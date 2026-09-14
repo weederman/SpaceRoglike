@@ -1,9 +1,13 @@
-
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class SpaceshipController : MonoBehaviour
 {
+    [Header("Click Marker")]
+    [SerializeField] private GameObject clickMarkerPrefab;
+
+    private GameObject currentClickMarker;
+
     [Header("Movement")]
     [SerializeField] private float acceleration = 8f;
     [SerializeField] private float maxSpeed = 12f;
@@ -15,8 +19,11 @@ public class SpaceshipController : MonoBehaviour
     [SerializeField] private float brakingPower = 4f;
     [SerializeField] private float stoppingDistance = 1.5f;
 
-    [Header("Click Effect")]
-    [SerializeField] private GameObject clickEffect;
+    [Header("Camera Zoom")]
+    [SerializeField] private Camera mainCamera;
+    [SerializeField] private float zoomSpeed = 3f;
+    [SerializeField] private float minZoom = 3f;
+    [SerializeField] private float maxZoom = 15f;
 
     private Rigidbody rb;
 
@@ -33,11 +40,18 @@ public class SpaceshipController : MonoBehaviour
         rb.constraints =
             RigidbodyConstraints.FreezeRotationX |
             RigidbodyConstraints.FreezeRotationZ;
+
+        // 카메라를 Inspector에 넣지 않았으면 Main Camera 자동 검색
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
     }
 
     private void Update()
     {
         HandleMouseInput();
+        HandleCameraZoom();
     }
 
     private void FixedUpdate()
@@ -49,11 +63,12 @@ public class SpaceshipController : MonoBehaviour
 
     private void HandleMouseInput()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(1))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-            Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+            Plane groundPlane =
+                new Plane(Vector3.up, Vector3.zero);
 
             if (groundPlane.Raycast(ray, out float distance))
             {
@@ -63,39 +78,33 @@ public class SpaceshipController : MonoBehaviour
 
                 hasTarget = true;
 
-                // 클릭 이펙트 생성
-                SpawnClickEffect(targetPosition);
+                SpawnClickMarker(targetPosition);
             }
         }
     }
 
-    private void SpawnClickEffect(Vector3 position)
+    private void SpawnClickMarker(Vector3 position)
     {
-        if (clickEffect == null)
+        if (clickMarkerPrefab == null)
             return;
 
-        GameObject effect = Instantiate(
-            clickEffect,
+        if (currentClickMarker != null)
+        {
+            Destroy(currentClickMarker);
+        }
+
+        currentClickMarker = Instantiate(
+            clickMarkerPrefab,
             position,
-            Quaternion.identity
+            Quaternion.Euler(90f, 0f, 0f)
         );
 
-        // 파티클이 끝나면 자동 삭제
-        ParticleSystem particle =
-            effect.GetComponent<ParticleSystem>();
-
-        if (particle != null)
-        {
-            Destroy(
-                effect,
-                particle.main.duration +
-                particle.main.startLifetime.constantMax
+        currentClickMarker.transform.position =
+            new Vector3(
+                position.x,
+                0.02f,
+                position.z
             );
-        }
-        else
-        {
-            Destroy(effect, 2f);
-        }
     }
 
     private void MoveToTarget()
@@ -103,7 +112,9 @@ public class SpaceshipController : MonoBehaviour
         if (!hasTarget)
             return;
 
-        Vector3 direction = targetPosition - transform.position;
+        Vector3 direction =
+            targetPosition - transform.position;
+
         direction.y = 0f;
 
         float distance = direction.magnitude;
@@ -136,11 +147,12 @@ public class SpaceshipController : MonoBehaviour
 
     private void Brake()
     {
-        Vector3 horizontalVelocity = new Vector3(
-            rb.velocity.x,
-            0f,
-            rb.velocity.z
-        );
+        Vector3 horizontalVelocity =
+            new Vector3(
+                rb.velocity.x,
+                0f,
+                rb.velocity.z
+            );
 
         rb.AddForce(
             -horizontalVelocity * brakingPower,
@@ -151,19 +163,24 @@ public class SpaceshipController : MonoBehaviour
     private void RotateToMovement()
     {
         Vector3 velocity = rb.velocity;
+
         velocity.y = 0f;
 
         if (velocity.sqrMagnitude < 0.1f)
             return;
 
         Quaternion targetRotation =
-            Quaternion.LookRotation(velocity.normalized);
+            Quaternion.LookRotation(
+                velocity.normalized
+            );
 
-        Quaternion newRotation = Quaternion.Slerp(
-            rb.rotation,
-            targetRotation,
-            rotationSpeed * Time.fixedDeltaTime
-        );
+        Quaternion newRotation =
+            Quaternion.Slerp(
+                rb.rotation,
+                targetRotation,
+                rotationSpeed *
+                Time.fixedDeltaTime
+            );
 
         rb.MoveRotation(newRotation);
     }
@@ -172,16 +189,18 @@ public class SpaceshipController : MonoBehaviour
     {
         Vector3 velocity = rb.velocity;
 
-        Vector3 horizontalVelocity = new Vector3(
-            velocity.x,
-            0f,
-            velocity.z
-        );
+        Vector3 horizontalVelocity =
+            new Vector3(
+                velocity.x,
+                0f,
+                velocity.z
+            );
 
         if (horizontalVelocity.magnitude > maxSpeed)
         {
             horizontalVelocity =
-                horizontalVelocity.normalized * maxSpeed;
+                horizontalVelocity.normalized *
+                maxSpeed;
 
             rb.velocity = new Vector3(
                 horizontalVelocity.x,
@@ -194,8 +213,39 @@ public class SpaceshipController : MonoBehaviour
     private float GetHorizontalSpeed()
     {
         Vector3 velocity = rb.velocity;
+
         velocity.y = 0f;
 
         return velocity.magnitude;
+    }
+
+    // =========================================================
+    // 카메라 줌
+    // =========================================================
+
+    private void HandleCameraZoom()
+    {
+        if (mainCamera == null)
+            return;
+
+        float scroll =
+            Input.GetAxis("Mouse ScrollWheel");
+
+        if (Mathf.Abs(scroll) < 0.01f)
+            return;
+
+        float newZoom =
+            mainCamera.orthographicSize -
+            scroll * zoomSpeed;
+
+        newZoom =
+            Mathf.Clamp(
+                newZoom,
+                minZoom,
+                maxZoom
+            );
+
+        mainCamera.orthographicSize =
+            newZoom;
     }
 }
