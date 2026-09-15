@@ -35,13 +35,35 @@ namespace FORGE3D
 
         void CheckForTurn()
         {
-            // Construct a ray pointing from screen mouse position into world space
-            Ray cameraRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Camera mainCamera = Camera.main;
 
-            // Raycast
-            if (Physics.Raycast(cameraRay, out hitInfo, 500f))
+            if (mainCamera == null)
+                return;
+
+            Ray ray =
+                mainCamera.ScreenPointToRay(Input.mousePosition);
+
+            Plane aimPlane =
+                new Plane(
+                    Vector3.up,
+                    new Vector3(
+                        0f,
+                        turret.transform.position.y,
+                        0f
+                    )
+                );
+
+            if (aimPlane.Raycast(ray, out float distance))
             {
-                turret.SetNewTarget(hitInfo.point);
+                Vector3 target =
+                    ray.GetPoint(distance);
+
+                target.y =
+                    turret.transform.position.y;
+
+                Debug.Log("Target = " + target);
+
+                turret.SetNewTarget(target);
             }
         }
     }

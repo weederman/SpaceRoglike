@@ -1,0 +1,16 @@
+Step-by-step:
+1. Duplicate your mesh and make the duplicate a child of the original GameObject.
+2. Assign the FX/Procedural Force Field material to the child mesh.
+3. Add ProceduralForceFieldOverlay.cs to the parent GameObject, then assign the child mesh in the script field.
+4. Add ProceduralForceFieldHit.cs to the child mesh (the same one using the force field material).
+
+Obs:
+To trigger the force field effect, call the following logic using a world-space hit position:
+
+ProceduralForceFieldOverlay overlay = hit.collider.GetComponentInParent<ProceduralForceFieldOverlay>();
+if (overlay != null)
+{
+    overlay.Trigger(hit.point);
+}
+
+You can check the ForceFieldHitTester script included in the asset as a reference for how the force field interaction is triggered via raycasts.

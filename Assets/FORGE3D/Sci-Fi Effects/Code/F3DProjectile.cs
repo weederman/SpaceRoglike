@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using ProceduralForceField;
 
 namespace FORGE3D
 {
@@ -83,6 +84,7 @@ namespace FORGE3D
             // If something was hit
             if (isHit)
             {
+
                 // Execute once
                 if (!isFXSpawned)
                 {
@@ -134,7 +136,26 @@ namespace FORGE3D
                     layerMask))
                 {
                     isHit = true;
+                    if (Physics.Raycast(transform.position, transform.forward, out hitPoint,
+    step.magnitude * RaycastAdvance, layerMask))
+                    {
+                        isHit = true;
 
+                        ProceduralForceFieldOverlay overlay =
+                            hitPoint.collider.GetComponentInParent<ProceduralForceFieldOverlay>();
+
+                        if (overlay != null)
+                        {
+                            overlay.Trigger(hitPoint.point);
+                        }
+
+                        // 기존 코드
+                        if (DelayDespawn)
+                        {
+                            timer = 0f;
+                            Delay();
+                        }
+                    }
                     // Invoke delay routine if required
                     if (DelayDespawn)
                     {
