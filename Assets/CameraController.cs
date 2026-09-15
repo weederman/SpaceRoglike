@@ -5,48 +5,32 @@ public class CameraController : MonoBehaviour
     [Header("Target")]
     [SerializeField] private Transform target;
 
-    [Header("Camera Position")]
-    [SerializeField] private float height = 12f;
-    [SerializeField] private float distance = 8f;
-
     [Header("Camera Angle")]
-    [SerializeField] private float angle = 55f;
+    [SerializeField] private float height = 15f;
+    [SerializeField] private float distance = 12f;
 
     [Header("Camera Follow")]
     [SerializeField] private float followSpeed = 8f;
 
-    [Header("Zoom")]
-    [SerializeField] private float zoomSpeed = 3f;
-    [SerializeField] private float minZoom = 6f;
-    [SerializeField] private float maxZoom = 18f;
-
-    private Camera cam;
-
-    private void Awake()
-    {
-        cam = GetComponent<Camera>();
-
-        if (cam == null)
-        {
-            cam = Camera.main;
-        }
-    }
-
     private void Start()
     {
         if (target == null)
+        {
+            Debug.LogWarning("CameraController: Target이 지정되지 않았습니다.");
             return;
+        }
 
-        // 시작 위치 설정
-        Vector3 startPosition =
-            target.position +
-            new Vector3(0f, height, -distance);
+        // 시작할 때 우주선 위쪽 + 뒤쪽에 카메라 배치
+        Vector3 offset = new Vector3(
+            0f,
+            height,
+            -distance
+        );
 
-        transform.position = startPosition;
+        transform.position = target.position + offset;
 
-        // 쿼터뷰 방향
-        transform.rotation =
-            Quaternion.Euler(angle, 0f, 0f);
+        // 우주선을 바라봄
+        LookAtTarget();
     }
 
     private void LateUpdate()
@@ -55,14 +39,19 @@ public class CameraController : MonoBehaviour
             return;
 
         FollowTarget();
-        HandleZoom();
     }
 
     private void FollowTarget()
     {
+        // 우주선과 카메라 사이의 상대 위치
+        Vector3 offset = new Vector3(
+            0f,
+            height,
+            -distance
+        );
+
         Vector3 targetPosition =
-            target.position +
-            new Vector3(0f, height, -distance);
+            target.position + offset;
 
         // 부드럽게 따라가기
         transform.position = Vector3.Lerp(
@@ -71,47 +60,18 @@ public class CameraController : MonoBehaviour
             followSpeed * Time.deltaTime
         );
 
-        // 항상 우주선을 바라봄
-        Vector3 lookDirection =
-            target.position - transform.position;
-
-        transform.rotation =
-            Quaternion.LookRotation(lookDirection);
+        LookAtTarget();
     }
 
-    private void HandleZoom()
+    private void LookAtTarget()
     {
-        float scroll =
-            Input.GetAxis("Mouse ScrollWheel");
+        Vector3 direction =
+            target.position - transform.position;
 
-        if (Mathf.Abs(scroll) < 0.01f)
+        if (direction.sqrMagnitude < 0.001f)
             return;
 
-        if (cam.orthographic)
-        {
-            float newSize =
-                cam.orthographicSize -
-                scroll * zoomSpeed;
-
-            cam.orthographicSize =
-                Mathf.Clamp(
-                    newSize,
-                    minZoom,
-                    maxZoom
-                );
-        }
-        else
-        {
-            float newFOV =
-                cam.fieldOfView -
-                scroll * zoomSpeed * 5f;
-
-            cam.fieldOfView =
-                Mathf.Clamp(
-                    newFOV,
-                    30f,
-                    80f
-                );
-        }
+        transform.rotation =
+            Quaternion.LookRotation(direction);
     }
 }
