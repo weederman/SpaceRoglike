@@ -14,6 +14,14 @@ public class SpaceshipController : MonoBehaviour
     [Header("Click Marker")]
     [SerializeField] private GameObject clickMarkerPrefab;
 
+    [Header("Engine Sound")]
+    [SerializeField] private AudioSource engineAudio;
+    [SerializeField] private float engineMinVolume = 0f;
+    [SerializeField] private float engineMaxVolume = 0.7f;
+    [SerializeField] private float engineMinPitch = 0.8f;
+    [SerializeField] private float engineMaxPitch = 1.3f;
+    [SerializeField] private float engineFadeSpeed = 5f;
+
     private GameObject currentClickMarker;
 
     private Rigidbody rb;
@@ -29,13 +37,23 @@ public class SpaceshipController : MonoBehaviour
         rb.angularDrag = 0.5f;
 
         rb.constraints =
+            RigidbodyConstraints.FreezePositionY |
             RigidbodyConstraints.FreezeRotationX |
             RigidbodyConstraints.FreezeRotationZ;
+
+        // 엔진음 초기 설정
+        if (engineAudio != null)
+        {
+            engineAudio.loop = true;
+            engineAudio.playOnAwake = false;
+            engineAudio.volume = 0f;
+        }
     }
 
     private void Update()
     {
         HandleMovementInput();
+        UpdateEngineSound();
     }
 
     private void FixedUpdate()
@@ -56,11 +74,9 @@ public class SpaceshipController : MonoBehaviour
         if (mainCamera == null)
             return;
 
-        // 마우스 위치에서 Ray 발사
         Ray ray =
             mainCamera.ScreenPointToRay(Input.mousePosition);
 
-        // 우주선이 있는 높이의 XZ 평면
         Plane groundPlane =
             new Plane(
                 Vector3.up,
@@ -71,7 +87,6 @@ public class SpaceshipController : MonoBehaviour
                 )
             );
 
-        // Ray와 XZ 평면의 교차점
         if (groundPlane.Raycast(ray, out float distance))
         {
             targetPosition =
@@ -227,5 +242,71 @@ public class SpaceshipController : MonoBehaviour
         velocity.y = 0f;
 
         return velocity.magnitude;
+    }
+
+    // =========================
+    // Engine Sound
+    // =========================
+
+    private void UpdateEngineSound()
+    {
+        if (engineAudio == null)
+            return;
+
+        float speed = GetHorizontalSpeed();
+
+        // 0 ~ 1 사이로 속도 변환
+        float speedRatio =
+            Mathf.Clamp01(speed / maxSpeed);
+
+        // 속도에 따라 목표 볼륨 계산
+        float targetVolume =
+            Mathf.Lerp(
+                engineMinVolume,
+                engineMaxVolume,
+                speedRatio
+            );
+
+        // 속도에 따라 Pitch 변화
+        float targetPitch =
+            Mathf.Lerp(
+                engineMinPitch,
+                engineMaxPitch,
+                speedRatio
+            );
+
+        // 부드럽게 볼륨 변화
+        engineAudio.volume =
+            Mathf.Lerp(
+                engineAudio.volume,
+                targetVolume,
+                engineFadeSpeed * Time.deltaTime
+            );
+
+        // 부드럽게 Pitch 변화
+        engineAudio.pitch =
+            Mathf.Lerp(
+                engineAudio.pitch,
+                targetPitch,
+                engineFadeSpeed * Time.deltaTime
+            );
+
+        // 움직이기 시작하면 재생
+        if (speed > 0.1f)
+        {
+            if (!engineAudio.isPlaying)
+            {
+                engineAudio.Play();
+            }
+        }
+        else
+        {
+            // 완전히 멈추면 정지
+            if (engineAudio.isPlaying &&
+                engineAudio.volume < 0.01f)
+            {
+                engineAudio.Stop();
+            }
+        }
     }
 }
