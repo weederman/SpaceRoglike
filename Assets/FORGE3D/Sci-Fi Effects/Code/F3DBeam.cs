@@ -2,8 +2,8 @@
 using System.Collections;
 
 namespace FORGE3D
-{ 
-    [RequireComponent(typeof (LineRenderer))]
+{
+    [RequireComponent(typeof(LineRenderer))]
     public class F3DBeam : MonoBehaviour
     {
         public LayerMask layerMask;
@@ -23,48 +23,43 @@ namespace FORGE3D
         public Transform rayImpact; // Impact transform
         public Transform rayMuzzle; // Muzzle flash transform
 
+        [Header("Damage")] // [추가]
+        [Tooltip("OneShot = 한 발 데미지 / 지속형 = 초당 데미지(DPS)")]
+        public float damage = 30f;
+
         LineRenderer lineRenderer; // Line rendered component
         RaycastHit hitPoint; // Raycast structure
         RaycastHit2D hitPoint2D; // Raycasthit in 2d
 
         int frameNo; // Frame counter
-        int FrameTimerID; // Frame timer reference
+        int FrameTimerID = -1; // [변경] 0 → -1 : 다른 타이머(ID 0)를 잘못 지우는 문제 방지
         float beamLength; // Current beam length
-        float initialBeamOffset; // Initial UV offset 
-        public float fxOffset; // Fx offset from bullet's touch point      
+        float initialBeamOffset; // Initial UV offset
+        public float fxOffset; // Fx offset from bullet's touch point
 
         void Awake()
         {
-            // Get line renderer component
             lineRenderer = GetComponent<LineRenderer>();
 
-            // Assign first frame texture
             if (!AnimateUV && BeamFrames.Length > 0)
                 lineRenderer.material.mainTexture = BeamFrames[0];
 
-            // Randomize uv offset
             initialBeamOffset = Random.Range(0f, 5f);
         }
 
-        // OnSpawned called by pool manager 
         void OnSpawned()
         {
-            // Do one time raycast in case of one shot flag
             if (OneShot)
                 Raycast();
 
-            // Start animation sequence if beam frames array has more than 2 elements
             if (BeamFrames.Length > 1)
                 Animate();
         }
 
-        // OnDespawned called by pool manager 
         void OnDespawned()
         {
-            // Reset frame counter
             frameNo = 0;
 
-            // Clear timer
             if (FrameTimerID != -1)
             {
                 F3DTime.time.RemoveTimer(FrameTimerID);
@@ -72,34 +67,32 @@ namespace FORGE3D
             }
         }
 
-        // Hit point calculation
         void Raycast()
-        { 
-            // Prepare structure and create ray
+        {
             hitPoint = new RaycastHit();
             Ray ray = new Ray(transform.position, transform.forward);
-            // Calculate default beam proportion multiplier based on default scale and maximum length
-            float propMult = MaxBeamLength*(beamScale/10f);
+            float propMult = MaxBeamLength * (beamScale / 10f);
 
-            // Raycast
             if (Physics.Raycast(ray, out hitPoint, MaxBeamLength, layerMask))
             {
-                // Get current beam length and update line renderer accordingly
                 beamLength = Vector3.Distance(transform.position, hitPoint.point);
                 lineRenderer.SetPosition(1, new Vector3(0f, 0f, beamLength));
 
-                // Calculate default beam proportion multiplier based on default scale and current length
-                propMult = beamLength*(beamScale/10f);
-                // Spawn prefabs and apply force
+                propMult = beamLength * (beamScale / 10f);
+
+                // [추가] 데미지 전달. 지속형 빔은 프레임레이트와 무관하게 DPS가 일정하도록 deltaTime을 곱한다.
+                float frameDamage = OneShot ? damage : damage * Time.deltaTime;
+                HitResolver.Resolve(hitPoint, frameDamage);
+
                 switch (fxType)
                 {
                     case F3DFXType.Sniper:
-                        F3DFXController.instance.SniperImpact(hitPoint.point + hitPoint.normal*fxOffset);
+                        F3DFXController.instance.SniperImpact(hitPoint.point + hitPoint.normal * fxOffset);
                         ApplyForce(4f);
                         break;
 
                     case F3DFXType.RailGun:
-                        F3DFXController.instance.RailgunImpact(hitPoint.point + hitPoint.normal*fxOffset);
+                        F3DFXController.instance.RailgunImpact(hitPoint.point + hitPoint.normal * fxOffset);
                         ApplyForce(7f);
                         break;
 
@@ -112,34 +105,29 @@ namespace FORGE3D
                         break;
                 }
 
-                // Adjust impact effect position
                 if (rayImpact)
-                    rayImpact.position = hitPoint.point - transform.forward*0.5f;
+                    rayImpact.position = hitPoint.point - transform.forward * 0.5f;
             }
-            //checking in 2d mode
             else
             {
+                // (원본 에셋의 2D 분기 — 3D 게임에서는 사용되지 않음. 데미지 처리 없음)
                 RaycastHit2D ray2D = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y),
                     new Vector2(transform.forward.x, transform.forward.y), beamLength, layerMask);
                 if (ray2D)
                 {
-                    // Get current beam length and update line renderer accordingly
                     beamLength = Vector3.Distance(transform.position, ray2D.point);
                     lineRenderer.SetPosition(1, new Vector3(0f, 0f, beamLength));
 
-                    // Calculate default beam proportion multiplier based on default scale and current length
-                    propMult = beamLength*(beamScale/10f);
-                    // Spawn prefabs and apply force
+                    propMult = beamLength * (beamScale / 10f);
                     switch (fxType)
                     {
                         case F3DFXType.Sniper:
-
-                            F3DFXController.instance.SniperImpact(ray2D.point + ray2D.normal*fxOffset);
+                            F3DFXController.instance.SniperImpact(ray2D.point + ray2D.normal * fxOffset);
                             ApplyForce(4f);
                             break;
 
                         case F3DFXType.RailGun:
-                            F3DFXController.instance.RailgunImpact(ray2D.point + ray2D.normal*fxOffset);
+                            F3DFXController.instance.RailgunImpact(ray2D.point + ray2D.normal * fxOffset);
                             ApplyForce(7f);
                             break;
 
@@ -152,79 +140,70 @@ namespace FORGE3D
                             break;
                     }
 
-                    // Adjust impact effect position
                     if (rayImpact)
                         rayImpact.position = new Vector3(ray2D.point.x,
                             ray2D.point.y,
-                            this.gameObject.transform.position.z) - transform.forward*0.5f;
+                            this.gameObject.transform.position.z) - transform.forward * 0.5f;
                 }
-                // Nothing was his
                 else
                 {
-                    // Set beam to maximum length
                     beamLength = MaxBeamLength;
                     lineRenderer.SetPosition(1, new Vector3(0f, 0f, beamLength));
 
-                    // Adjust impact effect position
                     if (rayImpact)
-                        rayImpact.position = transform.position + transform.forward*beamLength;
+                        rayImpact.position = transform.position + transform.forward * beamLength;
                 }
             }
 
-            // Adjust muzzle position
             if (rayMuzzle)
-                rayMuzzle.position = transform.position + transform.forward*0.1f;
+                rayMuzzle.position = transform.position + transform.forward * 0.1f;
 
-            // Set beam scaling according to its length
             lineRenderer.material.SetTextureScale("_MainTex", new Vector2(propMult, 1f));
         }
 
-        // Advance texture frame
         void OnFrameStep()
         {
-            // Set current texture frame based on frame counter
             lineRenderer.material.mainTexture = BeamFrames[frameNo];
             frameNo++;
 
-            // Reset frame counter
             if (frameNo == BeamFrames.Length)
                 frameNo = 0;
         }
 
-        // Initialize frame animation
         void Animate()
         {
             if (BeamFrames.Length > 1)
             {
-                // Set current frame
                 frameNo = 0;
                 lineRenderer.material.mainTexture = BeamFrames[frameNo];
 
-                // Add timer 
                 FrameTimerID = F3DTime.time.AddTimer(FrameStep, BeamFrames.Length - 1, OnFrameStep);
 
                 frameNo = 1;
             }
         }
 
-        // Apply force to last hit object
         void ApplyForce(float force)
         {
             if (hitPoint.rigidbody != null)
-                hitPoint.rigidbody.AddForceAtPosition(transform.forward*force, hitPoint.point, ForceMode.VelocityChange);
-        }  
+                hitPoint.rigidbody.AddForceAtPosition(transform.forward * force, hitPoint.point, ForceMode.VelocityChange);
+        }
 
-        // Set offset of impact
         public void SetOffset(float offset)
         {
             fxOffset = offset;
+        }
+
+        // [추가]
+        public void SetDamage(float value)
+        {
+            damage = Mathf.Max(0f, value);
         }
 
         private float animateUVTime;
 
         void Update()
         {
-            // Animate texture UV
             if (AnimateUV)
             {
                 animateUVTime += Time.deltaTime;
@@ -235,7 +214,6 @@ namespace FORGE3D
                 lineRenderer.material.SetTextureOffset("_MainTex", new Vector2(animateUVTime * UVTime + initialBeamOffset, 0f));
             }
 
-            // Raycast for laser beams
             if (!OneShot)
                 Raycast();
         }
