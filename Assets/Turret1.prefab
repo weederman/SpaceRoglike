@@ -6073,7 +6073,7 @@ MonoBehaviour:
   vulcanMuzzle: {fileID: 400002, guid: ca6dec307275d294ba519247d04b6733, type: 3}
   vulcanImpact: {fileID: 400000, guid: bfa7781c328a236468eda51a8ae2be55, type: 3}
   vulcanOffset: 0
-  VulcanFireRate: 0.07
+  VulcanFireRate: 1
   soloGunProjectile: {fileID: 0}
   soloGunMuzzle: {fileID: 0}
   soloGunImpact: {fileID: 0}
