@@ -9,10 +9,9 @@ public class SpaceshipController : MonoBehaviour
 
     [Header("Braking")]
     [SerializeField] private float brakingPower = 4f;
-    [SerializeField] private float stoppingDistance = 1.5f;
 
-    [Header("Click Marker")]
-    [SerializeField] private GameObject clickMarkerPrefab;
+    [Header("Rotation")]
+    [SerializeField] private float rotationSpeed = 8f;
 
     [Header("Engine Sound")]
     [SerializeField] private AudioSource engineAudio;
@@ -22,12 +21,7 @@ public class SpaceshipController : MonoBehaviour
     [SerializeField] private float engineMaxPitch = 1.3f;
     [SerializeField] private float engineFadeSpeed = 5f;
 
-    private GameObject currentClickMarker;
-
     private Rigidbody rb;
-
-    private Vector3 targetPosition;
-    private bool hasTarget = false;
 
     private void Awake()
     {
@@ -52,120 +46,73 @@ public class SpaceshipController : MonoBehaviour
 
     private void Update()
     {
-        HandleMovementInput();
         UpdateEngineSound();
     }
 
     private void FixedUpdate()
     {
-        MoveToTarget();
+        HandleMovement();
         RotateToMovement();
         LimitSpeed();
     }
 
-    private void HandleMovementInput()
+    // =========================
+    // RPG 스타일 WASD 이동
+    // =========================
+
+    private void HandleMovement()
     {
-        // 우클릭 = 이동
-        if (!Input.GetMouseButtonDown(1))
-            return;
+        float horizontal =
+            Input.GetAxisRaw("Horizontal");
 
-        Camera mainCamera = Camera.main;
+        float vertical =
+            Input.GetAxisRaw("Vertical");
 
-        if (mainCamera == null)
-            return;
-
-        Ray ray =
-            mainCamera.ScreenPointToRay(Input.mousePosition);
-
-        Plane groundPlane =
-            new Plane(
-                Vector3.up,
-                new Vector3(
-                    0f,
-                    transform.position.y,
-                    0f
-                )
-            );
-
-        if (groundPlane.Raycast(ray, out float distance))
-        {
-            targetPosition =
-                ray.GetPoint(distance);
-
-            targetPosition.y =
-                transform.position.y;
-
-            hasTarget = true;
-
-            SpawnClickMarker(targetPosition);
-        }
-    }
-
-    private void SpawnClickMarker(Vector3 position)
-    {
-        if (clickMarkerPrefab == null)
-            return;
-
-        if (currentClickMarker != null)
-        {
-            Destroy(currentClickMarker);
-        }
-
-        currentClickMarker =
-            Instantiate(
-                clickMarkerPrefab,
-                position,
-                Quaternion.Euler(90f, 0f, 0f)
-            );
-
-        currentClickMarker.transform.position =
+        Vector3 inputDirection =
             new Vector3(
-                position.x,
-                0.02f,
-                position.z
+                horizontal,
+                0f,
+                vertical
             );
-    }
 
-    private void MoveToTarget()
-    {
-        if (!hasTarget)
-            return;
+        // 대각선 이동 속도 보정
+        if (inputDirection.sqrMagnitude > 1f)
+        {
+            inputDirection.Normalize();
+        }
 
-        Vector3 direction =
-            targetPosition - transform.position;
+        // ====================================
+        // 입력이 없으면 감속
+        // ====================================
 
-        direction.y = 0f;
-
-        float distance =
-            direction.magnitude;
-
-        // 목적지 근처
-        if (distance <= stoppingDistance)
+        if (inputDirection.sqrMagnitude < 0.01f)
         {
             Brake();
-
-            if (GetHorizontalSpeed() < 0.2f)
-            {
-                rb.velocity =
-                    new Vector3(
-                        0f,
-                        rb.velocity.y,
-                        0f
-                    );
-
-                hasTarget = false;
-            }
-
             return;
         }
 
-        direction.Normalize();
+        // ====================================
+        // RPG 방식
+        //
+        // 월드 기준으로 WASD 이동
+        // W = +Z
+        // S = -Z
+        // A = -X
+        // D = +X
+        // ====================================
+
+        Vector3 moveDirection =
+            inputDirection.normalized;
 
         rb.AddForce(
-            direction * acceleration,
+            moveDirection * acceleration,
             ForceMode.Acceleration
         );
     }
+
+    // =========================
+    // 감속
+    // =========================
 
     private void Brake()
     {
@@ -176,11 +123,18 @@ public class SpaceshipController : MonoBehaviour
                 rb.velocity.z
             );
 
+        if (horizontalVelocity.sqrMagnitude < 0.01f)
+            return;
+
         rb.AddForce(
             -horizontalVelocity * brakingPower,
             ForceMode.Acceleration
         );
     }
+
+    // =========================
+    // 이동 방향을 바라보기
+    // =========================
 
     private void RotateToMovement()
     {
@@ -194,18 +148,23 @@ public class SpaceshipController : MonoBehaviour
 
         Quaternion targetRotation =
             Quaternion.LookRotation(
-                velocity.normalized
+                velocity.normalized,
+                Vector3.up
             );
 
         Quaternion newRotation =
             Quaternion.Slerp(
                 rb.rotation,
                 targetRotation,
-                5f * Time.fixedDeltaTime
+                rotationSpeed * Time.fixedDeltaTime
             );
 
         rb.MoveRotation(newRotation);
     }
+
+    // =========================
+    // 최대 속도 제한
+    // =========================
 
     private void LimitSpeed()
     {
@@ -234,6 +193,10 @@ public class SpaceshipController : MonoBehaviour
         }
     }
 
+    // =========================
+    // 현재 수평 속도
+    // =========================
+
     private float GetHorizontalSpeed()
     {
         Vector3 velocity =
@@ -253,13 +216,15 @@ public class SpaceshipController : MonoBehaviour
         if (engineAudio == null)
             return;
 
-        float speed = GetHorizontalSpeed();
+        float speed =
+            GetHorizontalSpeed();
 
-        // 0 ~ 1 사이로 속도 변환
         float speedRatio =
-            Mathf.Clamp01(speed / maxSpeed);
+            Mathf.Clamp01(
+                speed / maxSpeed
+            );
 
-        // 속도에 따라 목표 볼륨 계산
+        // 속도에 따른 볼륨
         float targetVolume =
             Mathf.Lerp(
                 engineMinVolume,
@@ -267,7 +232,7 @@ public class SpaceshipController : MonoBehaviour
                 speedRatio
             );
 
-        // 속도에 따라 Pitch 변화
+        // 속도에 따른 Pitch
         float targetPitch =
             Mathf.Lerp(
                 engineMinPitch,
@@ -275,7 +240,7 @@ public class SpaceshipController : MonoBehaviour
                 speedRatio
             );
 
-        // 부드럽게 볼륨 변화
+        // 볼륨 부드럽게 변화
         engineAudio.volume =
             Mathf.Lerp(
                 engineAudio.volume,
@@ -283,7 +248,7 @@ public class SpaceshipController : MonoBehaviour
                 engineFadeSpeed * Time.deltaTime
             );
 
-        // 부드럽게 Pitch 변화
+        // Pitch 부드럽게 변화
         engineAudio.pitch =
             Mathf.Lerp(
                 engineAudio.pitch,
@@ -301,7 +266,6 @@ public class SpaceshipController : MonoBehaviour
         }
         else
         {
-            // 완전히 멈추면 정지
             if (engineAudio.isPlaying &&
                 engineAudio.volume < 0.01f)
             {

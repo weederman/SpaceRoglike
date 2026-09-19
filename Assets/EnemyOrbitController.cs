@@ -18,6 +18,14 @@ public class EnemyOrbitController : MonoBehaviour
     [Header("Rotation")]
     [SerializeField] private float rotationSpeed = 5f;
 
+    [Header("Engine Sound")]
+    [SerializeField] private AudioSource engineAudio;
+    [SerializeField] private float engineMinVolume = 0f;
+    [SerializeField] private float engineMaxVolume = 0.7f;
+    [SerializeField] private float engineMinPitch = 0.8f;
+    [SerializeField] private float engineMaxPitch = 1.3f;
+    [SerializeField] private float engineFadeSpeed = 5f;
+
     private Rigidbody rb;
 
     private void Awake()
@@ -31,6 +39,14 @@ public class EnemyOrbitController : MonoBehaviour
             RigidbodyConstraints.FreezePositionY |
             RigidbodyConstraints.FreezeRotationX |
             RigidbodyConstraints.FreezeRotationZ;
+
+        // 엔진음 초기 설정
+        if (engineAudio != null)
+        {
+            engineAudio.loop = true;
+            engineAudio.playOnAwake = false;
+            engineAudio.volume = 0f;
+        }
     }
 
     private void Start()
@@ -46,6 +62,11 @@ public class EnemyOrbitController : MonoBehaviour
                 target = player.transform;
             }
         }
+    }
+
+    private void Update()
+    {
+        UpdateEngineSound();
     }
 
     private void FixedUpdate()
@@ -181,5 +202,82 @@ public class EnemyOrbitController : MonoBehaviour
                     horizontalVelocity.z
                 );
         }
+    }
+
+    // =========================
+    // Engine Sound
+    // =========================
+
+    private void UpdateEngineSound()
+    {
+        if (engineAudio == null)
+            return;
+
+        float speed =
+            GetHorizontalSpeed();
+
+        // 현재 속도를 0 ~ 1로 변환
+        float speedRatio =
+            Mathf.Clamp01(speed / maxSpeed);
+
+        // 속도에 따라 목표 볼륨 계산
+        float targetVolume =
+            Mathf.Lerp(
+                engineMinVolume,
+                engineMaxVolume,
+                speedRatio
+            );
+
+        // 속도에 따라 Pitch 변화
+        float targetPitch =
+            Mathf.Lerp(
+                engineMinPitch,
+                engineMaxPitch,
+                speedRatio
+            );
+
+        // 볼륨 부드럽게 변화
+        engineAudio.volume =
+            Mathf.Lerp(
+                engineAudio.volume,
+                targetVolume,
+                engineFadeSpeed * Time.deltaTime
+            );
+
+        // Pitch 부드럽게 변화
+        engineAudio.pitch =
+            Mathf.Lerp(
+                engineAudio.pitch,
+                targetPitch,
+                engineFadeSpeed * Time.deltaTime
+            );
+
+        // 움직이기 시작하면 재생
+        if (speed > 0.1f)
+        {
+            if (!engineAudio.isPlaying)
+            {
+                engineAudio.Play();
+            }
+        }
+        else
+        {
+            // 완전히 멈추면 정지
+            if (engineAudio.isPlaying &&
+                engineAudio.volume < 0.01f)
+            {
+                engineAudio.Stop();
+            }
+        }
+    }
+
+    private float GetHorizontalSpeed()
+    {
+        Vector3 velocity =
+            rb.velocity;
+
+        velocity.y = 0f;
+
+        return velocity.magnitude;
     }
 }

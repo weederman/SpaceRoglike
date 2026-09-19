@@ -2,8 +2,8 @@
 using System.Collections;
 
 namespace FORGE3D
-{ 
-    [RequireComponent(typeof (LineRenderer))]
+{
+    [RequireComponent(typeof(LineRenderer))]
     public class F3DBeam : MonoBehaviour
     {
         public LayerMask layerMask;
@@ -25,13 +25,15 @@ namespace FORGE3D
 
         LineRenderer lineRenderer; // Line rendered component
         RaycastHit hitPoint; // Raycast structure
-        RaycastHit2D hitPoint2D; // Raycasthit in 2d
+        RaycastHit2D hitPoint2D; // Raycast hit in 2D
 
         int frameNo; // Frame counter
-        int FrameTimerID; // Frame timer reference
+        int FrameTimerID = -1; // Frame timer reference
+
         float beamLength; // Current beam length
-        float initialBeamOffset; // Initial UV offset 
-        public float fxOffset; // Fx offset from bullet's touch point      
+        float initialBeamOffset; // Initial UV offset
+
+        public float fxOffset; // Fx offset from bullet's touch point
 
         void Awake()
         {
@@ -42,11 +44,11 @@ namespace FORGE3D
             if (!AnimateUV && BeamFrames.Length > 0)
                 lineRenderer.material.mainTexture = BeamFrames[0];
 
-            // Randomize uv offset
+            // Randomize UV offset
             initialBeamOffset = Random.Range(0f, 5f);
         }
 
-        // OnSpawned called by pool manager 
+        // OnSpawned called by pool manager
         void OnSpawned()
         {
             // Do one time raycast in case of one shot flag
@@ -58,7 +60,7 @@ namespace FORGE3D
                 Animate();
         }
 
-        // OnDespawned called by pool manager 
+        // OnDespawned called by pool manager
         void OnDespawned()
         {
             // Reset frame counter
@@ -74,145 +76,279 @@ namespace FORGE3D
 
         // Hit point calculation
         void Raycast()
-        { 
+        {
             // Prepare structure and create ray
             hitPoint = new RaycastHit();
-            Ray ray = new Ray(transform.position, transform.forward);
-            // Calculate default beam proportion multiplier based on default scale and maximum length
-            float propMult = MaxBeamLength*(beamScale/10f);
 
-            // Raycast
-            if (Physics.Raycast(ray, out hitPoint, MaxBeamLength, layerMask))
+            Ray ray = new Ray(
+                transform.position,
+                transform.forward
+            );
+
+            // Calculate default beam proportion multiplier
+            // based on default scale and maximum length
+            float propMult =
+                MaxBeamLength * (beamScale / 10f);
+
+            // --------------------------------------------------
+            // 3D Raycast
+            // --------------------------------------------------
+
+            if (Physics.Raycast(
+                ray,
+                out hitPoint,
+                MaxBeamLength,
+                layerMask))
             {
-                // Get current beam length and update line renderer accordingly
-                beamLength = Vector3.Distance(transform.position, hitPoint.point);
-                lineRenderer.SetPosition(1, new Vector3(0f, 0f, beamLength));
+                // Get current beam length
+                beamLength =
+                    Vector3.Distance(
+                        transform.position,
+                        hitPoint.point
+                    );
 
-                // Calculate default beam proportion multiplier based on default scale and current length
-                propMult = beamLength*(beamScale/10f);
-                // Spawn prefabs and apply force
+                lineRenderer.SetPosition(
+                    1,
+                    new Vector3(
+                        0f,
+                        0f,
+                        beamLength
+                    )
+                );
+
+                // Calculate beam proportion multiplier
+                propMult =
+                    beamLength * (beamScale / 10f);
+
+                // --------------------------------------------------
+                // Impact effects
+                // 물리력은 적용하지 않음
+                // --------------------------------------------------
+
                 switch (fxType)
                 {
                     case F3DFXType.Sniper:
-                        F3DFXController.instance.SniperImpact(hitPoint.point + hitPoint.normal*fxOffset);
-                        ApplyForce(4f);
+
+                        F3DFXController.instance.SniperImpact(
+                            hitPoint.point +
+                            hitPoint.normal * fxOffset
+                        );
+
                         break;
 
                     case F3DFXType.RailGun:
-                        F3DFXController.instance.RailgunImpact(hitPoint.point + hitPoint.normal*fxOffset);
-                        ApplyForce(7f);
+
+                        F3DFXController.instance.RailgunImpact(
+                            hitPoint.point +
+                            hitPoint.normal * fxOffset
+                        );
+
                         break;
 
                     case F3DFXType.PlasmaBeam:
-                        ApplyForce(0.5f);
+
+                        // 기존 물리력 제거
                         break;
 
                     case F3DFXType.PlasmaBeamHeavy:
-                        ApplyForce(2f);
+
+                        // 기존 물리력 제거
                         break;
                 }
 
                 // Adjust impact effect position
                 if (rayImpact)
-                    rayImpact.position = hitPoint.point - transform.forward*0.5f;
+                {
+                    rayImpact.position =
+                        hitPoint.point -
+                        transform.forward * 0.5f;
+                }
             }
-            //checking in 2d mode
+
+            // --------------------------------------------------
+            // 2D Raycast
+            // --------------------------------------------------
+
             else
             {
-                RaycastHit2D ray2D = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y),
-                    new Vector2(transform.forward.x, transform.forward.y), beamLength, layerMask);
-                if (ray2D)
-                {
-                    // Get current beam length and update line renderer accordingly
-                    beamLength = Vector3.Distance(transform.position, ray2D.point);
-                    lineRenderer.SetPosition(1, new Vector3(0f, 0f, beamLength));
+                hitPoint2D =
+                    Physics2D.Raycast(
+                        new Vector2(
+                            transform.position.x,
+                            transform.position.y
+                        ),
+                        new Vector2(
+                            transform.forward.x,
+                            transform.forward.y
+                        ),
+                        MaxBeamLength,
+                        layerMask
+                    );
 
-                    // Calculate default beam proportion multiplier based on default scale and current length
-                    propMult = beamLength*(beamScale/10f);
-                    // Spawn prefabs and apply force
+                if (hitPoint2D)
+                {
+                    // Get current beam length
+                    beamLength =
+                        Vector3.Distance(
+                            transform.position,
+                            hitPoint2D.point
+                        );
+
+                    lineRenderer.SetPosition(
+                        1,
+                        new Vector3(
+                            0f,
+                            0f,
+                            beamLength
+                        )
+                    );
+
+                    // Calculate beam proportion multiplier
+                    propMult =
+                        beamLength * (beamScale / 10f);
+
+                    // --------------------------------------------------
+                    // Impact effects
+                    // 물리력은 적용하지 않음
+                    // --------------------------------------------------
+
                     switch (fxType)
                     {
                         case F3DFXType.Sniper:
 
-                            F3DFXController.instance.SniperImpact(ray2D.point + ray2D.normal*fxOffset);
-                            ApplyForce(4f);
+                            F3DFXController.instance.SniperImpact(
+                                hitPoint2D.point +
+                                hitPoint2D.normal * fxOffset
+                            );
+
                             break;
 
                         case F3DFXType.RailGun:
-                            F3DFXController.instance.RailgunImpact(ray2D.point + ray2D.normal*fxOffset);
-                            ApplyForce(7f);
+
+                            F3DFXController.instance.RailgunImpact(
+                                hitPoint2D.point +
+                                hitPoint2D.normal * fxOffset
+                            );
+
                             break;
 
                         case F3DFXType.PlasmaBeam:
-                            ApplyForce(0.5f);
+
+                            // 기존 물리력 제거
                             break;
 
                         case F3DFXType.PlasmaBeamHeavy:
-                            ApplyForce(2f);
+
+                            // 기존 물리력 제거
                             break;
                     }
 
                     // Adjust impact effect position
                     if (rayImpact)
-                        rayImpact.position = new Vector3(ray2D.point.x,
-                            ray2D.point.y,
-                            this.gameObject.transform.position.z) - transform.forward*0.5f;
+                    {
+                        rayImpact.position =
+                            new Vector3(
+                                hitPoint2D.point.x,
+                                hitPoint2D.point.y,
+                                transform.position.z
+                            )
+                            - transform.forward * 0.5f;
+                    }
                 }
-                // Nothing was his
+
+                // --------------------------------------------------
+                // Nothing was hit
+                // --------------------------------------------------
+
                 else
                 {
                     // Set beam to maximum length
                     beamLength = MaxBeamLength;
-                    lineRenderer.SetPosition(1, new Vector3(0f, 0f, beamLength));
+
+                    lineRenderer.SetPosition(
+                        1,
+                        new Vector3(
+                            0f,
+                            0f,
+                            beamLength
+                        )
+                    );
 
                     // Adjust impact effect position
                     if (rayImpact)
-                        rayImpact.position = transform.position + transform.forward*beamLength;
+                    {
+                        rayImpact.position =
+                            transform.position +
+                            transform.forward * beamLength;
+                    }
                 }
             }
 
-            // Adjust muzzle position
-            if (rayMuzzle)
-                rayMuzzle.position = transform.position + transform.forward*0.1f;
+            // --------------------------------------------------
+            // Muzzle position
+            // --------------------------------------------------
 
-            // Set beam scaling according to its length
-            lineRenderer.material.SetTextureScale("_MainTex", new Vector2(propMult, 1f));
+            if (rayMuzzle)
+            {
+                rayMuzzle.position =
+                    transform.position +
+                    transform.forward * 0.1f;
+            }
+
+            // --------------------------------------------------
+            // Beam texture scaling
+            // --------------------------------------------------
+
+            lineRenderer.material.SetTextureScale(
+                "_MainTex",
+                new Vector2(
+                    propMult,
+                    1f
+                )
+            );
         }
 
         // Advance texture frame
         void OnFrameStep()
         {
-            // Set current texture frame based on frame counter
-            lineRenderer.material.mainTexture = BeamFrames[frameNo];
+            if (BeamFrames == null ||
+                BeamFrames.Length == 0)
+                return;
+
+            // Set current texture frame
+            lineRenderer.material.mainTexture =
+                BeamFrames[frameNo];
+
             frameNo++;
 
             // Reset frame counter
-            if (frameNo == BeamFrames.Length)
+            if (frameNo >= BeamFrames.Length)
                 frameNo = 0;
         }
 
         // Initialize frame animation
         void Animate()
         {
-            if (BeamFrames.Length > 1)
-            {
-                // Set current frame
-                frameNo = 0;
-                lineRenderer.material.mainTexture = BeamFrames[frameNo];
+            if (BeamFrames == null ||
+                BeamFrames.Length <= 1)
+                return;
 
-                // Add timer 
-                FrameTimerID = F3DTime.time.AddTimer(FrameStep, BeamFrames.Length - 1, OnFrameStep);
+            // Set current frame
+            frameNo = 0;
 
-                frameNo = 1;
-            }
+            lineRenderer.material.mainTexture =
+                BeamFrames[frameNo];
+
+            // Add timer
+            FrameTimerID =
+                F3DTime.time.AddTimer(
+                    FrameStep,
+                    BeamFrames.Length - 1,
+                    OnFrameStep
+                );
+
+            frameNo = 1;
         }
-
-        // Apply force to last hit object
-        void ApplyForce(float force)
-        {
-            if (hitPoint.rigidbody != null)
-                hitPoint.rigidbody.AddForceAtPosition(transform.forward*force, hitPoint.point, ForceMode.VelocityChange);
-        }  
 
         // Set offset of impact
         public void SetOffset(float offset)
@@ -224,7 +360,10 @@ namespace FORGE3D
 
         void Update()
         {
+            // --------------------------------------------------
             // Animate texture UV
+            // --------------------------------------------------
+
             if (AnimateUV)
             {
                 animateUVTime += Time.deltaTime;
@@ -232,10 +371,20 @@ namespace FORGE3D
                 if (animateUVTime > 1.0f)
                     animateUVTime = 0f;
 
-                lineRenderer.material.SetTextureOffset("_MainTex", new Vector2(animateUVTime * UVTime + initialBeamOffset, 0f));
+                lineRenderer.material.SetTextureOffset(
+                    "_MainTex",
+                    new Vector2(
+                        animateUVTime * UVTime +
+                        initialBeamOffset,
+                        0f
+                    )
+                );
             }
 
-            // Raycast for laser beams
+            // --------------------------------------------------
+            // Raycast for continuous laser beams
+            // --------------------------------------------------
+
             if (!OneShot)
                 Raycast();
         }
