@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using ProceduralForceField;
 
 namespace FORGE3D
 {
@@ -23,28 +24,29 @@ namespace FORGE3D
         public Transform rayImpact; // Impact transform
         public Transform rayMuzzle; // Muzzle flash transform
 
-        LineRenderer lineRenderer; // Line rendered component
-        RaycastHit hitPoint; // Raycast structure
-        RaycastHit2D hitPoint2D; // Raycast hit in 2D
+        private LineRenderer lineRenderer;
+        private RaycastHit hitPoint;
+        private RaycastHit2D hitPoint2D;
 
-        int frameNo; // Frame counter
-        int FrameTimerID = -1; // Frame timer reference
+        private int frameNo;
+        private int FrameTimerID = -1;
 
-        float beamLength; // Current beam length
-        float initialBeamOffset; // Initial UV offset
+        private float beamLength;
+        private float initialBeamOffset;
 
         public float fxOffset; // Fx offset from bullet's touch point
 
         void Awake()
         {
-            // Get line renderer component
             lineRenderer = GetComponent<LineRenderer>();
 
-            // Assign first frame texture
-            if (!AnimateUV && BeamFrames.Length > 0)
+            if (!AnimateUV &&
+                BeamFrames != null &&
+                BeamFrames.Length > 0)
+            {
                 lineRenderer.material.mainTexture = BeamFrames[0];
+            }
 
-            // Randomize UV offset
             initialBeamOffset = Random.Range(0f, 5f);
         }
 
@@ -55,18 +57,19 @@ namespace FORGE3D
             if (OneShot)
                 Raycast();
 
-            // Start animation sequence if beam frames array has more than 2 elements
-            if (BeamFrames.Length > 1)
+            // Start animation sequence if beam frames array has more than 1 element
+            if (BeamFrames != null &&
+                BeamFrames.Length > 1)
+            {
                 Animate();
+            }
         }
 
         // OnDespawned called by pool manager
         void OnDespawned()
         {
-            // Reset frame counter
             frameNo = 0;
 
-            // Clear timer
             if (FrameTimerID != -1)
             {
                 F3DTime.time.RemoveTimer(FrameTimerID);
@@ -74,10 +77,32 @@ namespace FORGE3D
             }
         }
 
-        // Hit point calculation
+        // ============================================================
+        // SHIELD INTERACTION
+        // ============================================================
+
+        private void TriggerShield(Vector3 hitPosition, Transform hitTransform)
+        {
+            if (hitTransform == null)
+                return;
+
+            // Collider may be on the shield mesh child,
+            // while ProceduralForceFieldOverlay is on the parent.
+            ProceduralForceFieldOverlay shield =
+                hitTransform.GetComponentInParent<ProceduralForceFieldOverlay>();
+
+            if (shield != null)
+            {
+                shield.Trigger(hitPosition);
+            }
+        }
+
+        // ============================================================
+        // RAYCAST
+        // ============================================================
+
         void Raycast()
         {
-            // Prepare structure and create ray
             hitPoint = new RaycastHit();
 
             Ray ray = new Ray(
@@ -86,13 +111,12 @@ namespace FORGE3D
             );
 
             // Calculate default beam proportion multiplier
-            // based on default scale and maximum length
             float propMult =
                 MaxBeamLength * (beamScale / 10f);
 
-            // --------------------------------------------------
-            // 3D Raycast
-            // --------------------------------------------------
+            // ========================================================
+            // 3D RAYCAST
+            // ========================================================
 
             if (Physics.Raycast(
                 ray,
@@ -120,10 +144,21 @@ namespace FORGE3D
                 propMult =
                     beamLength * (beamScale / 10f);
 
-                // --------------------------------------------------
-                // Impact effects
-                // 물리력은 적용하지 않음
-                // --------------------------------------------------
+                // ====================================================
+                // SHIELD INTERACTION
+                // ====================================================
+
+                TriggerShield(
+                    hitPoint.point,
+                    hitPoint.transform
+                );
+
+                // ====================================================
+                // IMPACT EFFECTS
+                // ====================================================
+                // IMPORTANT:
+                // No AddForce / AddForceAtPosition is used here.
+                // The beam will NOT physically push the ship.
 
                 switch (fxType)
                 {
@@ -147,12 +182,12 @@ namespace FORGE3D
 
                     case F3DFXType.PlasmaBeam:
 
-                        // 기존 물리력 제거
+                        // Physical force removed.
                         break;
 
                     case F3DFXType.PlasmaBeamHeavy:
 
-                        // 기존 물리력 제거
+                        // Physical force removed.
                         break;
                 }
 
@@ -165,9 +200,9 @@ namespace FORGE3D
                 }
             }
 
-            // --------------------------------------------------
-            // 2D Raycast
-            // --------------------------------------------------
+            // ========================================================
+            // 2D RAYCAST
+            // ========================================================
 
             else
             {
@@ -207,10 +242,23 @@ namespace FORGE3D
                     propMult =
                         beamLength * (beamScale / 10f);
 
-                    // --------------------------------------------------
-                    // Impact effects
-                    // 물리력은 적용하지 않음
-                    // --------------------------------------------------
+                    // =================================================
+                    // SHIELD INTERACTION
+                    // =================================================
+
+                    TriggerShield(
+                        new Vector3(
+                            hitPoint2D.point.x,
+                            hitPoint2D.point.y,
+                            transform.position.z
+                        ),
+                        hitPoint2D.transform
+                    );
+
+                    // =================================================
+                    // IMPACT EFFECTS
+                    // =================================================
+                    // No physical force.
 
                     switch (fxType)
                     {
@@ -234,12 +282,12 @@ namespace FORGE3D
 
                         case F3DFXType.PlasmaBeam:
 
-                            // 기존 물리력 제거
+                            // Physical force removed.
                             break;
 
                         case F3DFXType.PlasmaBeamHeavy:
 
-                            // 기존 물리력 제거
+                            // Physical force removed.
                             break;
                     }
 
@@ -256,13 +304,12 @@ namespace FORGE3D
                     }
                 }
 
-                // --------------------------------------------------
-                // Nothing was hit
-                // --------------------------------------------------
+                // ====================================================
+                // NOTHING WAS HIT
+                // ====================================================
 
                 else
                 {
-                    // Set beam to maximum length
                     beamLength = MaxBeamLength;
 
                     lineRenderer.SetPosition(
@@ -284,9 +331,9 @@ namespace FORGE3D
                 }
             }
 
-            // --------------------------------------------------
-            // Muzzle position
-            // --------------------------------------------------
+            // ========================================================
+            // MUZZLE POSITION
+            // ========================================================
 
             if (rayMuzzle)
             {
@@ -295,9 +342,9 @@ namespace FORGE3D
                     transform.forward * 0.1f;
             }
 
-            // --------------------------------------------------
-            // Beam texture scaling
-            // --------------------------------------------------
+            // ========================================================
+            // BEAM TEXTURE SCALING
+            // ========================================================
 
             lineRenderer.material.SetTextureScale(
                 "_MainTex",
@@ -308,38 +355,36 @@ namespace FORGE3D
             );
         }
 
-        // Advance texture frame
+        // ============================================================
+        // FRAME ANIMATION
+        // ============================================================
+
         void OnFrameStep()
         {
             if (BeamFrames == null ||
                 BeamFrames.Length == 0)
                 return;
 
-            // Set current texture frame
             lineRenderer.material.mainTexture =
                 BeamFrames[frameNo];
 
             frameNo++;
 
-            // Reset frame counter
             if (frameNo >= BeamFrames.Length)
                 frameNo = 0;
         }
 
-        // Initialize frame animation
         void Animate()
         {
             if (BeamFrames == null ||
                 BeamFrames.Length <= 1)
                 return;
 
-            // Set current frame
             frameNo = 0;
 
             lineRenderer.material.mainTexture =
                 BeamFrames[frameNo];
 
-            // Add timer
             FrameTimerID =
                 F3DTime.time.AddTimer(
                     FrameStep,
@@ -350,20 +395,23 @@ namespace FORGE3D
             frameNo = 1;
         }
 
-        // Set offset of impact
+        // ============================================================
+        // IMPACT OFFSET
+        // ============================================================
+
         public void SetOffset(float offset)
         {
             fxOffset = offset;
         }
 
+        // ============================================================
+        // UV ANIMATION
+        // ============================================================
+
         private float animateUVTime;
 
         void Update()
         {
-            // --------------------------------------------------
-            // Animate texture UV
-            // --------------------------------------------------
-
             if (AnimateUV)
             {
                 animateUVTime += Time.deltaTime;
@@ -381,10 +429,7 @@ namespace FORGE3D
                 );
             }
 
-            // --------------------------------------------------
-            // Raycast for continuous laser beams
-            // --------------------------------------------------
-
+            // Continuous beam
             if (!OneShot)
                 Raycast();
         }
