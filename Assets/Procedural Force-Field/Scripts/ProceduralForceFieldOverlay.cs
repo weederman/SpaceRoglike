@@ -8,9 +8,6 @@ namespace ProceduralForceField
         [SerializeField] private ProceduralForceFieldHit _forceFieldHit;
         [SerializeField] private Renderer _overlayRenderer;
 
-        [Header("Startup")]
-        [SerializeField] private bool _startVisible = true;
-
         [Header("Reveal Size")]
         [SerializeField]
         private bool _autoComputeRevealMaxDistance = true;
@@ -22,6 +19,10 @@ namespace ProceduralForceField
         private float _minimumRevealMaxDistance = 1.0f;
 
         private MaterialPropertyBlock _propertyBlock;
+
+        // [ï¿½ß°ï¿½] ï¿½ï¿½ï¿½å°¡ ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½. falseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½/ï¿½Ç°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â´ï¿½.
+        private bool _isShieldActive = true;
+        public bool IsShieldActive => _isShieldActive;
 
         private static readonly int FieldVisibilityId =
             Shader.PropertyToID("_FieldVisibility");
@@ -50,8 +51,8 @@ namespace ProceduralForceField
 
         private void Update()
         {
-            // ½¯µå´Â Ç×»ó ÄÑÁ® ÀÖµµ·Ï À¯Áö
-            if (_overlayRenderer == null)
+            // [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½å°¡ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×»ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½
+            if (!_isShieldActive || _overlayRenderer == null)
                 return;
 
             if (!_overlayRenderer.enabled)
@@ -62,19 +63,46 @@ namespace ProceduralForceField
 
         public void Trigger(Vector3 hitWorldPosition)
         {
+            // [ï¿½ß°ï¿½] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç°ï¿½ ï¿½ï¿½ï¿½âµµ ï¿½ï¿½ï¿½ï¿½
+            if (!_isShieldActive)
+                return;
+
             CacheReferences();
 
             if (_forceFieldHit == null ||
                 _overlayRenderer == null)
                 return;
 
-            // ½¯µå°¡ ²¨Á® ÀÖ´õ¶óµµ ´Ù½Ã ÄÔ
             _overlayRenderer.enabled = true;
 
             ApplyProperties();
 
-            // ½ÇÁ¦ ÇÇ°Ý È¿°ú ½ÇÇà
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ç°ï¿½ È¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             _forceFieldHit.TriggerHit(hitWorldPosition);
+        }
+
+        /// <summary>
+        /// [ï¿½ß°ï¿½] ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ on/off. falseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ + ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
+        /// </summary>
+        public void SetShieldActive(bool active)
+        {
+            _isShieldActive = active;
+
+            CacheReferences();
+
+            if (_propertyBlock == null)
+                _propertyBlock = new MaterialPropertyBlock();
+
+            if (!active && _forceFieldHit != null)
+                _forceFieldHit.HideAll();
+
+            if (_overlayRenderer != null)
+            {
+                _overlayRenderer.enabled = active;
+
+                if (active)
+                    ApplyProperties();
+            }
         }
 
         private void CacheReferences()

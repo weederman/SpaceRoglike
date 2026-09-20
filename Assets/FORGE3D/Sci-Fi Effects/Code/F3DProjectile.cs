@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using ProceduralForceField;
 
 namespace FORGE3D
 {
@@ -14,6 +13,9 @@ namespace FORGE3D
         public float RaycastAdvance = 2f;
         public bool DelayDespawn = false;
         public ParticleSystem[] delayedParticles;
+
+        [Header("Damage")]
+        public float damage = 10f;
 
         ParticleSystem[] particles;
         new Transform transform;
@@ -153,18 +155,12 @@ namespace FORGE3D
                     isHit = true;
 
                     // =========================================
-                    // 실드 히트 효과
+                    // 데미지 전달 (쉴드/선체 HP 처리 + 피격 연출까지 포함)
                     // =========================================
+                    // 감지한 프레임에 즉시 처리한다. 대상을 찾아 데미지를 주고,
+                    // 쉴드가 살아있다면 ShieldHealth가 알아서 Overlay.Trigger를 호출한다.
 
-                    ProceduralForceFieldOverlay overlay =
-                        hitPoint.collider.GetComponentInParent<
-                            ProceduralForceFieldOverlay
-                        >();
-
-                    if (overlay != null)
-                    {
-                        overlay.Trigger(hitPoint.point);
-                    }
+                    HitResolver.Resolve(hitPoint, damage);
 
                     // =========================================
                     // 탄환 파티클 처리
@@ -199,6 +195,12 @@ namespace FORGE3D
         public void SetOffset(float offset)
         {
             fxOffset = offset;
+        }
+
+        // 로그라이크 업그레이드 등에서 발사 시 데미지 설정용
+        public void SetDamage(float value)
+        {
+            damage = Mathf.Max(0f, value);
         }
     }
 }

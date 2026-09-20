@@ -74,13 +74,16 @@ namespace ProceduralForceField
 
         private void CreateHitClones()
         {
+            // [추가] 이미 만들었으면 다시 만들지 않음
+            // (Start 전에 TriggerHit이 먼저 불리면 16개가 생기던 문제 방지)
+            if (_isHitClone || _hitClones != null)
+                return;
+
             if (_targetRenderer == null)
                 return;
 
             _hitClones = new ProceduralForceFieldHit[MaxHits];
 
-            // 원본은 첫 번째 슬롯으로 사용하지 않고
-            // 별도의 복제본 8개를 생성
             for (int i = 0; i < MaxHits; i++)
             {
                 GameObject cloneObject =
@@ -92,7 +95,6 @@ namespace ProceduralForceField
                 cloneObject.name =
                     gameObject.name + "_HitClone_" + (i + 1);
 
-                // 복제본임을 표시
                 ProceduralForceFieldHit clone =
                     cloneObject.GetComponent<ProceduralForceFieldHit>();
 
@@ -106,7 +108,6 @@ namespace ProceduralForceField
                 clone._hitStrength = _hitStrength;
                 clone._hitDuration = _hitDuration;
 
-                // 원본과 동일한 위치/회전/크기
                 cloneObject.transform.position =
                     transform.position;
 
@@ -116,7 +117,6 @@ namespace ProceduralForceField
                 cloneObject.transform.localScale =
                     transform.localScale;
 
-                // Renderer 가져오기
                 Renderer cloneRenderer =
                     clone._targetRenderer;
 
@@ -126,9 +126,13 @@ namespace ProceduralForceField
 
                 clone._targetRenderer = cloneRenderer;
 
-                // 처음에는 보이지 않게
                 if (cloneRenderer != null)
                     cloneRenderer.enabled = false;
+
+                // [추가] 안전장치: 원본에 콜라이더가 남아 있더라도 복제본에서는 끈다.
+                // (판정은 ShieldHitbox 한 곳에서만 해야 함)
+                foreach (Collider col in cloneObject.GetComponentsInChildren<Collider>(true))
+                    col.enabled = false;
 
                 _hitClones[i] = clone;
             }
@@ -137,22 +141,17 @@ namespace ProceduralForceField
 
         public void TriggerHit(Vector3 worldPosition)
         {
-            // 아직 Start가 실행되지 않았다면
-            // 안전하게 준비
-            if (!_isHitClone &&
-                (_hitClones == null || _hitClones.Length == 0))
+            if (!_isHitClone && _hitClones == null)
             {
                 CreateHitClones();
             }
 
-            // 복제본 자체가 직접 호출된 경우
             if (_isHitClone)
             {
                 PlayHit(worldPosition);
                 return;
             }
 
-            // 사용할 복제본 찾기
             if (_hitClones == null)
                 return;
 
@@ -176,6 +175,34 @@ namespace ProceduralForceField
         }
 
 
+        /// <summary>
+        /// [추가] 원본과 모든 복제본의 렌더러를 끄고 진행 중인 코루틴을 정리한다.
+        /// 쉴드 파괴 시 Overlay.SetShieldActive(false)에서 호출.
+        /// </summary>
+        public void HideAll()
+        {
+            StopAllCoroutines();
+
+            if (_targetRenderer != null)
+                _targetRenderer.enabled = false;
+
+            if (_hitClones == null)
+                return;
+
+            for (int i = 0; i < _hitClones.Length; i++)
+            {
+                ProceduralForceFieldHit clone = _hitClones[i];
+                if (clone == null)
+                    continue;
+
+                clone.StopAllCoroutines();
+
+                if (clone._targetRenderer != null)
+                    clone._targetRenderer.enabled = false;
+            }
+        }
+
+
         private void PlayHit(Vector3 worldPosition)
         {
             if (_targetRenderer == null)
@@ -185,7 +212,6 @@ namespace ProceduralForceField
                 _propertyBlock =
                     new MaterialPropertyBlock();
 
-            // Renderer 켜기
             _targetRenderer.enabled = true;
 
             Bounds bounds =
@@ -201,7 +227,6 @@ namespace ProceduralForceField
                 _propertyBlock
             );
 
-            // 원본 Shader가 사용하는 단일 변수에 전달
             _propertyBlock.SetVector(
                 HitPositionId,
                 new Vector4(
@@ -231,8 +256,6 @@ namespace ProceduralForceField
                 _propertyBlock
             );
 
-            // 이전 코루틴이 있더라도
-            // 새로운 피격부터 다시 유지
             StopAllCoroutines();
 
             StartCoroutine(

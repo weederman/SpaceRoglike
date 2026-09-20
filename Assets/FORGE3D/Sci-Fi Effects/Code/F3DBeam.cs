@@ -24,6 +24,10 @@ namespace FORGE3D
         public Transform rayImpact; // Impact transform
         public Transform rayMuzzle; // Muzzle flash transform
 
+        [Header("Damage")]
+        [Tooltip("OneShot = 한 발 데미지 / 지속형 = 초당 데미지(DPS)")]
+        public float damage = 30f;
+
         private LineRenderer lineRenderer;
         private RaycastHit hitPoint;
         private RaycastHit2D hitPoint2D;
@@ -78,8 +82,11 @@ namespace FORGE3D
         }
 
         // ============================================================
-        // SHIELD INTERACTION
+        // SHIELD INTERACTION (2D 폴백 전용 — 3D 게임에서는 도달하지 않는 경로)
         // ============================================================
+        // 3D 경로는 데미지/HP까지 처리하는 HitResolver.Resolve()를 쓰고,
+        // RaycastHit2D는 HitResolver가 받는 RaycastHit 구조체로 바꿀 수 없어
+        // 여기서는 기존처럼 쉴드 연출만 직접 트리거한다(데미지 없음).
 
         private void TriggerShield(Vector3 hitPosition, Transform hitTransform)
         {
@@ -145,13 +152,12 @@ namespace FORGE3D
                     beamLength * (beamScale / 10f);
 
                 // ====================================================
-                // SHIELD INTERACTION
+                // 데미지 전달 (쉴드/선체 HP 처리 + 피격 연출까지 포함)
                 // ====================================================
+                // 지속형 빔은 프레임레이트와 무관하게 DPS가 일정하도록 deltaTime을 곱한다.
 
-                TriggerShield(
-                    hitPoint.point,
-                    hitPoint.transform
-                );
+                float frameDamage = OneShot ? damage : damage * Time.deltaTime;
+                HitResolver.Resolve(hitPoint, frameDamage);
 
                 // ====================================================
                 // IMPACT EFFECTS
@@ -402,6 +408,12 @@ namespace FORGE3D
         public void SetOffset(float offset)
         {
             fxOffset = offset;
+        }
+
+        // 로그라이크 업그레이드 등에서 발사 시 데미지 설정용
+        public void SetDamage(float value)
+        {
+            damage = Mathf.Max(0f, value);
         }
 
         // ============================================================
