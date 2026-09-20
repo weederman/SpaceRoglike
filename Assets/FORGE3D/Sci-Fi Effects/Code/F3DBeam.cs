@@ -28,6 +28,9 @@ namespace FORGE3D
         [Tooltip("OneShot = 한 발 데미지 / 지속형 = 초당 데미지(DPS)")]
         public float damage = 30f;
 
+        // 이 빔을 쏜 F3DFXController. F3DProjectile과 동일한 이유로 정적 싱글톤 대신 사용.
+        [System.NonSerialized] public F3DFXController controller;
+
         private LineRenderer lineRenderer;
         private RaycastHit hitPoint;
         private RaycastHit2D hitPoint2D;
@@ -121,6 +124,9 @@ namespace FORGE3D
             float propMult =
                 MaxBeamLength * (beamScale / 10f);
 
+            // 발사 주체(controller)가 있으면 그쪽으로, 없으면 기존처럼 싱글톤으로 폴백
+            F3DFXController fx = controller != null ? controller : F3DFXController.instance;
+
             // ========================================================
             // 3D RAYCAST
             // ========================================================
@@ -170,7 +176,7 @@ namespace FORGE3D
                 {
                     case F3DFXType.Sniper:
 
-                        F3DFXController.instance.SniperImpact(
+                        fx.SniperImpact(
                             hitPoint.point +
                             hitPoint.normal * fxOffset
                         );
@@ -179,7 +185,7 @@ namespace FORGE3D
 
                     case F3DFXType.RailGun:
 
-                        F3DFXController.instance.RailgunImpact(
+                        fx.RailgunImpact(
                             hitPoint.point +
                             hitPoint.normal * fxOffset
                         );
@@ -270,7 +276,7 @@ namespace FORGE3D
                     {
                         case F3DFXType.Sniper:
 
-                            F3DFXController.instance.SniperImpact(
+                            fx.SniperImpact(
                                 hitPoint2D.point +
                                 hitPoint2D.normal * fxOffset
                             );
@@ -279,7 +285,7 @@ namespace FORGE3D
 
                         case F3DFXType.RailGun:
 
-                            F3DFXController.instance.RailgunImpact(
+                            fx.RailgunImpact(
                                 hitPoint2D.point +
                                 hitPoint2D.normal * fxOffset
                             );

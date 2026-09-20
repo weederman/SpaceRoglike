@@ -17,6 +17,11 @@ namespace FORGE3D
         [Header("Damage")]
         public float damage = 10f;
 
+        // 이 발사체를 쏜 F3DFXController. 착탄 연출을 정적 싱글톤(instance) 대신
+        // 발사한 컨트롤러로 향하게 해서, 함선이 여러 대(=컨트롤러가 여러 개)일 때
+        // 착탄 이펙트가 마지막에 Awake된 컨트롤러로 섞이는 문제를 막는다.
+        [System.NonSerialized] public F3DFXController controller;
+
         ParticleSystem[] particles;
         new Transform transform;
         RaycastHit hitPoint;
@@ -87,34 +92,37 @@ namespace FORGE3D
             {
                 if (!isFXSpawned)
                 {
+                    // 발사 주체(controller)가 있으면 그쪽으로, 없으면 기존처럼 싱글톤으로 폴백
+                    F3DFXController fx = controller != null ? controller : F3DFXController.instance;
+
                     switch (fxType)
                     {
                         case F3DFXType.Vulcan:
-                            F3DFXController.instance.VulcanImpact(
+                            fx.VulcanImpact(
                                 hitPoint.point + hitPoint.normal * fxOffset
                             );
                             break;
 
                         case F3DFXType.SoloGun:
-                            F3DFXController.instance.SoloGunImpact(
+                            fx.SoloGunImpact(
                                 hitPoint.point + hitPoint.normal * fxOffset
                             );
                             break;
 
                         case F3DFXType.Seeker:
-                            F3DFXController.instance.SeekerImpact(
+                            fx.SeekerImpact(
                                 hitPoint.point + hitPoint.normal * fxOffset
                             );
                             break;
 
                         case F3DFXType.PlasmaGun:
-                            F3DFXController.instance.PlasmaGunImpact(
+                            fx.PlasmaGunImpact(
                                 hitPoint.point + hitPoint.normal * fxOffset
                             );
                             break;
 
                         case F3DFXType.LaserImpulse:
-                            F3DFXController.instance.LaserImpulseImpact(
+                            fx.LaserImpulseImpact(
                                 hitPoint.point + hitPoint.normal * fxOffset
                             );
                             break;
