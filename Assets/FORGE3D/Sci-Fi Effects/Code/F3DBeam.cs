@@ -23,6 +23,9 @@ namespace FORGE3D
         public Transform rayImpact; // Impact transform
         public Transform rayMuzzle; // Muzzle flash transform
 
+        // [추가] 이 빔을 쏜 F3DFXController. F3DProjectile과 동일한 이유로 싱글톤 대신 사용.
+        [System.NonSerialized] public F3DFXController controller;
+
         [Header("Damage")] // [추가]
         [Tooltip("OneShot = 한 발 데미지 / 지속형 = 초당 데미지(DPS)")]
         public float damage = 30f;
@@ -73,6 +76,9 @@ namespace FORGE3D
             Ray ray = new Ray(transform.position, transform.forward);
             float propMult = MaxBeamLength * (beamScale / 10f);
 
+            // [변경] 발사 주체(controller)가 있으면 그쪽으로, 없으면 기존처럼 싱글톤으로 폴백
+            F3DFXController fx = controller != null ? controller : F3DFXController.instance;
+
             if (Physics.Raycast(ray, out hitPoint, MaxBeamLength, layerMask))
             {
                 beamLength = Vector3.Distance(transform.position, hitPoint.point);
@@ -87,12 +93,12 @@ namespace FORGE3D
                 switch (fxType)
                 {
                     case F3DFXType.Sniper:
-                        F3DFXController.instance.SniperImpact(hitPoint.point + hitPoint.normal * fxOffset);
+                        fx.SniperImpact(hitPoint.point + hitPoint.normal * fxOffset);
                         ApplyForce(4f);
                         break;
 
                     case F3DFXType.RailGun:
-                        F3DFXController.instance.RailgunImpact(hitPoint.point + hitPoint.normal * fxOffset);
+                        fx.RailgunImpact(hitPoint.point + hitPoint.normal * fxOffset);
                         ApplyForce(7f);
                         break;
 
@@ -122,12 +128,12 @@ namespace FORGE3D
                     switch (fxType)
                     {
                         case F3DFXType.Sniper:
-                            F3DFXController.instance.SniperImpact(ray2D.point + ray2D.normal * fxOffset);
+                            fx.SniperImpact(ray2D.point + ray2D.normal * fxOffset);
                             ApplyForce(4f);
                             break;
 
                         case F3DFXType.RailGun:
-                            F3DFXController.instance.RailgunImpact(ray2D.point + ray2D.normal * fxOffset);
+                            fx.RailgunImpact(ray2D.point + ray2D.normal * fxOffset);
                             ApplyForce(7f);
                             break;
 

@@ -7,6 +7,11 @@ namespace FORGE3D
     {
         public F3DFXType fxType; // Weapon type
         public LayerMask layerMask;
+
+        // [추가] 이 발사체를 쏜 F3DFXController. 착탄 연출을 정적 싱글톤(instance) 대신
+        // 발사한 컨트롤러로 향하게 해서, 함선이 여러 대(=컨트롤러가 여러 개)일 때
+        // 착탄 이펙트가 마지막에 Awake된 컨트롤러로 섞이는 문제를 막는다.
+        [System.NonSerialized] public F3DFXController controller;
         public float lifeTime = 5f; // Projectile life time
         public float despawnDelay; // Delay despawn (seconds)
         public float velocity = 300f; // Projectile velocity
@@ -84,30 +89,33 @@ namespace FORGE3D
             {
                 if (!isFXSpawned)
                 {
+                    // [변경] 발사 주체(controller)가 있으면 그쪽으로, 없으면 기존처럼 싱글톤으로 폴백
+                    F3DFXController fx = controller != null ? controller : F3DFXController.instance;
+
                     switch (fxType)
                     {
                         case F3DFXType.Vulcan:
-                            F3DFXController.instance.VulcanImpact(hitPoint.point + hitPoint.normal * fxOffset);
+                            fx.VulcanImpact(hitPoint.point + hitPoint.normal * fxOffset);
                             ApplyForce(2.5f);
                             break;
 
                         case F3DFXType.SoloGun:
-                            F3DFXController.instance.SoloGunImpact(hitPoint.point + hitPoint.normal * fxOffset);
+                            fx.SoloGunImpact(hitPoint.point + hitPoint.normal * fxOffset);
                             ApplyForce(25f);
                             break;
 
                         case F3DFXType.Seeker:
-                            F3DFXController.instance.SeekerImpact(hitPoint.point + hitPoint.normal * fxOffset);
+                            fx.SeekerImpact(hitPoint.point + hitPoint.normal * fxOffset);
                             ApplyForce(30f);
                             break;
 
                         case F3DFXType.PlasmaGun:
-                            F3DFXController.instance.PlasmaGunImpact(hitPoint.point + hitPoint.normal * fxOffset);
+                            fx.PlasmaGunImpact(hitPoint.point + hitPoint.normal * fxOffset);
                             ApplyForce(25f);
                             break;
 
                         case F3DFXType.LaserImpulse:
-                            F3DFXController.instance.LaserImpulseImpact(hitPoint.point + hitPoint.normal * fxOffset);
+                            fx.LaserImpulseImpact(hitPoint.point + hitPoint.normal * fxOffset);
                             ApplyForce(25f);
                             break;
                     }

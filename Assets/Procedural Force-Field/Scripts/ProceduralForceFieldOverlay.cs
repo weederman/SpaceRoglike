@@ -8,9 +8,6 @@ namespace ProceduralForceField
         [SerializeField] private ProceduralForceFieldHit _forceFieldHit;
         [SerializeField] private Renderer _overlayRenderer;
 
-        [Header("Startup")]
-        [SerializeField] private bool _startVisible = true;
-
         [Header("Reveal Size")]
         [SerializeField]
         private bool _autoComputeRevealMaxDistance = true;
@@ -23,7 +20,7 @@ namespace ProceduralForceField
 
         private MaterialPropertyBlock _propertyBlock;
 
-        // [Ãß°¡] ½¯µå°¡ »ì¾Æ ÀÖ´ÂÁö. false¸é °­Á¦ ÄÑ±â/ÇÇ°Ý ¿¬ÃâÀ» ¸ðµÎ ¸·´Â´Ù.
+        // [ï¿½ß°ï¿½] ï¿½ï¿½ï¿½å°¡ ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½. falseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½/ï¿½Ç°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â´ï¿½.
         private bool _isShieldActive = true;
         public bool IsShieldActive => _isShieldActive;
 
@@ -52,17 +49,9 @@ namespace ProceduralForceField
             }
         }
 
-        // [Ãß°¡] ½ÃÀÛ Ç¥½Ã ¿©ºÎ Àû¿ë.
-        // Awake°¡ ¾Æ´Ï¶ó StartÀÎ ÀÌÀ¯: ÀÚ½Ä HitÀÇ Awake°¡ ¿øº» ·»´õ·¯¸¦ ÄÑ±â ¶§¹®¿¡,
-        // ¸ðµç Awake°¡ ³¡³­ µÚ(Start)¿¡ Àû¿ëÇØ¾ß _startVisible=false°¡ µ¤¾î½áÁöÁö ¾Ê´Â´Ù.
-        private void Start()
-        {
-            SetShieldActive(_startVisible);
-        }
-
         private void Update()
         {
-            // [º¯°æ] ½¯µå°¡ »ì¾Æ ÀÖÀ» ¶§¸¸ Ç×»ó ÄÑÁø »óÅÂ¸¦ À¯Áö
+            // [ï¿½ï¿½ï¿½ï¿½] ï¿½ï¿½ï¿½å°¡ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½×»ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½
             if (!_isShieldActive || _overlayRenderer == null)
                 return;
 
@@ -74,7 +63,7 @@ namespace ProceduralForceField
 
         public void Trigger(Vector3 hitWorldPosition)
         {
-            // [Ãß°¡] ±úÁø ½¯µå´Â ÇÇ°Ý ¿¬Ãâµµ ¾øÀ½
+            // [ï¿½ß°ï¿½] ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç°ï¿½ ï¿½ï¿½ï¿½âµµ ï¿½ï¿½ï¿½ï¿½
             if (!_isShieldActive)
                 return;
 
@@ -88,12 +77,12 @@ namespace ProceduralForceField
 
             ApplyProperties();
 
-            // ½ÇÁ¦ ÇÇ°Ý È¿°ú ½ÇÇà
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ç°ï¿½ È¿ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             _forceFieldHit.TriggerHit(hitWorldPosition);
         }
 
         /// <summary>
-        /// [Ãß°¡] ½¯µå Ç¥½Ã on/off. false¸é ¿øº» + º¹Á¦º» ·»´õ·¯¸¦ ¸ðµÎ ²ö´Ù.
+        /// [ï¿½ß°ï¿½] ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ on/off. falseï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ + ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
         /// </summary>
         public void SetShieldActive(bool active)
         {

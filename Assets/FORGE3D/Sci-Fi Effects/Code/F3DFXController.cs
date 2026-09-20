@@ -247,6 +247,7 @@ namespace FORGE3D
             var proj = newGO.gameObject.GetComponent<F3DProjectile>();
             if (proj)
             {
+                proj.controller = this; // [추가] 착탄 FX가 이 컨트롤러로 향하도록
                 proj.SetOffset(vulcanOffset);
             }
 
@@ -283,6 +284,7 @@ namespace FORGE3D
             var proj = newGO.GetComponent<F3DProjectile>();
             if (proj)
             {
+                proj.controller = this;
                 proj.SetOffset(soloGunOffset);
             }
 
@@ -310,6 +312,7 @@ namespace FORGE3D
             var beam = newGO.GetComponent<F3DBeam>();
             if (beam)
             {
+                beam.controller = this;
                 beam.SetOffset(sniperOffset);
             }
 
@@ -352,6 +355,7 @@ namespace FORGE3D
             var proj = newGO.GetComponent<F3DProjectile>();
             if (proj)
             {
+                proj.controller = this;
                 proj.SetOffset(seekerOffset);
             }
 
@@ -378,6 +382,7 @@ namespace FORGE3D
             var beam = newGO.GetComponent<F3DBeam>();
             if (beam)
             {
+                beam.controller = this;
                 beam.SetOffset(railgunOffset);
             }
 
@@ -406,6 +411,7 @@ namespace FORGE3D
             var proj = newGo.GetComponent<F3DProjectile>();
             if (proj)
             {
+                proj.controller = this;
                 proj.SetOffset(plasmaOffset);
             }
 
@@ -484,6 +490,7 @@ namespace FORGE3D
             var proj = newGO.GetComponent<F3DProjectile>();
             if (proj)
             {
+                proj.controller = this;
                 proj.SetOffset(laserImpulseOffset);
             }
 
