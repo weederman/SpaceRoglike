@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.EventSystems;
 
 namespace FORGE3D
 {
@@ -18,6 +19,14 @@ namespace FORGE3D
 
         void CheckForFire()
         {
+            // UI(인벤토리 드래그 등) 위를 클릭했을 때는 무기가 같이 발사되지 않도록 함
+            if (!isFiring &&
+                EventSystem.current != null &&
+                EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+
             // Fire turret
             if (!isFiring && Input.GetKeyDown(KeyCode.Mouse0))
             {

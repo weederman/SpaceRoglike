@@ -240,6 +240,15 @@ namespace FORGE3D
             int curPos = GetTemplatePosition(obj);
             for (i = 0; i < readyObjects[obj].Count; i++)
             {
+                // [추가] 풀에 있어야 할 오브젝트가 외부에서 Destroy()되어 죽은 참조로 남아있는 경우
+                // (예: 부모 오브젝트가 통째로 파괴될 때 자식으로 붙어있던 이펙트가 같이 파괴됨) 건너뛴다.
+                if (readyObjects[obj][i] == null)
+                {
+                    readyObjects[obj].RemoveAt(i);
+                    i--;
+                    continue;
+                }
+
                 if (!readyObjects[obj][i].gameObject.activeSelf)
                 {
                     tempTransform = readyObjects[obj][i];
@@ -300,6 +309,15 @@ namespace FORGE3D
 
             for (i = 0; i < readyObjects[obj].Count; i++)
             {
+                // [추가] 풀에 있어야 할 오브젝트가 외부에서 Destroy()되어 죽은 참조로 남아있는 경우
+                // (예: 부모 오브젝트가 통째로 파괴될 때 자식으로 붙어있던 이펙트가 같이 파괴됨) 건너뛴다.
+                if (readyObjects[obj][i] == null)
+                {
+                    readyObjects[obj].RemoveAt(i);
+                    i--;
+                    continue;
+                }
+
                 if (!readyObjects[obj][i].gameObject.activeSelf)
                 {
                     tempTransform = readyObjects[obj][i];
@@ -362,6 +380,15 @@ namespace FORGE3D
             int curPos = GetTemplatePosition(obj);
             for (i = 0; i < readyObjects[obj].Count; i++)
             {
+                // [추가] 풀에 있어야 할 오브젝트가 외부에서 Destroy()되어 죽은 참조로 남아있는 경우
+                // (예: 부모 오브젝트가 통째로 파괴될 때 자식으로 붙어있던 이펙트가 같이 파괴됨) 건너뛴다.
+                if (readyObjects[obj][i] == null)
+                {
+                    readyObjects[obj].RemoveAt(i);
+                    i--;
+                    continue;
+                }
+
                 if (!readyObjects[obj][i].gameObject.activeSelf)
                 {
                     tempTransform = readyObjects[obj][i];
