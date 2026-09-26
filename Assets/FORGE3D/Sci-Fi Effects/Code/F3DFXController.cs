@@ -412,7 +412,7 @@ namespace FORGE3D
             if (proj)
             {
                 proj.controller = this;
-                proj.SetOffset(plasmaOffset);
+                proj.SetOffset(plasmaGunOffset); // [수정] PlasmaBeam용 plasmaOffset을 잘못 쓰던 원본 버그
             }
 
             F3DAudioController.instance.PlasmaGunShot(TurretSocket[curSocket].position);

@@ -6094,11 +6094,11 @@ MonoBehaviour:
   railgunMuzzle: {fileID: 400010, guid: 2e92e894e0311c14c87f9544b2c88693, type: 3}
   railgunImpact: {fileID: 0}
   railgunOffset: 0
-  plasmagunProjectile: {fileID: 0}
-  plasmagunMuzzle: {fileID: 0}
-  plasmagunImpact: {fileID: 0}
+  plasmagunProjectile: {fileID: 400000, guid: e7b84dec6cdbfb646a33fd06b85cf64e, type: 3}
+  plasmagunMuzzle: {fileID: 400002, guid: e4aff98840a58c94ea1cec28789d55d6, type: 3}
+  plasmagunImpact: {fileID: 400004, guid: ec543be1efaafca46aeac6f66e7a5ff0, type: 3}
   plasmaGunOffset: 0
-  plasmaBeam: {fileID: 0}
+  plasmaBeam: {fileID: 400000, guid: 66b50793fa1c780409218a1a1db5b1d8, type: 3}
   plasmaOffset: 0
   plasmaBeamHeavy: {fileID: 0}
   plasmaBeamHeavyOffset: 0
