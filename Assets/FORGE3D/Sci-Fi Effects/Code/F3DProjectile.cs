@@ -126,6 +126,12 @@ namespace FORGE3D
                                 hitPoint.point + hitPoint.normal * fxOffset
                             );
                             break;
+
+                        case F3DFXType.FlameRed:
+                            fx.FlameRedImpact(
+                                hitPoint.point + hitPoint.normal * fxOffset
+                            );
+                            break;
                     }
 
                     isFXSpawned = true;

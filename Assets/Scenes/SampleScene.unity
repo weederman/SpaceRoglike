@@ -1609,7 +1609,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4400347069002238935, guid: ffbdbd577dbc7164ba626e63d93c4398, type: 3}
       propertyPath: DefaultFXType
-      value: 0
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 4400347069002238935, guid: ffbdbd577dbc7164ba626e63d93c4398, type: 3}
       propertyPath: railgunImpact

@@ -84,6 +84,7 @@ namespace FORGE3D
         public float lightingGunBeamOffset;
 
         [Header("Flame")] public Transform flameRed;
+        public Transform flameImpact;
         public float flameOffset;
 
         [Header("Laser impulse")] public Transform laserImpulseProjectile;
@@ -190,7 +191,8 @@ namespace FORGE3D
                     break;
 
                 case F3DFXType.FlameRed:
-                    // Flames has no timer requirement
+                    // [수정] 화염 루프 대신 미사일 발사체 한 발씩 발사하도록 변경
+                    timerID = F3DTime.time.AddTimer(0.75f, FlameRed);
                     FlameRed();
                     break;
 
@@ -223,10 +225,6 @@ namespace FORGE3D
 
                 case F3DFXType.LightningGun:
                     F3DAudioController.instance.LightningGunClose(transform.position);
-                    break;
-
-                case F3DFXType.FlameRed:
-                    F3DAudioController.instance.FlameGunClose(transform.position);
                     break;
             }
         }
@@ -465,17 +463,29 @@ namespace FORGE3D
             F3DAudioController.instance.LightningGunLoop(transform.position, transform);
         }
 
-        // Fire flames weapon
+        // [수정] 미사일 발사체를 한 발 발사(직선 비행 + 충돌 시 폭발)하도록 변경. 기존에는
+        // 소켓마다 화염 이펙트만 붙여두는 연속 루프 무기였는데, 실제로는 미사일처럼
+        // 포탄이 날아가서 맞는 무기여야 하므로 다른 발사체 무기(Vulcan/PlasmaGun 등)와
+        // 같은 방식으로 F3DProjectile을 스폰한다.
         private void FlameRed()
         {
-            for (var i = 0; i < TurretSocket.Length; i++)
+            var newGo =
+                F3DPoolManager.Pools["GeneratedPool"].Spawn(flameRed, TurretSocket[curSocket].position,
+                    TurretSocket[curSocket].rotation, null).gameObject;
+            var proj = newGo.GetComponent<F3DProjectile>();
+            if (proj)
             {
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(flameRed, TurretSocket[i].position,
-                    TurretSocket[i].rotation,
-                    TurretSocket[i]);
+                proj.controller = this;
+                proj.SetOffset(flameOffset);
             }
 
-            F3DAudioController.instance.FlameGunLoop(transform.position, transform);
+            AdvanceSocket();
+        }
+
+        // Spawn missile weapon impact (explosion)
+        public void FlameRedImpact(Vector3 pos)
+        {
+            F3DPoolManager.Pools["GeneratedPool"].Spawn(flameImpact, pos, Quaternion.identity, null);
         }
 
         // Fire laser pulse weapon

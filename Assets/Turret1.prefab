@@ -6104,11 +6104,12 @@ MonoBehaviour:
   plasmaBeamHeavyOffset: 0
   lightningGunBeam: {fileID: 0}
   lightingGunBeamOffset: 0
-  flameRed: {fileID: 0}
+  flameRed: {fileID: 3516160815638274128, guid: 169604b468078304281cbc9b323a78d5, type: 3}
+  flameImpact: {fileID: 492552, guid: c7e9f38264df9af438839ee9c90e07c4, type: 3}
   flameOffset: 0
-  laserImpulseProjectile: {fileID: 0}
-  laserImpulseMuzzle: {fileID: 0}
-  laserImpulseImpact: {fileID: 0}
+  laserImpulseProjectile: {fileID: 400004, guid: 64703ac190f718b4abd5d10cb23c96ce, type: 3}
+  laserImpulseMuzzle: {fileID: 400004, guid: 45116fb1512dc704b99d70267628129a, type: 3}
+  laserImpulseImpact: {fileID: 400010, guid: ce59e020d922ccb43866dee1ba26a673, type: 3}
   laserImpulseOffset: 0
 --- !u!1 &6605933260816500125
 GameObject:
