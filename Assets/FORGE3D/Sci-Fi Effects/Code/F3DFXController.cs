@@ -26,6 +26,10 @@ namespace FORGE3D
         // Singleton instance
         public static F3DFXController instance;
 
+        // [추가] 0보다 크면 이 컨트롤러가 쏘는 발사체의 데미지를 프리팹 기본값 대신 이 값으로 덮어쓴다.
+        // 발사체 프리팹은 플레이어/적이 공유하므로, 적만 다른 데미지를 주고 싶을 때 쓴다.
+        [Header("Damage")] public float damageOverride = 0f;
+
         // Current firing socket
         private int curSocket = 0;
 

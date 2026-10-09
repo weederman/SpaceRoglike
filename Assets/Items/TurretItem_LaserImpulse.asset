@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: TurretItem_LaserImpulse
   m_EditorClassIdentifier: 
   displayName: Laser Impulse
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 66c3b59285095af4e8f45e67e9f813ee, type: 3}
   turretPrefab: {fileID: 6509607899620335586, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
   weaponType: 11
+  price: 150

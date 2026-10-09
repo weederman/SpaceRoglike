@@ -1,12 +1,12 @@
 using UnityEngine;
 
 /// <summary>
-/// 적 선체가 파괴되면(HullHealth.OnBroken) 인벤토리 빈 슬롯에 보상 터렛 아이템을 지급한다.
+/// 적 선체가 파괴되면(HullHealth.OnBroken) 크레딧을 지급한다.
 /// </summary>
 [RequireComponent(typeof(HullHealth))]
 public class EnemyKillReward : MonoBehaviour
 {
-    [SerializeField] private TurretItemData _rewardItem;
+    [SerializeField, Min(0)] private int _creditAmount = 100;
 
     private HullHealth _hull;
 
@@ -24,6 +24,7 @@ public class EnemyKillReward : MonoBehaviour
 
     private void HandleBroken()
     {
-        InventorySlot.TryGrantItem(_rewardItem);
+        if (CreditWallet.Instance != null)
+            CreditWallet.Instance.Add(_creditAmount);
     }
 }

@@ -14,4 +14,5 @@ public class TurretItemData : ScriptableObject
     public Sprite icon;
     public GameObject turretPrefab;
     public F3DFXType weaponType;
+    [Min(0)] public int price = 100;
 }

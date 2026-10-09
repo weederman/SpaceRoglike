@@ -174,7 +174,12 @@ namespace FORGE3D
                     // 감지한 프레임에 즉시 처리한다. 대상을 찾아 데미지를 주고,
                     // 쉴드가 살아있다면 ShieldHealth가 알아서 Overlay.Trigger를 호출한다.
 
-                    HitResolver.Resolve(hitPoint, damage);
+                    float appliedDamage =
+                        controller != null && controller.damageOverride > 0f
+                            ? controller.damageOverride
+                            : damage;
+
+                    HitResolver.Resolve(hitPoint, appliedDamage);
 
                     // =========================================
                     // 탄환 파티클 처리

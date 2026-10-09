@@ -27,6 +27,10 @@ namespace FORGE3D
                 return;
             }
 
+            // 상점에서 터렛 배치 위치를 고르는 중에는 클릭이 발사로 이어지지 않도록 함
+            if (!isFiring && StationShop.IsPlacingWeapon)
+                return;
+
             // Fire turret
             if (!isFiring && Input.GetKeyDown(KeyCode.Mouse0))
             {
