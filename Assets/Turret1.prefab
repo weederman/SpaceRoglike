@@ -6064,6 +6064,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2b82c757a706dd44ad77efcf0d513f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damageOverride: 0
   TurretSocket:
   - {fileID: 3722300202982717705}
   ShellParticles:
@@ -6105,7 +6106,7 @@ MonoBehaviour:
   lightningGunBeam: {fileID: 0}
   lightingGunBeamOffset: 0
   flameRed: {fileID: 3516160815638274128, guid: 169604b468078304281cbc9b323a78d5, type: 3}
-  flameImpact: {fileID: 492552, guid: c7e9f38264df9af438839ee9c90e07c4, type: 3}
+  flameImpact: {fileID: 400000, guid: 58d33f87477bc024e97aca92f1a5db36, type: 3}
   flameOffset: 0
   laserImpulseProjectile: {fileID: 400004, guid: 64703ac190f718b4abd5d10cb23c96ce, type: 3}
   laserImpulseMuzzle: {fileID: 400004, guid: 45116fb1512dc704b99d70267628129a, type: 3}

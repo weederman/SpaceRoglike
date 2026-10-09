@@ -1152,7 +1152,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: damageOverride
-      value: 100
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 3143938758925990926, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1286,7 +1286,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: damageOverride
-      value: 100
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 3143938758925990926, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: m_LocalPosition.x
