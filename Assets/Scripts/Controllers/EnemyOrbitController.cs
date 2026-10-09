@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-public class EnemyOrbitController : MonoBehaviour
+/// <summary>ì  í•¨ì„ : ëŒ€ìƒ(ê¸°ë³¸ Player íƒœê·¸)ì„ ì¼ì • ê±°ë¦¬ë¥¼ ìœ ì§€í•˜ë©° ì›í˜•ìœ¼ë¡œ ê³µì „í•œë‹¤.</summary>
+public class EnemyOrbitController : ShipMovementBase
 {
     [Header("Target")]
     [SerializeField] private Transform target;
@@ -11,80 +11,27 @@ public class EnemyOrbitController : MonoBehaviour
     [SerializeField] private float orbitSpeed = 3f;
     [SerializeField] private bool clockwise = true;
 
-    [Header("Movement")]
-    [SerializeField] private float acceleration = 8f;
-    [SerializeField] private float maxSpeed = 10f;
-
-    [Header("Rotation")]
-    [SerializeField] private float rotationSpeed = 5f;
-
-    [Header("Engine Sound")]
-    [SerializeField] private AudioSource engineAudio;
-    [SerializeField] private float engineMinVolume = 0f;
-    [SerializeField] private float engineMaxVolume = 0.7f;
-    [SerializeField] private float engineMinPitch = 0.8f;
-    [SerializeField] private float engineMaxPitch = 1.3f;
-    [SerializeField] private float engineFadeSpeed = 5f;
-
-    private Rigidbody rb;
-
-    private void Awake()
-    {
-        rb = GetComponent<Rigidbody>();
-
-        rb.drag = 0.05f;
-        rb.angularDrag = 0.5f;
-
-        rb.constraints =
-            RigidbodyConstraints.FreezePositionY |
-            RigidbodyConstraints.FreezeRotationX |
-            RigidbodyConstraints.FreezeRotationZ;
-
-        // ¿£ÁøÀ½ ÃÊ±â ¼³Á¤
-        if (engineAudio != null)
-        {
-            engineAudio.loop = true;
-            engineAudio.playOnAwake = false;
-            engineAudio.volume = 0f;
-        }
-    }
-
     private void Start()
     {
-        // TargetÀÌ ÁöÁ¤µÇÁö ¾Ê¾Ò´Ù¸é Player ÅÂ±×¸¦ Ã£À½
+        // Targetì´ ì§€ì •ë˜ì§€ ì•Šì•˜ë‹¤ë©´ Player íƒœê·¸ë¥¼ ì°¾ëŠ”ë‹¤
         if (target == null)
         {
-            GameObject player =
-                GameObject.FindGameObjectWithTag("Player");
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
 
             if (player != null)
-            {
                 target = player.transform;
-            }
         }
     }
 
-    private void Update()
+    protected override bool CanMove()
     {
-        UpdateEngineSound();
+        return target != null;
     }
 
-    private void FixedUpdate()
+    protected override void ApplyMovement()
     {
-        if (target == null)
-            return;
-
-        OrbitTarget();
-        RotateToMovement();
-        LimitSpeed();
-    }
-
-    private void OrbitTarget()
-    {
-        // ÇÃ·¹ÀÌ¾î ¡æ Àû ¹æÇâ
-        Vector3 offset =
-            transform.position - target.position;
-
+        // ëŒ€ìƒ â†’ ì  ë°©í–¥
+        Vector3 offset = transform.position - target.position;
         offset.y = 0f;
 
         float distance = offset.magnitude;
@@ -92,192 +39,23 @@ public class EnemyOrbitController : MonoBehaviour
         if (distance < 0.01f)
             return;
 
-        Vector3 radialDirection =
-            offset.normalized;
+        Vector3 radialDirection = offset.normalized;
 
-        // ====================================
-        // ¿øÀÇ Á¢¼± ¹æÇâ °è»ê
-        // ====================================
+        // ì›ì˜ ì ‘ì„  ë°©í–¥
+        Vector3 tangentDirection = clockwise
+            ? new Vector3(radialDirection.z, 0f, -radialDirection.x)
+            : new Vector3(-radialDirection.z, 0f, radialDirection.x);
 
-        Vector3 tangentDirection;
+        // ëŒ€ìƒê³¼ì˜ ê±°ë¦¬ ìœ ì§€
+        float distanceError = distance - orbitDistance;
+        Vector3 radialCorrection = -radialDirection * distanceError;
 
-        if (clockwise)
-        {
-            tangentDirection =
-                new Vector3(
-                    radialDirection.z,
-                    0f,
-                    -radialDirection.x
-                );
-        }
-        else
-        {
-            tangentDirection =
-                new Vector3(
-                    -radialDirection.z,
-                    0f,
-                    radialDirection.x
-                );
-        }
-
-        // ====================================
-        // ÇÃ·¹ÀÌ¾î¿ÍÀÇ °Å¸® À¯Áö
-        // ====================================
-
-        float distanceError =
-            distance - orbitDistance;
-
-        Vector3 radialCorrection =
-            -radialDirection * distanceError;
-
-        // ====================================
-        // ÃÖÁ¾ ÀÌµ¿ ¹æÇâ
-        // ====================================
-
-        Vector3 desiredDirection =
-            tangentDirection * orbitSpeed +
-            radialCorrection;
+        Vector3 desiredDirection = tangentDirection * orbitSpeed + radialCorrection;
 
         if (desiredDirection.sqrMagnitude > 0.01f)
         {
             desiredDirection.Normalize();
-
-            rb.AddForce(
-                desiredDirection * acceleration,
-                ForceMode.Acceleration
-            );
+            rb.AddForce(desiredDirection * acceleration, ForceMode.Acceleration);
         }
-    }
-
-    private void RotateToMovement()
-    {
-        // ÇöÀç ¼Óµµ
-        Vector3 velocity =
-            rb.velocity;
-
-        velocity.y = 0f;
-
-        // ³Ê¹« ´À¸®¸é È¸ÀüÇÏÁö ¾ÊÀ½
-        if (velocity.sqrMagnitude < 0.1f)
-            return;
-
-        // ÀÌµ¿ ¹æÇâÀ» ¹Ù¶óº½
-        Quaternion targetRotation =
-            Quaternion.LookRotation(
-                velocity.normalized
-            );
-
-        Quaternion newRotation =
-            Quaternion.Slerp(
-                rb.rotation,
-                targetRotation,
-                rotationSpeed * Time.fixedDeltaTime
-            );
-
-        rb.MoveRotation(newRotation);
-    }
-
-    private void LimitSpeed()
-    {
-        Vector3 velocity =
-            rb.velocity;
-
-        Vector3 horizontalVelocity =
-            new Vector3(
-                velocity.x,
-                0f,
-                velocity.z
-            );
-
-        if (horizontalVelocity.magnitude > maxSpeed)
-        {
-            horizontalVelocity =
-                horizontalVelocity.normalized *
-                maxSpeed;
-
-            rb.velocity =
-                new Vector3(
-                    horizontalVelocity.x,
-                    velocity.y,
-                    horizontalVelocity.z
-                );
-        }
-    }
-
-    // =========================
-    // Engine Sound
-    // =========================
-
-    private void UpdateEngineSound()
-    {
-        if (engineAudio == null)
-            return;
-
-        float speed =
-            GetHorizontalSpeed();
-
-        // ÇöÀç ¼Óµµ¸¦ 0 ~ 1·Î º¯È¯
-        float speedRatio =
-            Mathf.Clamp01(speed / maxSpeed);
-
-        // ¼Óµµ¿¡ µû¶ó ¸ñÇ¥ º¼·ı °è»ê
-        float targetVolume =
-            Mathf.Lerp(
-                engineMinVolume,
-                engineMaxVolume,
-                speedRatio
-            );
-
-        // ¼Óµµ¿¡ µû¶ó Pitch º¯È­
-        float targetPitch =
-            Mathf.Lerp(
-                engineMinPitch,
-                engineMaxPitch,
-                speedRatio
-            );
-
-        // º¼·ı ºÎµå·´°Ô º¯È­
-        engineAudio.volume =
-            Mathf.Lerp(
-                engineAudio.volume,
-                targetVolume,
-                engineFadeSpeed * Time.deltaTime
-            );
-
-        // Pitch ºÎµå·´°Ô º¯È­
-        engineAudio.pitch =
-            Mathf.Lerp(
-                engineAudio.pitch,
-                targetPitch,
-                engineFadeSpeed * Time.deltaTime
-            );
-
-        // ¿òÁ÷ÀÌ±â ½ÃÀÛÇÏ¸é Àç»ı
-        if (speed > 0.1f)
-        {
-            if (!engineAudio.isPlaying)
-            {
-                engineAudio.Play();
-            }
-        }
-        else
-        {
-            // ¿ÏÀüÈ÷ ¸ØÃß¸é Á¤Áö
-            if (engineAudio.isPlaying &&
-                engineAudio.volume < 0.01f)
-            {
-                engineAudio.Stop();
-            }
-        }
-    }
-
-    private float GetHorizontalSpeed()
-    {
-        Vector3 velocity =
-            rb.velocity;
-
-        velocity.y = 0f;
-
-        return velocity.magnitude;
     }
 }

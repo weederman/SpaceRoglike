@@ -2,9 +2,9 @@ using UnityEngine;
 
 /// <summary>
 /// 함선에 터렛을 장착/교체할 수 있는 위치.
-/// 비어 있으면 홀로그램 프리뷰(이 오브젝트의 메시)만 보이다가, 인벤토리에서 터렛 아이템을
-/// 드래그해 이 위치에 놓으면 실제로 작동하는 터렛 프리팹으로 교체된다.
-/// 이미 터렛이 장착되어 있어도(처음부터 장착된 기본 터렛 포함) 다시 드래그해서
+/// 비어 있으면 홀로그램 프리뷰(이 오브젝트의 메시)만 보이다가, 정거장 상점에서 산 터렛 아이템을
+/// 이 위치에 장착하면 실제로 작동하는 터렛으로 교체된다.
+/// 이미 터렛이 장착되어 있어도(처음부터 장착된 기본 터렛 포함) 다시 장착하면
 /// 놓으면 무기 타입만 새 아이템 것으로 바뀐다(같은 Turret1 프리팹을 재사용하므로
 /// 오브젝트를 새로 만들 필요 없이 F3DFXController.DefaultFXType만 바꾸면 된다).
 /// </summary>
@@ -87,7 +87,7 @@ public class TurretMountPoint : MonoBehaviour
     }
 
     /// <summary>
-    /// 인벤토리 아이템을 드래그하는 동안 장착 가능 위치를 알려주기 위해 홀로그램을 강제로 보여준다.
+    /// 상점에서 무기를 고르는 동안 장착 가능 위치를 알려주기 위해 홀로그램을 강제로 보여준다.
     /// 이미 터렛이 장착된 자리라면, 실제 터렛 메시가 홀로그램을 가리지 않도록 잠시 꺼둔다.
     /// </summary>
     public void ShowHologramPreview()
@@ -99,7 +99,7 @@ public class TurretMountPoint : MonoBehaviour
                 r.enabled = true;
     }
 
-    /// <summary>드래그가 끝나면 원래 상태(장착되어 있으면 터렛 표시+홀로그램 숨김, 비어 있으면 홀로그램 표시)로 되돌린다.</summary>
+    /// <summary>선택이 끝나면 원래 상태(장착되어 있으면 터렛 표시+홀로그램 숨김, 비어 있으면 홀로그램 표시)로 되돌린다.</summary>
     public void RefreshHologramVisibility()
     {
         if (IsOccupied)

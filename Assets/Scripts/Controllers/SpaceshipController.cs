@@ -1,89 +1,18 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-public class SpaceshipController : MonoBehaviour
+/// <summary>í”Œë ˆì´ì–´ í•¨ì„ : WASDë¡œ ì›”ë“œ ê¸°ì¤€ ì´ë™(W=+Z, S=-Z, A=-X, D=+X), ì…ë ¥ì´ ì—†ìœ¼ë©´ ê°ì†.</summary>
+public class SpaceshipController : ShipMovementBase
 {
-    [Header("Movement")]
-    [SerializeField] private float acceleration = 8f;
-    [SerializeField] private float maxSpeed = 12f;
-
     [Header("Braking")]
     [SerializeField] private float brakingPower = 4f;
 
-    [Header("Rotation")]
-    [SerializeField] private float rotationSpeed = 8f;
-
-    [Header("Engine Sound")]
-    [SerializeField] private AudioSource engineAudio;
-    [SerializeField] private float engineMinVolume = 0f;
-    [SerializeField] private float engineMaxVolume = 0.7f;
-    [SerializeField] private float engineMinPitch = 0.8f;
-    [SerializeField] private float engineMaxPitch = 1.3f;
-    [SerializeField] private float engineFadeSpeed = 5f;
-
-    private Rigidbody rb;
-
-    private void Awake()
+    protected override void ApplyMovement()
     {
-        rb = GetComponent<Rigidbody>();
+        Vector3 inputDirection = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
 
-        rb.drag = 0.05f;
-        rb.angularDrag = 0.5f;
-
-        rb.constraints =
-            RigidbodyConstraints.FreezePositionY |
-            RigidbodyConstraints.FreezeRotationX |
-            RigidbodyConstraints.FreezeRotationZ;
-
-        // ¿£ÁøÀ½ ÃÊ±â ¼³Á¤
-        if (engineAudio != null)
-        {
-            engineAudio.loop = true;
-            engineAudio.playOnAwake = false;
-            engineAudio.volume = 0f;
-        }
-    }
-
-    private void Update()
-    {
-        UpdateEngineSound();
-    }
-
-    private void FixedUpdate()
-    {
-        HandleMovement();
-        RotateToMovement();
-        LimitSpeed();
-    }
-
-    // =========================
-    // RPG ½ºÅ¸ÀÏ WASD ÀÌµ¿
-    // =========================
-
-    private void HandleMovement()
-    {
-        float horizontal =
-            Input.GetAxisRaw("Horizontal");
-
-        float vertical =
-            Input.GetAxisRaw("Vertical");
-
-        Vector3 inputDirection =
-            new Vector3(
-                horizontal,
-                0f,
-                vertical
-            );
-
-        // ´ë°¢¼± ÀÌµ¿ ¼Óµµ º¸Á¤
+        // ëŒ€ê°ì„  ì´ë™ ì†ë„ ë³´ì •
         if (inputDirection.sqrMagnitude > 1f)
-        {
             inputDirection.Normalize();
-        }
-
-        // ====================================
-        // ÀÔ·ÂÀÌ ¾øÀ¸¸é °¨¼Ó
-        // ====================================
 
         if (inputDirection.sqrMagnitude < 0.01f)
         {
@@ -91,186 +20,16 @@ public class SpaceshipController : MonoBehaviour
             return;
         }
 
-        // ====================================
-        // RPG ¹æ½Ä
-        //
-        // ¿ùµå ±âÁØÀ¸·Î WASD ÀÌµ¿
-        // W = +Z
-        // S = -Z
-        // A = -X
-        // D = +X
-        // ====================================
-
-        Vector3 moveDirection =
-            inputDirection.normalized;
-
-        rb.AddForce(
-            moveDirection * acceleration,
-            ForceMode.Acceleration
-        );
+        rb.AddForce(inputDirection.normalized * acceleration, ForceMode.Acceleration);
     }
-
-    // =========================
-    // °¨¼Ó
-    // =========================
 
     private void Brake()
     {
-        Vector3 horizontalVelocity =
-            new Vector3(
-                rb.velocity.x,
-                0f,
-                rb.velocity.z
-            );
+        Vector3 horizontalVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
         if (horizontalVelocity.sqrMagnitude < 0.01f)
             return;
 
-        rb.AddForce(
-            -horizontalVelocity * brakingPower,
-            ForceMode.Acceleration
-        );
-    }
-
-    // =========================
-    // ÀÌµ¿ ¹æÇâÀ» ¹Ù¶óº¸±â
-    // =========================
-
-    private void RotateToMovement()
-    {
-        Vector3 velocity =
-            rb.velocity;
-
-        velocity.y = 0f;
-
-        if (velocity.sqrMagnitude < 0.1f)
-            return;
-
-        Quaternion targetRotation =
-            Quaternion.LookRotation(
-                velocity.normalized,
-                Vector3.up
-            );
-
-        Quaternion newRotation =
-            Quaternion.Slerp(
-                rb.rotation,
-                targetRotation,
-                rotationSpeed * Time.fixedDeltaTime
-            );
-
-        rb.MoveRotation(newRotation);
-    }
-
-    // =========================
-    // ÃÖ´ë ¼Óµµ Á¦ÇÑ
-    // =========================
-
-    private void LimitSpeed()
-    {
-        Vector3 velocity =
-            rb.velocity;
-
-        Vector3 horizontalVelocity =
-            new Vector3(
-                velocity.x,
-                0f,
-                velocity.z
-            );
-
-        if (horizontalVelocity.magnitude > maxSpeed)
-        {
-            horizontalVelocity =
-                horizontalVelocity.normalized *
-                maxSpeed;
-
-            rb.velocity =
-                new Vector3(
-                    horizontalVelocity.x,
-                    velocity.y,
-                    horizontalVelocity.z
-                );
-        }
-    }
-
-    // =========================
-    // ÇöÀç ¼öÆò ¼Óµµ
-    // =========================
-
-    private float GetHorizontalSpeed()
-    {
-        Vector3 velocity =
-            rb.velocity;
-
-        velocity.y = 0f;
-
-        return velocity.magnitude;
-    }
-
-    // =========================
-    // Engine Sound
-    // =========================
-
-    private void UpdateEngineSound()
-    {
-        if (engineAudio == null)
-            return;
-
-        float speed =
-            GetHorizontalSpeed();
-
-        float speedRatio =
-            Mathf.Clamp01(
-                speed / maxSpeed
-            );
-
-        // ¼Óµµ¿¡ µû¸¥ º¼·ı
-        float targetVolume =
-            Mathf.Lerp(
-                engineMinVolume,
-                engineMaxVolume,
-                speedRatio
-            );
-
-        // ¼Óµµ¿¡ µû¸¥ Pitch
-        float targetPitch =
-            Mathf.Lerp(
-                engineMinPitch,
-                engineMaxPitch,
-                speedRatio
-            );
-
-        // º¼·ı ºÎµå·´°Ô º¯È­
-        engineAudio.volume =
-            Mathf.Lerp(
-                engineAudio.volume,
-                targetVolume,
-                engineFadeSpeed * Time.deltaTime
-            );
-
-        // Pitch ºÎµå·´°Ô º¯È­
-        engineAudio.pitch =
-            Mathf.Lerp(
-                engineAudio.pitch,
-                targetPitch,
-                engineFadeSpeed * Time.deltaTime
-            );
-
-        // ¿òÁ÷ÀÌ±â ½ÃÀÛÇÏ¸é Àç»ı
-        if (speed > 0.1f)
-        {
-            if (!engineAudio.isPlaying)
-            {
-                engineAudio.Play();
-            }
-        }
-        else
-        {
-            if (engineAudio.isPlaying &&
-                engineAudio.volume < 0.01f)
-            {
-                engineAudio.Stop();
-            }
-        }
+        rb.AddForce(-horizontalVelocity * brakingPower, ForceMode.Acceleration);
     }
 }

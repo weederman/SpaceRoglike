@@ -965,10 +965,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2f8d04036554ea4ab03f13c5817620e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  orbitDistance: 100
-  orbitSpeed: 5
-  clockwise: 1
   acceleration: 8
   maxSpeed: 10
   rotationSpeed: 5
@@ -978,6 +974,10 @@ MonoBehaviour:
   engineMinPitch: 0.05
   engineMaxPitch: 0.09
   engineFadeSpeed: 5
+  target: {fileID: 0}
+  orbitDistance: 100
+  orbitSpeed: 5
+  clockwise: 1
 --- !u!65 &3423131677080255871
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1131,6 +1131,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 4954360195491713528}
     m_Modifications:
     - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
+      propertyPath: owner
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: sniperBeam
       value: 
       objectReference: {fileID: 400000, guid: 12e7c1b739173c946b6fa3d40e9f62d1, type: 3}
@@ -1145,14 +1149,6 @@ PrefabInstance:
     - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: DefaultFXType
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
-      propertyPath: VulcanFireRate
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
-      propertyPath: damageOverride
-      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 3143938758925990926, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1265,6 +1261,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 4954360195491713528}
     m_Modifications:
     - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
+      propertyPath: owner
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: sniperBeam
       value: 
       objectReference: {fileID: 400000, guid: 12e7c1b739173c946b6fa3d40e9f62d1, type: 3}
@@ -1279,14 +1279,6 @@ PrefabInstance:
     - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: DefaultFXType
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
-      propertyPath: VulcanFireRate
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
-      propertyPath: damageOverride
-      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 3143938758925990926, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: m_LocalPosition.x

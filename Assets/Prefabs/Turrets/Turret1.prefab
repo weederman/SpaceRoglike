@@ -6064,7 +6064,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2b82c757a706dd44ad77efcf0d513f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageOverride: 0
   TurretSocket:
   - {fileID: 3722300202982717705}
   ShellParticles:
@@ -6074,7 +6073,6 @@ MonoBehaviour:
   vulcanMuzzle: {fileID: 400002, guid: ca6dec307275d294ba519247d04b6733, type: 3}
   vulcanImpact: {fileID: 400000, guid: bfa7781c328a236468eda51a8ae2be55, type: 3}
   vulcanOffset: 0
-  VulcanFireRate: 1
   soloGunProjectile: {fileID: 0}
   soloGunMuzzle: {fileID: 0}
   soloGunImpact: {fileID: 0}

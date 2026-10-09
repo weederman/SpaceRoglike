@@ -56,7 +56,6 @@ MonoBehaviour:
   RaycastAdvance: 2
   DelayDespawn: 0
   delayedParticles: []
-  damage: 30
 --- !u!1001 &585316890977732217
 PrefabInstance:
   m_ObjectHideFlags: 0

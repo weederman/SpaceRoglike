@@ -14,9 +14,6 @@ namespace FORGE3D
         public bool DelayDespawn = false;
         public ParticleSystem[] delayedParticles;
 
-        [Header("Damage")]
-        public float damage = 10f;
-
         // 이 발사체를 쏜 F3DFXController. 착탄 연출을 정적 싱글톤(instance) 대신
         // 발사한 컨트롤러로 향하게 해서, 함선이 여러 대(=컨트롤러가 여러 개)일 때
         // 착탄 이펙트가 마지막에 Awake된 컨트롤러로 섞이는 문제를 막는다.
@@ -174,12 +171,9 @@ namespace FORGE3D
                     // 감지한 프레임에 즉시 처리한다. 대상을 찾아 데미지를 주고,
                     // 쉴드가 살아있다면 ShieldHealth가 알아서 Overlay.Trigger를 호출한다.
 
-                    // 기본 데미지: 무기 데이터 테이블 값(없으면 프리팹 값).
-                    // 컨트롤러의 damageOverride(예: 적 전용 데미지)가 있으면 그 값이 우선한다.
-                    float appliedDamage =
-                        controller != null && controller.damageOverride > 0f
-                            ? controller.damageOverride
-                            : WeaponStatsTable.GetDamage(fxType, damage);
+                    // 데미지: 무기 데이터 테이블(WeaponStatsTable)에서 (무기 종류, 쏜 쪽)으로 찾는다.
+                    WeaponOwner owner = controller != null ? controller.owner : WeaponOwner.Player;
+                    float appliedDamage = WeaponStatsTable.GetDamage(fxType, owner);
 
                     HitResolver.Resolve(
                         hitPoint,
@@ -222,10 +216,5 @@ namespace FORGE3D
             fxOffset = offset;
         }
 
-        // 로그라이크 업그레이드 등에서 발사 시 데미지 설정용
-        public void SetDamage(float value)
-        {
-            damage = Mathf.Max(0f, value);
-        }
     }
 }

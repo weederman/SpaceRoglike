@@ -332,10 +332,6 @@ PrefabInstance:
       propertyPath: DefaultFXType
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
-      propertyPath: VulcanFireRate
-      value: 0.01
-      objectReference: {fileID: 0}
     - target: {fileID: 3143938758925990926, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: m_LocalPosition.x
       value: -20
@@ -413,10 +409,6 @@ PrefabInstance:
     - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: DefaultFXType
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 890361652911954261, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
-      propertyPath: VulcanFireRate
-      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 3143938758925990926, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
       propertyPath: m_LocalPosition.x
@@ -619,8 +611,6 @@ MonoBehaviour:
   acceleration: 8
   maxSpeed: 12
   brakingPower: 4
-  stoppingDistance: 1.5
-  clickMarkerPrefab: {fileID: 6818539408815014018, guid: 9dc4db7300710b24689519c6209d93a7, type: 3}
   engineAudio: {fileID: 3509386918197939854}
   engineMinVolume: 0
   engineMaxVolume: 0.2

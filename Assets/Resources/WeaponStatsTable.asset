@@ -16,6 +16,7 @@ MonoBehaviour:
   - name: Vulcan
     weaponType: 0
     damage: 10
+    enemyDamage: 50
     fireInterval: 1
     shieldMultiplier: 1
     armorMultiplier: 1
@@ -23,6 +24,7 @@ MonoBehaviour:
   - name: PlasmaGun
     weaponType: 6
     damage: 10
+    enemyDamage: 0
     fireInterval: 0.2
     shieldMultiplier: 1
     armorMultiplier: 1
@@ -30,6 +32,7 @@ MonoBehaviour:
   - name: PlasmaBeam
     weaponType: 7
     damage: 30
+    enemyDamage: 0
     fireInterval: 0
     shieldMultiplier: 1
     armorMultiplier: 1
@@ -37,6 +40,7 @@ MonoBehaviour:
   - name: LaserImpulse
     weaponType: 11
     damage: 10
+    enemyDamage: 0
     fireInterval: 0.15
     shieldMultiplier: 2
     armorMultiplier: 0.5
@@ -44,6 +48,7 @@ MonoBehaviour:
   - name: RailGun
     weaponType: 5
     damage: 30
+    enemyDamage: 0
     fireInterval: 0.2
     shieldMultiplier: 0.5
     armorMultiplier: 2
@@ -51,6 +56,7 @@ MonoBehaviour:
   - name: FlameRed
     weaponType: 10
     damage: 30
+    enemyDamage: 0
     fireInterval: 0.75
     shieldMultiplier: 1.5
     armorMultiplier: 1.5

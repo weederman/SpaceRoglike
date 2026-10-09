@@ -24,10 +24,6 @@ namespace FORGE3D
         public Transform rayImpact; // Impact transform
         public Transform rayMuzzle; // Muzzle flash transform
 
-        [Header("Damage")]
-        [Tooltip("OneShot = 한 발 데미지 / 지속형 = 초당 데미지(DPS)")]
-        public float damage = 30f;
-
         // 이 빔을 쏜 F3DFXController. F3DProjectile과 동일한 이유로 정적 싱글톤 대신 사용.
         [System.NonSerialized] public F3DFXController controller;
 
@@ -162,7 +158,8 @@ namespace FORGE3D
                 // ====================================================
                 // 지속형 빔은 프레임레이트와 무관하게 DPS가 일정하도록 deltaTime을 곱한다.
 
-                float baseDamage = WeaponStatsTable.GetDamage(fxType, damage);
+                float baseDamage = WeaponStatsTable.GetDamage(
+                    fxType, controller != null ? controller.owner : WeaponOwner.Player);
                 float frameDamage = OneShot ? baseDamage : baseDamage * Time.deltaTime;
                 HitResolver.Resolve(
                     hitPoint,
@@ -419,12 +416,6 @@ namespace FORGE3D
         public void SetOffset(float offset)
         {
             fxOffset = offset;
-        }
-
-        // 로그라이크 업그레이드 등에서 발사 시 데미지 설정용
-        public void SetDamage(float value)
-        {
-            damage = Mathf.Max(0f, value);
         }
 
         // ============================================================

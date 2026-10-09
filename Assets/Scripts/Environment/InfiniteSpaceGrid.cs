@@ -62,21 +62,21 @@ public class InfiniteSpaceGrid : MonoBehaviour
 
         line.positionCount = 2;
 
-        // ¿ùµå °ø°£ ±âÁØ
+        // ì›”ë“œ ê³µê°„ ê¸°ì¤€
         line.useWorldSpace = true;
 
-        // ¼± ±½±â
+        // ì„  êµµê¸°
         line.startWidth = lineWidth;
         line.endWidth = lineWidth;
 
-        // ±âº» Line Renderer ¸ÓÆ¼¸®¾ó
+        // ê¸°ë³¸ Line Renderer ë¨¸í‹°ë¦¬ì–¼
         line.material = new Material(Shader.Find("Sprites/Default"));
 
-        // ±×¸®µå »ö»ó
+        // ê·¸ë¦¬ë“œ ìƒ‰ìƒ
         line.startColor = gridColor;
         line.endColor = gridColor;
 
-        // ±×¸²ÀÚ »ç¿ëÇÏÁö ¾ÊÀ½
+        // ê·¸ë¦¼ì ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
         line.shadowCastingMode =
             UnityEngine.Rendering.ShadowCastingMode.Off;
 
@@ -89,11 +89,11 @@ public class InfiniteSpaceGrid : MonoBehaviour
     {
         Vector3 targetPosition = target.position;
 
-        // YÃàÀº °íÁ¤
+        // Yì¶•ì€ ê³ ì •
         targetPosition.y = lineHeight;
 
-        // ±×¸®µå°¡ Ç×»ó ÀÏÁ¤ÇÑ Å©±â·Î º¸ÀÌµµ·Ï
-        // °İÀÚ °£°İ ´ÜÀ§·Î À§Ä¡¸¦ ¸ÂÃá´Ù.
+        // ê·¸ë¦¬ë“œê°€ í•­ìƒ ì¼ì •í•œ í¬ê¸°ë¡œ ë³´ì´ë„ë¡
+        // ê²©ì ê°„ê²© ë‹¨ìœ„ë¡œ ìœ„ì¹˜ë¥¼ ë§ì¶˜ë‹¤.
         targetPosition.x =
             Mathf.Round(targetPosition.x / gridSize) * gridSize;
 
@@ -119,7 +119,7 @@ public class InfiniteSpaceGrid : MonoBehaviour
             float offset =
                 (i - gridCount) * gridSize;
 
-            // X ¹æÇâÀ¸·Î »¸´Â ¼±
+            // X ë°©í–¥ìœ¼ë¡œ ë»—ëŠ” ì„ 
             verticalLines[i].SetPosition(
                 0,
                 new Vector3(
@@ -138,7 +138,7 @@ public class InfiniteSpaceGrid : MonoBehaviour
                 )
             );
 
-            // Z ¹æÇâÀ¸·Î »¸´Â ¼±
+            // Z ë°©í–¥ìœ¼ë¡œ ë»—ëŠ” ì„ 
             horizontalLines[i].SetPosition(
                 0,
                 new Vector3(

@@ -22,8 +22,8 @@ namespace FORGE3D
 
         private void Start()
         {
-            // TargetÀÌ Inspector¿¡ ÁöÁ¤µÇÁö ¾Ê¾Ò´Ù¸é
-            // Player ÅÂ±×¸¦ °¡Áø ¿ÀºêÁ§Æ®¸¦ Ã£À½
+            // Targetì´ Inspectorì— ì§€ì •ë˜ì§€ ì•Šì•˜ë‹¤ë©´
+            // Player íƒœê·¸ë¥¼ ê°€ì§„ ì˜¤ë¸Œì íŠ¸ë¥¼ ì°¾ìŒ
             if (target == null)
             {
                 GameObject player =
@@ -50,11 +50,11 @@ namespace FORGE3D
             Vector3 targetPosition =
                 target.position;
 
-            // ÅÍ·¿°ú °°Àº ³ôÀÌ·Î ¸ÂÃã
+            // í„°ë ›ê³¼ ê°™ì€ ë†’ì´ë¡œ ë§ì¶¤
             targetPosition.y =
                 turret.transform.position.y;
 
-            // FORGE3D ÅÍ·¿¿¡ Á¶ÁØÁ¡ Àü´Ş
+            // FORGE3D í„°ë ›ì— ì¡°ì¤€ì  ì „ë‹¬
             turret.SetNewTarget(targetPosition);
         }
 
@@ -66,7 +66,7 @@ namespace FORGE3D
                     target.position
                 );
 
-            // »ç°Å¸® ¹ÛÀÌ¸é ¹ß»çÇÏÁö ¾ÊÀ½
+            // ì‚¬ê±°ë¦¬ ë°–ì´ë©´ ë°œì‚¬í•˜ì§€ ì•ŠìŒ
             if (distance > fireRange)
             {
                 StopFire();
@@ -75,7 +75,7 @@ namespace FORGE3D
 
             fireTimer += Time.deltaTime;
 
-            // ÀÏÁ¤ ½Ã°£ÀÌ Áö³ª¸é ¹ß»ç
+            // ì¼ì • ì‹œê°„ì´ ì§€ë‚˜ë©´ ë°œì‚¬
             if (fireTimer >= fireInterval)
             {
                 fireTimer = 0f;
@@ -92,7 +92,7 @@ namespace FORGE3D
             fxController.Fire();
             isFiring = true;
 
-            // ´Ü¹ß ¹ß»çÀÌ¹Ç·Î ¹Ù·Î ¹ß»ç »óÅÂ Á¾·á
+            // ë‹¨ë°œ ë°œì‚¬ì´ë¯€ë¡œ ë°”ë¡œ ë°œì‚¬ ìƒíƒœ ì¢…ë£Œ
             Invoke(nameof(StopFire), 0.1f);
         }
 

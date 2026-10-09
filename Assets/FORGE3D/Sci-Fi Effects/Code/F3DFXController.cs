@@ -26,9 +26,9 @@ namespace FORGE3D
         // Singleton instance
         public static F3DFXController instance;
 
-        // [추가] 0보다 크면 이 컨트롤러가 쏘는 발사체의 데미지를 프리팹 기본값 대신 이 값으로 덮어쓴다.
-        // 발사체 프리팹은 플레이어/적이 공유하므로, 적만 다른 데미지를 주고 싶을 때 쓴다.
-        [Header("Damage")] public float damageOverride = 0f;
+        // [추가] 이 컨트롤러를 쓰는 쪽(플레이어/적). 발사체·빔 프리팹은 둘이 공유하므로,
+        // 데미지는 WeaponStatsTable에서 (무기 종류, 쏜 쪽)으로 찾는다.
+        [Header("Damage")] public WeaponOwner owner = WeaponOwner.Player;
 
         // Current firing socket
         private int curSocket = 0;
@@ -45,8 +45,6 @@ namespace FORGE3D
         public Transform vulcanMuzzle; // Muzzle flash prefab  
         public Transform vulcanImpact; // Impact prefab
         public float vulcanOffset;
-
-        public float VulcanFireRate = 0.07f;
 
         [Header("Solo gun")] public Transform soloGunProjectile;
         public Transform soloGunMuzzle;
@@ -145,44 +143,44 @@ namespace FORGE3D
                 case F3DFXType.Vulcan:
                     // Fire vulcan at specified rate until canceled
                     timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.Vulcan, VulcanFireRate), Vulcan);
+                        WeaponStatsTable.GetFireInterval(F3DFXType.Vulcan), Vulcan);
                     // Invoke manually before the timer ticked to avoid initial delay
                     Vulcan();
                     break;
 
                 case F3DFXType.SoloGun:
                     timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.SoloGun, 0.2f), SoloGun);
+                        WeaponStatsTable.GetFireInterval(F3DFXType.SoloGun), SoloGun);
                     SoloGun();
                     break;
 
                 case F3DFXType.Sniper:
                     timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.Sniper, 0.3f), Sniper);
+                        WeaponStatsTable.GetFireInterval(F3DFXType.Sniper), Sniper);
                     Sniper();
                     break;
 
                 case F3DFXType.ShotGun:
                     timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.ShotGun, 0.3f), ShotGun);
+                        WeaponStatsTable.GetFireInterval(F3DFXType.ShotGun), ShotGun);
                     ShotGun();
                     break;
 
                 case F3DFXType.Seeker:
                     timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.Seeker, 0.2f), Seeker);
+                        WeaponStatsTable.GetFireInterval(F3DFXType.Seeker), Seeker);
                     Seeker();
                     break;
 
                 case F3DFXType.RailGun:
                     timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.RailGun, 0.2f), RailGun);
+                        WeaponStatsTable.GetFireInterval(F3DFXType.RailGun), RailGun);
                     RailGun();
                     break;
 
                 case F3DFXType.PlasmaGun:
                     timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.PlasmaGun, 0.2f), PlasmaGun);
+                        WeaponStatsTable.GetFireInterval(F3DFXType.PlasmaGun), PlasmaGun);
                     PlasmaGun();
                     break;
 
@@ -204,13 +202,13 @@ namespace FORGE3D
                 case F3DFXType.FlameRed:
                     // [수정] 화염 루프 대신 미사일 발사체 한 발씩 발사하도록 변경
                     timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.FlameRed, 0.75f), FlameRed);
+                        WeaponStatsTable.GetFireInterval(F3DFXType.FlameRed), FlameRed);
                     FlameRed();
                     break;
 
                 case F3DFXType.LaserImpulse:
                     timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.LaserImpulse, 0.15f), LaserImpulse);
+                        WeaponStatsTable.GetFireInterval(F3DFXType.LaserImpulse), LaserImpulse);
                     LaserImpulse();
                     break;
             }

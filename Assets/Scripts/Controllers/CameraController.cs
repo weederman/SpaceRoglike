@@ -30,13 +30,13 @@ public class CameraController : MonoBehaviour
         if (target == null)
         {
             Debug.LogWarning(
-                "CameraController: TargetÀÌ ÁöÁ¤µÇÁö ¾Ê¾Ò½À´Ï´Ù."
+                "CameraController: Targetì´ ì§€ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤."
             );
 
             return;
         }
 
-        // ½ÃÀÛ°ª
+        // ì‹œì‘ê°’
         targetZoom = distance;
         targetHeight = height;
 
@@ -72,8 +72,8 @@ public class CameraController : MonoBehaviour
 
         if (Mathf.Abs(scroll) > 0.01f)
         {
-            // ÈÙ À§ = ÁÜÀÎ
-            // ÈÙ ¾Æ·¡ = ÁÜ¾Æ¿ô
+            // íœ  ìœ„ = ì¤Œì¸
+            // íœ  ì•„ë˜ = ì¤Œì•„ì›ƒ
             targetZoom -=
                 scroll * zoomSpeed;
 
@@ -84,7 +84,7 @@ public class CameraController : MonoBehaviour
                     maxZoom
                 );
 
-            // 45 ~ 120 °Å¸® »çÀÌÀÇ ºñÀ²
+            // 45 ~ 120 ê±°ë¦¬ ì‚¬ì´ì˜ ë¹„ìœ¨
             float zoomRatio =
                 Mathf.InverseLerp(
                     minZoom,
@@ -92,7 +92,7 @@ public class CameraController : MonoBehaviour
                     targetZoom
                 );
 
-            // ³ôÀÌµµ °°ÀÌ º¯°æ
+            // ë†’ì´ë„ ê°™ì´ ë³€ê²½
             targetHeight =
                 Mathf.Lerp(
                     minHeight,
@@ -101,7 +101,7 @@ public class CameraController : MonoBehaviour
                 );
         }
 
-        // °Å¸® ºÎµå·´°Ô º¯°æ
+        // ê±°ë¦¬ ë¶€ë“œëŸ½ê²Œ ë³€ê²½
         distance =
             Mathf.Lerp(
                 distance,
@@ -109,7 +109,7 @@ public class CameraController : MonoBehaviour
                 zoomSmoothSpeed * Time.deltaTime
             );
 
-        // ³ôÀÌ ºÎµå·´°Ô º¯°æ
+        // ë†’ì´ ë¶€ë“œëŸ½ê²Œ ë³€ê²½
         height =
             Mathf.Lerp(
                 height,
