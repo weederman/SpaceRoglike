@@ -174,12 +174,18 @@ namespace FORGE3D
                     // 감지한 프레임에 즉시 처리한다. 대상을 찾아 데미지를 주고,
                     // 쉴드가 살아있다면 ShieldHealth가 알아서 Overlay.Trigger를 호출한다.
 
+                    // 기본 데미지: 무기 데이터 테이블 값(없으면 프리팹 값).
+                    // 컨트롤러의 damageOverride(예: 적 전용 데미지)가 있으면 그 값이 우선한다.
                     float appliedDamage =
                         controller != null && controller.damageOverride > 0f
                             ? controller.damageOverride
-                            : damage;
+                            : WeaponStatsTable.GetDamage(fxType, damage);
 
-                    HitResolver.Resolve(hitPoint, appliedDamage);
+                    HitResolver.Resolve(
+                        hitPoint,
+                        appliedDamage,
+                        WeaponStatsTable.GetShieldMultiplier(fxType),
+                        WeaponStatsTable.GetArmorMultiplier(fxType));
 
                     // =========================================
                     // 탄환 파티클 처리

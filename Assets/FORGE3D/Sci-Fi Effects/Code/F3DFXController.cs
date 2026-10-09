@@ -144,38 +144,45 @@ namespace FORGE3D
             {
                 case F3DFXType.Vulcan:
                     // Fire vulcan at specified rate until canceled
-                    timerID = F3DTime.time.AddTimer(VulcanFireRate, Vulcan);
+                    timerID = F3DTime.time.AddTimer(
+                        WeaponStatsTable.GetFireInterval(F3DFXType.Vulcan, VulcanFireRate), Vulcan);
                     // Invoke manually before the timer ticked to avoid initial delay
                     Vulcan();
                     break;
 
                 case F3DFXType.SoloGun:
-                    timerID = F3DTime.time.AddTimer(0.2f, SoloGun);
+                    timerID = F3DTime.time.AddTimer(
+                        WeaponStatsTable.GetFireInterval(F3DFXType.SoloGun, 0.2f), SoloGun);
                     SoloGun();
                     break;
 
                 case F3DFXType.Sniper:
-                    timerID = F3DTime.time.AddTimer(0.3f, Sniper);
+                    timerID = F3DTime.time.AddTimer(
+                        WeaponStatsTable.GetFireInterval(F3DFXType.Sniper, 0.3f), Sniper);
                     Sniper();
                     break;
 
                 case F3DFXType.ShotGun:
-                    timerID = F3DTime.time.AddTimer(0.3f, ShotGun);
+                    timerID = F3DTime.time.AddTimer(
+                        WeaponStatsTable.GetFireInterval(F3DFXType.ShotGun, 0.3f), ShotGun);
                     ShotGun();
                     break;
 
                 case F3DFXType.Seeker:
-                    timerID = F3DTime.time.AddTimer(0.2f, Seeker);
+                    timerID = F3DTime.time.AddTimer(
+                        WeaponStatsTable.GetFireInterval(F3DFXType.Seeker, 0.2f), Seeker);
                     Seeker();
                     break;
 
                 case F3DFXType.RailGun:
-                    timerID = F3DTime.time.AddTimer(0.2f, RailGun);
+                    timerID = F3DTime.time.AddTimer(
+                        WeaponStatsTable.GetFireInterval(F3DFXType.RailGun, 0.2f), RailGun);
                     RailGun();
                     break;
 
                 case F3DFXType.PlasmaGun:
-                    timerID = F3DTime.time.AddTimer(0.2f, PlasmaGun);
+                    timerID = F3DTime.time.AddTimer(
+                        WeaponStatsTable.GetFireInterval(F3DFXType.PlasmaGun, 0.2f), PlasmaGun);
                     PlasmaGun();
                     break;
 
@@ -196,12 +203,14 @@ namespace FORGE3D
 
                 case F3DFXType.FlameRed:
                     // [수정] 화염 루프 대신 미사일 발사체 한 발씩 발사하도록 변경
-                    timerID = F3DTime.time.AddTimer(0.75f, FlameRed);
+                    timerID = F3DTime.time.AddTimer(
+                        WeaponStatsTable.GetFireInterval(F3DFXType.FlameRed, 0.75f), FlameRed);
                     FlameRed();
                     break;
 
                 case F3DFXType.LaserImpulse:
-                    timerID = F3DTime.time.AddTimer(0.15f, LaserImpulse);
+                    timerID = F3DTime.time.AddTimer(
+                        WeaponStatsTable.GetFireInterval(F3DFXType.LaserImpulse, 0.15f), LaserImpulse);
                     LaserImpulse();
                     break;
             }

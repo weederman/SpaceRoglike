@@ -162,8 +162,13 @@ namespace FORGE3D
                 // ====================================================
                 // 지속형 빔은 프레임레이트와 무관하게 DPS가 일정하도록 deltaTime을 곱한다.
 
-                float frameDamage = OneShot ? damage : damage * Time.deltaTime;
-                HitResolver.Resolve(hitPoint, frameDamage);
+                float baseDamage = WeaponStatsTable.GetDamage(fxType, damage);
+                float frameDamage = OneShot ? baseDamage : baseDamage * Time.deltaTime;
+                HitResolver.Resolve(
+                    hitPoint,
+                    frameDamage,
+                    WeaponStatsTable.GetShieldMultiplier(fxType),
+                    WeaponStatsTable.GetArmorMultiplier(fxType));
 
                 // ====================================================
                 // IMPACT EFFECTS

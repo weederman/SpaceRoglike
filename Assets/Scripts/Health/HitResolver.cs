@@ -6,7 +6,9 @@ using UnityEngine;
 /// </summary>
 public static class HitResolver
 {
-    public static void Resolve(in RaycastHit hit, float damage)
+    /// <param name="shieldMultiplier">대상이 쉴드일 때 데미지에 곱할 배율</param>
+    /// <param name="armorMultiplier">대상이 선체(아머)일 때 데미지에 곱할 배율</param>
+    public static void Resolve(in RaycastHit hit, float damage, float shieldMultiplier = 1f, float armorMultiplier = 1f)
     {
         if (hit.collider == null || damage <= 0f)
             return;
@@ -16,7 +18,15 @@ public static class HitResolver
         // 선체 모델에 맞으면        → Ship 루트의 HullHealth
         IDamageable target = hit.collider.GetComponentInParent<IDamageable>();
 
-        if (target != null)
-            target.TakeDamage(damage, hit.point);
+        if (target == null)
+            return;
+
+        float multiplier = 1f;
+        if (target is ShieldHealth)
+            multiplier = shieldMultiplier;
+        else if (target is HullHealth)
+            multiplier = armorMultiplier;
+
+        target.TakeDamage(damage * multiplier, hit.point);
     }
 }
