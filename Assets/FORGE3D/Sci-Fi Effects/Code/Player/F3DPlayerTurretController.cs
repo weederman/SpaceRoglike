@@ -19,6 +19,17 @@ namespace FORGE3D
 
         void CheckForFire()
         {
+            // 개발자 모드 창이 열려 있는 동안에는 발사하지 않고, 쏘던 중이면 멈춘다
+            if (DevTuning.InputBlocked)
+            {
+                if (isFiring)
+                {
+                    isFiring = false;
+                    fxController.Stop();
+                }
+                return;
+            }
+
             // UI(상점 등) 위를 클릭했을 때는 무기가 같이 발사되지 않도록 함
             if (!isFiring &&
                 EventSystem.current != null &&

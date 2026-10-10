@@ -39,6 +39,13 @@ public class CreditWallet : MonoBehaviour
         return true;
     }
 
+    /// <summary>크레딧 총량을 직접 정한다(개발자 모드 등). 0 미만은 0으로 맞춘다.</summary>
+    public void SetAmount(int amount)
+    {
+        Amount = Mathf.Max(0, amount);
+        OnChanged?.Invoke(Amount);
+    }
+
     public void Add(int amount)
     {
         if (amount <= 0)

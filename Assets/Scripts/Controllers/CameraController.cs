@@ -67,6 +67,10 @@ public class CameraController : MonoBehaviour
 
     private void HandleZoom()
     {
+        // 개발자 모드 창의 채팅 로그를 스크롤할 때 줌이 같이 바뀌지 않도록 함
+        if (DevTuning.InputBlocked)
+            return;
+
         float scroll =
             Input.GetAxis("Mouse ScrollWheel");
 

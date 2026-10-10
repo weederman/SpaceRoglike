@@ -19,7 +19,37 @@ public class EnemySpawner : MonoBehaviour
 
     private readonly List<GameObject> _alive = new List<GameObject>();
 
+    /// <summary>동시에 존재할 수 있는 적의 최대 개체수. 늘리면 즉시 부족한 만큼 스폰한다(줄여도 살아있는 적은 그대로).</summary>
+    public int MaxAliveCount
+    {
+        get => _maxAliveCount;
+        set
+        {
+            _maxAliveCount = Mathf.Max(1, value);
+            FillToCapacity();
+        }
+    }
+
+    public float RespawnDelay
+    {
+        get => _respawnDelay;
+        set => _respawnDelay = Mathf.Max(0f, value);
+    }
+
+    public IReadOnlyList<GameObject> AliveEnemies => _alive;
+
     private void Start()
+    {
+        // 개발자 모드에서 바꿔 둔 값이 있으면 씬을 다시 불러와도 유지한다
+        if (DevTuning.EnemyCount.HasValue)
+            _maxAliveCount = Mathf.Max(1, Mathf.RoundToInt(DevTuning.EnemyCount.Value));
+        if (DevTuning.EnemyRespawnDelay.HasValue)
+            _respawnDelay = Mathf.Max(0f, DevTuning.EnemyRespawnDelay.Value);
+
+        FillToCapacity();
+    }
+
+    private void FillToCapacity()
     {
         for (int i = _alive.Count; i < _maxAliveCount; i++)
             SpawnOne();
@@ -33,6 +63,7 @@ public class EnemySpawner : MonoBehaviour
         Transform point = _spawnPoints[Random.Range(0, _spawnPoints.Length)];
         GameObject enemy = Instantiate(_enemyPrefab, point.position, point.rotation);
         _alive.Add(enemy);
+        DevTuning.ApplyToEnemy(enemy);
 
         HullHealth hull = enemy.GetComponentInChildren<HullHealth>();
         if (hull != null)

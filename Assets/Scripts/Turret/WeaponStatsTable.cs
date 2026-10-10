@@ -95,7 +95,11 @@ public class WeaponStatsTable : ScriptableObject
     public static float GetDamage(F3DFXType type, WeaponOwner owner = WeaponOwner.Player)
     {
         var e = Find(type);
-        return owner == WeaponOwner.Enemy && e.enemyDamage > 0f ? e.enemyDamage : e.damage;
+        bool byEnemy = owner == WeaponOwner.Enemy;
+        float damage = byEnemy && e.enemyDamage > 0f ? e.enemyDamage : e.damage;
+
+        // 개발자 모드가 덮어쓴 값은 에셋을 건드리지 않고 여기서만 적용한다
+        return byEnemy ? DevTuning.OverrideEnemyDamage(type, damage) : damage;
     }
 
     /// <summary>발사 간격(초). 0 이하로 설정돼 타이머가 폭주하지 않도록 최소값을 둔다.</summary>

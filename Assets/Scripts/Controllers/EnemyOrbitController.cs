@@ -11,6 +11,12 @@ public class EnemyOrbitController : ShipMovementBase
     [SerializeField] private float orbitSpeed = 3f;
     [SerializeField] private bool clockwise = true;
 
+    public float OrbitDistance
+    {
+        get => orbitDistance;
+        set => orbitDistance = Mathf.Max(0f, value);
+    }
+
     private void Start()
     {
         // Target이 지정되지 않았다면 Player 태그를 찾는다

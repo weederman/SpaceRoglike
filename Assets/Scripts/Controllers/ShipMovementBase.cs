@@ -25,6 +25,18 @@ public abstract class ShipMovementBase : MonoBehaviour
 
     protected Rigidbody rb;
 
+    public float MaxSpeed
+    {
+        get => maxSpeed;
+        set => maxSpeed = Mathf.Max(0f, value);
+    }
+
+    public float Acceleration
+    {
+        get => acceleration;
+        set => acceleration = Mathf.Max(0f, value);
+    }
+
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody>();

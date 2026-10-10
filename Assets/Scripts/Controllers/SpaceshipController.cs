@@ -8,7 +8,10 @@ public class SpaceshipController : ShipMovementBase
 
     protected override void ApplyMovement()
     {
-        Vector3 inputDirection = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
+        // 개발자 모드 창에서 채팅을 입력하는 동안에는 WASD가 함선을 움직이지 않는다
+        Vector3 inputDirection = DevTuning.InputBlocked
+            ? Vector3.zero
+            : new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
 
         // 대각선 이동 속도 보정
         if (inputDirection.sqrMagnitude > 1f)

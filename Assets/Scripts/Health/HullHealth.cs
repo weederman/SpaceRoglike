@@ -23,6 +23,9 @@ public class HullHealth : MonoBehaviour, IDamageable
     public float MaxHp => _maxHp;
     public bool IsActive => !_isBroken;
 
+    /// <summary>true면 데미지를 전혀 받지 않는다(개발자 모드 무적 등).</summary>
+    public bool Invincible { get; set; }
+
     private void Awake()
     {
         _hp = _maxHp;
@@ -30,7 +33,7 @@ public class HullHealth : MonoBehaviour, IDamageable
 
     public void TakeDamage(float damage, Vector3 hitPoint)
     {
-        if (_isBroken || damage <= 0f)
+        if (_isBroken || Invincible || damage <= 0f)
             return;
 
         _hp = Mathf.Max(0f, _hp - damage);
@@ -44,6 +47,17 @@ public class HullHealth : MonoBehaviour, IDamageable
     {
         _isBroken = true;
         OnBroken?.Invoke();
+    }
+
+    /// <summary>최대 체력을 바꾸고 가득 채운다(개발자 모드 등). 이미 파괴된 선체는 무시한다.</summary>
+    public void SetMaxHp(float maxHp)
+    {
+        if (_isBroken)
+            return;
+
+        _maxHp = Mathf.Max(1f, maxHp);
+        _hp = _maxHp;
+        OnHpChanged?.Invoke(_hp, _maxHp);
     }
 
     /// <summary>
