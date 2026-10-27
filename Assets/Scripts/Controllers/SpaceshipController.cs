@@ -8,8 +8,8 @@ public class SpaceshipController : ShipMovementBase
 
     protected override void ApplyMovement()
     {
-        // 개발자 모드 창에서 채팅을 입력하는 동안에는 WASD가 함선을 움직이지 않는다
-        Vector3 inputDirection = DevTuning.InputBlocked
+        // 개발자 모드 창 입력, 스토리 재생 중에는 WASD가 함선을 움직이지 않는다
+        Vector3 inputDirection = GameInputLock.IsLocked
             ? Vector3.zero
             : new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
 

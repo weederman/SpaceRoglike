@@ -52,6 +52,16 @@ public class CameraController : MonoBehaviour
         LookAtTarget();
     }
 
+    /// <summary>함선이 순간이동했을 때 등, 카메라가 미끄러져 오지 않고 곧바로 함선 뒤 제자리로 가게 한다.</summary>
+    public void SnapToTarget()
+    {
+        if (target == null)
+            return;
+
+        transform.position = target.position + new Vector3(0f, height, -distance);
+        LookAtTarget();
+    }
+
     private void Update()
     {
         HandleZoom();
@@ -68,7 +78,7 @@ public class CameraController : MonoBehaviour
     private void HandleZoom()
     {
         // 개발자 모드 창의 채팅 로그를 스크롤할 때 줌이 같이 바뀌지 않도록 함
-        if (DevTuning.InputBlocked)
+        if (GameInputLock.IsLocked)
             return;
 
         float scroll =

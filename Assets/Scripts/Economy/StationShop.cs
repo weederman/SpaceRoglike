@@ -77,6 +77,7 @@ public class StationShop : MonoBehaviour
         }
 
         if (Input.GetMouseButtonDown(0) &&
+            !GameInputLock.IsLocked &&
             !(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
         {
             PlaceAtScreenPoint(Input.mousePosition);

@@ -9,9 +9,6 @@ using UnityEngine;
 /// </summary>
 public static class DevTuning
 {
-    /// <summary>개발자 모드 창이 열려 있어 게임 입력(이동/발사/줌)을 막아야 하는지</summary>
-    public static bool InputBlocked;
-
     // ── 적 ─────────────────────────────────────────────
     public static float? EnemyCount;
     public static float? EnemyRespawnDelay;
@@ -38,8 +35,6 @@ public static class DevTuning
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     public static void Clear()
     {
-        InputBlocked = false;
-
         EnemyCount = null;
         EnemyRespawnDelay = null;
         EnemyHp = null;

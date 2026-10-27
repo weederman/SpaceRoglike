@@ -103,7 +103,7 @@ public class DevConsole : MonoBehaviour
         _focusInput = true;
         _scrollToBottom = true;
         _nextStatusTime = 0f;
-        DevTuning.InputBlocked = true;
+        GameInputLock.Lock(this);
 
         SetPaused(_pauseWhileOpen);
 
@@ -118,7 +118,7 @@ public class DevConsole : MonoBehaviour
     private void Close()
     {
         _isOpen = false;
-        DevTuning.InputBlocked = false;
+        GameInputLock.Unlock(this);
 
         SetPaused(false);
 
@@ -181,6 +181,12 @@ public class DevConsole : MonoBehaviour
             case "reset":
                 reply = HandleReset();
                 break;
+            case "story":
+                reply = HandleStory(words);
+                break;
+            case "prologue":
+                reply = HandlePrologue(words);
+                break;
             case "clear":
                 _log.Clear();
                 reply = null;
@@ -205,6 +211,53 @@ public class DevConsole : MonoBehaviour
         return DevCommands.Ok(_pauseWhileOpen
             ? "창이 열려 있는 동안 게임을 멈춥니다."
             : "게임을 멈추지 않습니다. (입력은 계속 막힘)");
+    }
+
+    /// <summary>다음 플레이부터 게임 시작 프롤로그를 재생할지 정한다 (PlayerPrefs에 저장되어 에디터를 껐다 켜도 유지).</summary>
+    private string HandlePrologue(string[] words)
+    {
+        bool skipNow = PlayerPrefs.GetInt(PrologueDirector.SkipPrefKey, 0) == 1;
+
+        if (words.Length < 2)
+            return DevCommands.Ok($"프롤로그는 현재 {(skipNow ? "꺼짐(건너뜀)" : "켜짐")}입니다. 바꾸려면: prologue on / prologue off");
+
+        if (words[1] != "on" && words[1] != "off")
+            return DevCommands.Err("사용법: prologue on|off");
+
+        bool play = words[1] == "on";
+        PlayerPrefs.SetInt(PrologueDirector.SkipPrefKey, play ? 0 : 1);
+        PlayerPrefs.Save();
+
+        return DevCommands.Ok(play
+            ? "다음 플레이부터 게임 시작 때 프롤로그를 재생합니다."
+            : "다음 플레이부터 프롤로그를 건너뛰고 바로 게임을 시작합니다.");
+    }
+
+    private string HandleStory(string[] words)
+    {
+        string sub = words.Length > 1 ? words[1] : "";
+
+        if (sub == "list")
+            return "스토리 시퀀스: " + string.Join(", ", StoryDatabase.SequenceIds);
+
+        if (sub == "reload")
+        {
+            StoryDatabase.Reload();
+            return DevCommands.Ok("스토리 JSON을 다시 읽었습니다. 시퀀스: " + string.Join(", ", StoryDatabase.SequenceIds));
+        }
+
+        // story play <id>  /  story <id>
+        string id = sub == "play" ? (words.Length > 2 ? words[2] : "") : sub;
+        if (id.Length == 0)
+            return DevCommands.Err("사용법: story play <id>  /  story list  /  story reload");
+
+        if (!StoryDatabase.TryGetSequence(id, out _))
+            return DevCommands.Err($"'{id}' 시퀀스가 없습니다. (story list)");
+
+        // 창이 열려 있으면 가려지고 입력도 막히니, 닫고 재생한다
+        Close();
+        StoryPlayer.Play(id);
+        return null;
     }
 
     private string HandleReset()

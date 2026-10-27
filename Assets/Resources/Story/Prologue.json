@@ -1,0 +1,38 @@
+{
+  "sequences": [
+    {
+      "id": "prologue",
+      "then": "tutorial_tavern",
+      "lines": [
+        { "cue": "show_warp_route", "delay": 3 },
+
+        { "speaker": "hero", "text": "하 참… 이렇게 오토파일럿만 할려고 아카데미를 졸업한게 아닌데 말이야." },
+        { "speaker": "hero", "text": "심지어 이번엔 이딴 시골 변방계나 가야한다니… 아무리 자치령이라지만 치안따위는 개나 줘버렸을게 분명하잖아…" },
+
+        { "cue": "warp_storm", "delay": 2 },
+        { "speaker": "hero", "text": "이게 무슨?!" },
+
+        { "cue": "screen_shake_whiteout", "delay": 3 },
+        { "cue": "show_warp_module_broken", "delay": 1.5 },
+
+        { "speaker": "hero", "text": "젠장… 되는 일이 없네.. 빨리 본사에 구조 요청을…" },
+        { "speaker": "ship_ai", "text": "무전 요청이 들어왔습니다." },
+
+        { "cue": "patrol_ships_approach", "delay": 2 },
+
+        { "speaker": "patrol", "text": "미확인 함선, 여기는 크롬웰 자치령 제7순찰전대다. 현재 귀 함선은 자치령 통제 구역 내에서 무단 운항 및 조난 신호 송출 혐의를 받고 있다." },
+        { "speaker": "hero",   "text": "조난 신호를 보냈다는 게 혐의라고?" },
+        { "speaker": "patrol", "text": "불필요한 교신은 중단하라. 무장 해제 후 승선 검사를 허가하면 승무원의 안전은 보장하겠다." },
+        { "speaker": "hero",   "text": "함선은?" },
+        { "speaker": "patrol", "text": "압류한다." },
+        { "speaker": "hero",   "text": "어이가 없군, UTI가 두렵지 않은거냐." },
+        { "speaker": "patrol", "text": "다시 한번 말하지. 불필요한 교신은 중단하라." },
+        { "speaker": "hero",   "text": "…" },
+
+        { "cue": "ship_seized", "delay": 3 },
+        { "cue": "corvette_received", "delay": 3 },
+        { "cue": "station_start", "delay": 2 }
+      ]
+    }
+  ]
+}

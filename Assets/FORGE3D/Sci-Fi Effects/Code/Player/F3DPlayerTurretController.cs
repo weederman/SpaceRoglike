@@ -19,8 +19,8 @@ namespace FORGE3D
 
         void CheckForFire()
         {
-            // 개발자 모드 창이 열려 있는 동안에는 발사하지 않고, 쏘던 중이면 멈춘다
-            if (DevTuning.InputBlocked)
+            // 개발자 모드 창이 열려 있거나 스토리가 재생되는 동안에는 발사하지 않고, 쏘던 중이면 멈춘다
+            if (GameInputLock.IsLocked)
             {
                 if (isFiring)
                 {

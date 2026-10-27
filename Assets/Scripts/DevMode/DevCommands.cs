@@ -33,6 +33,9 @@ public static class DevCommands
         "player god [on|off]       무적 (생략하면 전환)\n" +
         "credit <값>               크레딧 지급 (음수면 차감)\n" +
         "credit set <값>           크레딧을 그 값으로 설정\n" +
+        "story play <id>           스토리 재생 (예: story play prologue, 창은 자동으로 닫힘)\n" +
+        "story list / reload       시퀀스 목록 / 플레이 중 고친 JSON 다시 읽기\n" +
+        "prologue on|off           다음 플레이부터 게임 시작 프롤로그 재생/건너뛰기\n" +
         "pause [on|off]            창이 열려 있는 동안 게임 정지 여부\n" +
         "reset                     바꾼 값을 모두 되돌리고 씬 다시 시작\n" +
         "clear                     채팅 지우기";

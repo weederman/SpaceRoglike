@@ -1,0 +1,24 @@
+{
+  "sequences": [
+    {
+      "id": "choice_example",
+      "lines": [
+        {
+          "speaker": "ship_ai",
+          "text": "선택지 예시입니다. 어느 쪽으로 가시겠습니까?",
+          "choices": [
+            { "id": "left",     "text": "왼쪽으로 간다.",   "next": "left" },
+            { "id": "right",    "text": "오른쪽으로 간다.", "next": "right" },
+            { "id": "straight", "text": "그냥 직진한다.",   "next": "straight" }
+          ]
+        },
+
+        { "id": "left",     "speaker": "hero", "text": "왼쪽이다.",   "next": "common" },
+        { "id": "right",    "speaker": "hero", "text": "오른쪽이다.", "next": "common" },
+        { "id": "straight", "speaker": "hero", "text": "직진이다." },
+
+        { "id": "common", "speaker": "ship_ai", "text": "어느 쪽을 고르셨든 여기서 다시 만납니다. 이것이 분기 합류입니다." }
+      ]
+    }
+  ]
+}

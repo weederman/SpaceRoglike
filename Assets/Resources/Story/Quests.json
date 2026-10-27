@@ -1,0 +1,13 @@
+{
+  "quests": [
+    {
+      "id": "frontier_gold",
+      "title": "변방의 황금",
+      "objectives": [
+        { "id": "go_beacon",     "text": "지정된 워프 비콘으로 이동한다." },
+        { "id": "clear_pirates", "text": "주변 해적을 격퇴한다." },
+        { "id": "mine_return",   "text": "희귀 광물을 채굴해 정거장으로 귀환한다." }
+      ]
+    }
+  ]
+}
