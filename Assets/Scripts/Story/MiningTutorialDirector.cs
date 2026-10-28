@@ -8,7 +8,8 @@ using UnityEngine;
 ///
 ///  s5_ore_show          라스가 보낸 좌표(소행성 지대 안쪽)에 광맥 소행성을 놓고 목적지 표시를 띄운다
 ///  s5_vein_reveal       광맥 소행성 표면의 보랏빛 광맥이 드러난다
-///  s5_pirates_arrive    해적선들이 레이더 신호 방향에서 나타나 멀찍이 멈춘다 (쏘지 않는다)
+///  s5_pirates_arrive    해적선들이 레이더 신호 방향에서 나타나 멀찍이 멈춘다 (쏘지 않고, 피해도 받지 않는다)
+///                       플레이어가 해적선을 맞히면 오르비스가 채굴을 우선하라고 안내한다("tutorial_mining_pirate_hit"를 끼워 넣음)
 ///  s5_pirates_retreat   해적선들이 차례로 워프해 물러난다 (기본 튜토리얼형: 채굴을 끝내면 후퇴)
 ///  s6_return            (장면 6 귀환) 남은 광맥 소행성과 해적선을 정리한다
 ///
@@ -27,6 +28,8 @@ public class MiningTutorialDirector : MonoBehaviour
     private const string PiratesArriveCue = "s5_pirates_arrive";
     private const string PiratesRetreatCue = "s5_pirates_retreat";
     private const string ReturnCue = "s6_return";
+
+    private const string PirateHitAside = "tutorial_mining_pirate_hit";
 
     private const string ReachedSignal = "ore_reached";
     private const string Ore65Signal = "ore_65";
@@ -57,8 +60,12 @@ public class MiningTutorialDirector : MonoBehaviour
     [SerializeField, Min(1f)] private float _pirateHoldDistance = 240f;
     [SerializeField, Min(0f)] private float _retreatInterval = 0.6f;
     [SerializeField] private PirateShip.Tuning _pirateTuning = new PirateShip.Tuning();
+    [Tooltip("해적선을 맞혔을 때 오르비스 안내를 다시 띄우기까지의 최소 간격(초)")]
+    [SerializeField, Min(0f)] private float _pirateHitAsideCooldown = 15f;
 
     private readonly List<PirateShip> _pirates = new List<PirateShip>();
+    private bool _retreating;
+    private float _nextAsideTime;
     private MineableAsteroid _ore;
     private SpaceshipController _player;
     private bool _reached;
@@ -68,11 +75,13 @@ public class MiningTutorialDirector : MonoBehaviour
     private void OnEnable()
     {
         StoryPlayer.OnCue += HandleCue;
+        HitResolver.OnHit += HandleHit;
     }
 
     private void OnDisable()
     {
         StoryPlayer.OnCue -= HandleCue;
+        HitResolver.OnHit -= HandleHit;
         CombatHud.HideWaypoint();
     }
 
@@ -157,6 +166,7 @@ public class MiningTutorialDirector : MonoBehaviour
         if (_pirates.Count > 0 || !EnsurePlayer())
             return;
 
+        _retreating = false;
         Vector3 center = _player.transform.position;
         for (int i = 0; i < _pirateAngles.Length; i++)
         {
@@ -170,12 +180,35 @@ public class MiningTutorialDirector : MonoBehaviour
             pirate.Init(_pirateTuning, _player.transform, _warpOutPrefab);
             pirate.Hold(center + dir * _pirateHoldDistance, snap);
             pirate.OnWarpedOut += p => _pirates.Remove(p);
+
+            // 기본 튜토리얼형: 증원은 무전으로 압박만 하고 교전 대상이 아니다. 맞히면 쉴드 피격 연출만 나온다.
+            if (pirate.Hull != null)
+                pirate.Hull.Invincible = true;
+            ShieldHealth shield = go.GetComponentInChildren<ShieldHealth>();
+            if (shield != null)
+                shield.Invincible = true;
+
             _pirates.Add(pirate);
         }
     }
 
+    private void HandleHit(IDamageable target, FORGE3D.F3DFXType weapon, WeaponOwner owner)
+    {
+        if (owner != WeaponOwner.Player || _retreating || Time.time < _nextAsideTime || !(target is Component component))
+            return;
+
+        Transform root = component.transform.root;
+        if (!_pirates.Exists(p => p != null && p.transform == root))
+            return;
+
+        if (StoryPlayer.PlayAside(PirateHitAside))
+            _nextAsideTime = Time.time + _pirateHitAsideCooldown;
+    }
+
     private IEnumerator Retreat()
     {
+        _retreating = true;
+
         foreach (PirateShip pirate in _pirates.ToArray())
         {
             if (pirate == null)
@@ -199,6 +232,7 @@ public class MiningTutorialDirector : MonoBehaviour
     {
         StopAllCoroutines();
         CombatHud.HideWaypoint();
+        _retreating = true;
 
         if (_ore != null)
             Destroy(_ore.gameObject);

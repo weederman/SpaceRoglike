@@ -55,6 +55,12 @@ public class NarrationBar : MonoBehaviour
 
         _panelRect = (RectTransform)_panel.transform;
         _panel.alpha = 0f;
+
+        // 대사창이 보이는 동안에는 대사창 위 클릭이 뒤로(발사, 목표 지정) 새지 않도록 클릭을 받는다
+        var panelGraphic = _panel.GetComponent<Graphic>();
+        if (panelGraphic != null)
+            panelGraphic.raycastTarget = true;
+        _panel.blocksRaycasts = false;
         _continueIcon.enabled = false;
         _blocker.SetActive(false);
         _choiceContainer.gameObject.SetActive(false);
@@ -123,6 +129,14 @@ public class NarrationBar : MonoBehaviour
 
         SetContinueVisible(false);
         _panelVisible = true;
+        _panel.blocksRaycasts = true;
+    }
+
+    /// <summary>화면 좌표가 보이는 대사창 위인지 (조작 중 대사창을 클릭해 넘길 때)</summary>
+    public bool IsPointerOverPanel(Vector2 screenPosition)
+    {
+        // Screen Space Overlay 캔버스라 카메라는 null
+        return _panelVisible && RectTransformUtility.RectangleContainsScreenPoint(_panelRect, screenPosition, null);
     }
 
     /// <summary>대사창을 왼쪽/오른쪽 아래로 옮긴다. 프리팹에 배치해 둔 왼쪽 여백과 높이를 그대로 좌우 대칭으로 쓴다.</summary>
@@ -204,6 +218,7 @@ public class NarrationBar : MonoBehaviour
     public void Hide()
     {
         _panelVisible = false;
+        _panel.blocksRaycasts = false;
         IsTyping = false;
         SetContinueVisible(false);
         HideChoices();

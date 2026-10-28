@@ -36,6 +36,16 @@ public class CombatTutorialDirector : MonoBehaviour
     private const string SecondDownSignal = "pirate2_down";
     private const string EscapedSignal = "pirate_escaped";
 
+    // 전투 튜토리얼 단계가 기다리는 신호 (TutorialCombat.json의 waitFor 순서)
+    private static readonly string[] TutorialStepSignals =
+    {
+        "target_locked",
+        HitSignalPrefix + nameof(F3DFXType.LaserImpulse),
+        HitSignalPrefix + nameof(F3DFXType.Vulcan),
+        PlayerHitSignal,
+        FirstDownSignal,
+    };
+
     [Header("에셋 (프리팹에서 연결)")]
     [SerializeField] private GameObject _piratePrefab;
     [Tooltip("해적선이 워프로 이탈할 때의 이펙트 (FirstWarpDirector와 같은 워프 아웃)")]
@@ -50,6 +60,12 @@ public class CombatTutorialDirector : MonoBehaviour
 
     [Header("해적선 행동")]
     [SerializeField] private PirateShip.Tuning _pirateTuning = new PirateShip.Tuning();
+
+    [Header("해적선 체력 (적 프리팹 값 대신 튜토리얼에서만 쓴다)")]
+    [Tooltip("레이저(쉴드 1.5배)로 약 3.5초, 발칸으로 약 5초. 레이저로 쉴드를 깨도록 유도할 만큼 두껍게.")]
+    [SerializeField, Min(1f)] private float _pirateShieldHp = 200f;
+    [Tooltip("발칸으로 약 3초, 레이저(선체 0.5배)로 약 6초. 쉴드를 깬 뒤 발칸으로 바꾸도록 유도.")]
+    [SerializeField, Min(1f)] private float _pirateHullHp = 120f;
 
     [Header("모여서 공격하는 주기 (초)")]
     [Tooltip("전투 시작 후 첫 공격까지 (그동안 흩어져 숨는다)")]
@@ -157,8 +173,15 @@ public class CombatTutorialDirector : MonoBehaviour
             pirate.Hold(center + dir * _holdDistance, snap);
             pirate.OnWarpedOut += HandleWarpedOut;
 
+            ShieldHealth shield = go.GetComponentInChildren<ShieldHealth>();
+            if (shield != null)
+                shield.SetMaxHp(_pirateShieldHp);
+
             if (pirate.Hull != null)
+            {
+                pirate.Hull.SetMaxHp(_pirateHullHp);
                 pirate.Hull.OnBroken += () => HandlePirateDestroyed(pirate);
+            }
 
             _pirates.Add(pirate);
         }
@@ -274,6 +297,10 @@ public class CombatTutorialDirector : MonoBehaviour
         }
         else if (_kills == 2)
         {
+            // 해적을 빨리 격파해 앞 단계(발칸 사용, 피격)를 거치지 못했어도 마지막 한 척이 떠나면
+            // 그 단계를 다시 할 수 없으므로, 남은 튜토리얼 단계를 완료로 처리해 스토리가 멈추지 않게 한다
+            foreach (string step in TutorialStepSignals)
+                StoryPlayer.Signal(step);
             StoryPlayer.Signal(SecondDownSignal);
 
             // 마지막 한 척은 교전을 포기하고 워프한다

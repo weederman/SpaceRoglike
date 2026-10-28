@@ -16,12 +16,12 @@ MonoBehaviour:
   - name: Vulcan
     weaponType: 0
     displayName: "\uBC1C\uCE78"
-    damage: 10
+    damage: 38.33
     enemyDamage: 50
     fireInterval: 1
     shieldMultiplier: 1
     armorMultiplier: 1
-    damagePerSecond: 10
+    damagePerSecond: 38.33
   - name: PlasmaGun
     weaponType: 6
     displayName: 
@@ -43,12 +43,12 @@ MonoBehaviour:
   - name: LaserImpulse
     weaponType: 11
     displayName: "\uB808\uC774\uC800"
-    damage: 10
+    damage: 11.5
     enemyDamage: 0
-    fireInterval: 0.15
-    shieldMultiplier: 2
+    fireInterval: 0.3
+    shieldMultiplier: 1.5
     armorMultiplier: 0.5
-    damagePerSecond: 66.666664
+    damagePerSecond: 38.333332
   - name: RailGun
     weaponType: 5
     displayName: 
