@@ -78,6 +78,7 @@
     },
     {
       "id": "tutorial_combat_end",
+      "then": "tutorial_mining",
       "lines": [
         { "cue": "s4_combat_end;quest_done:frontier_gold:clear_pirates", "speaker": "orbis", "text": "적대 신호 감소. 해당 구역의 즉각적인 위협이 해소되었습니다." },
         { "speaker": "hero",  "text": "아카데미에서 배운 게 헛되진 않았군." },

@@ -1,0 +1,51 @@
+{
+  "tutorials": [
+    {
+      "id": "mining",
+      "title": "채굴 튜토리얼",
+      "image": "mining",
+      "tips": [
+        { "title": "광맥 지정", "text": "Tab 또는 클릭으로 광맥 소행성을 목표로 지정합니다. 목표 표시에 채굴 사거리 안인지 나타납니다." },
+        { "title": "채굴",     "text": "사거리 안에서 F를 누르고 있으면 채굴 빔이 광맥에 고정되어 광물을 회수합니다." },
+        { "title": "화물",     "text": "화면 왼쪽의 화물 게이지로 적재량을 확인합니다. 가득 차면 의뢰 목표치를 채운 것입니다." }
+      ]
+    }
+  ],
+  "sequences": [
+    {
+      "id": "tutorial_mining",
+      "control": true,
+      "then": "tutorial_return",
+      "lines": [
+        { "cue": "s5_ore_show", "text": "전투가 끝난 뒤, 플레이어는 라스가 전송한 좌표를 따라 소행성 지대 안쪽으로 이동한다.", "waitFor": "ore_reached" },
+
+        { "speaker": "orbis", "text": "광물 탐지 완료. 목표 소행성에서 고농도 희귀 광물 반응이 확인됩니다." },
+        { "speaker": "hero",  "text": "라스가 허풍만 친 건 아니었군." },
+        { "speaker": "orbis", "text": "해당 광물은 일반적인 산업용 광석보다 높은 시장 가치를 가질 가능성이 있습니다." },
+        { "cue": "s5_vein_reveal", "text": "플레이어가 소행성에 접근하자 표면의 보랏빛 광맥이 드러난다." },
+
+        { "cue": "tutorial_show:mining", "speaker": "orbis", "text": "채굴 작업을 시작하려면 목표 소행성을 지정하고 채굴 장비를 활성화하십시오.", "waitFor": "mining_locked" },
+        { "speaker": "orbis", "text": "채굴 장비가 광맥에 고정되었습니다. 채굴을 시작합니다." },
+        { "text": "장비가 작동하면서 광석 파편들이 함선의 화물 수집 장치로 빨려 들어간다." },
+        { "speaker": "orbis", "text": "광물 회수량 증가 중. 화물 적재량을 확인하십시오." },
+        { "speaker": "hero",  "text": "이 정도면 꽤 짭짤하겠는데.", "waitFor": "ore_65" },
+        { "speaker": "orbis", "text": "현재 회수량은 의뢰 목표치의 65%입니다." },
+        { "speaker": "hero",  "text": "조금만 더 캐면 되겠군." },
+
+        { "cue": "radar_show", "text": "채굴 작업을 이어가던 중, 레이더에 새로운 신호가 나타난다." },
+        { "speaker": "orbis", "text": "경고. 미등록 함선 접근 중. 이전에 교전했던 해적 편대와 동일한 통신 식별자가 확인됩니다." },
+        { "speaker": "hero",  "text": "설마 지원군인가?" },
+        { "speaker": "orbis", "text": "가능성이 높습니다. 광물 회수를 완료하거나 즉시 이탈할 것을 권장합니다." },
+        { "cue": "radar_hide;s5_pirates_arrive", "text": "멀리서 붉은 엔진 불빛이 나타난다." },
+        { "speaker": "pirate_radio", "text": "아까 그 제국 놈이군. 우리 구역에서 뭘 캐고 있는지 이제야 알겠어." },
+        { "speaker": "hero",         "text": "이 광맥에 소유권이라도 등록해 놨나?" },
+        { "speaker": "pirate_radio", "text": "여기선 살아남은 놈이 주인이야." },
+        { "text": "무전이 끊긴다." },
+
+        { "waitFor": "ore_full" },
+        { "cue": "tutorial_hide;s5_pirates_retreat", "text": "화물칸이 가득 차자, 해적선들이 교전을 피해 물러난다." },
+        { "speaker": "orbis", "text": "적대 신호 이탈 확인. 화물 적재 완료. 정거장으로 귀환합니다." }
+      ]
+    }
+  ]
+}

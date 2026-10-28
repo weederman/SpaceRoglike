@@ -198,7 +198,8 @@ public class AsteroidField : MonoBehaviour
         return center + new Vector3(Mathf.Sin(angle) * r, Mathf.Lerp(_height.x, _height.y, (float)_rng.NextDouble()), Mathf.Cos(angle) * r);
     }
 
-    /// <summary>이 자리에 반지름 radius인 암석을 두면, 이미 놓인 다른 큰 암석과 가장자리 사이가 가장 가까운 거리 (수평 기준).</summary>
+    /// <summary>이 자리에 반지름 radius인 암석을 두면, 이미 놓인 다른 큰 암석(과 채굴용 광맥 소행성)과
+    /// 가장자리 사이가 가장 가까운 거리 (수평 기준).</summary>
     private float SmallestGap(Piece self, Vector3 position, float radius)
     {
         float smallest = float.PositiveInfinity;
@@ -210,6 +211,13 @@ public class AsteroidField : MonoBehaviour
             Vector3 d = other.transform.position - position;
             d.y = 0f;
             smallest = Mathf.Min(smallest, d.magnitude - radius - other.radius);
+        }
+
+        foreach (MineableAsteroid ore in MineableAsteroid.All)
+        {
+            Vector3 d = ore.transform.position - position;
+            d.y = 0f;
+            smallest = Mathf.Min(smallest, d.magnitude - radius - ore.Radius);
         }
 
         return smallest;

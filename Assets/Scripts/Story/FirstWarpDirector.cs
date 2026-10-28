@@ -14,6 +14,10 @@ using UnityEngine.UI;
 ///  s3_warp_go       워프 아웃 이펙트와 함께 함선이 쏘아져 나가 푸른 워프 터널로 들어간다
 ///  s3_warp_arrive   하얗게 번쩍인 뒤 소행성 지대에 도착한다 (암석과 선박 잔해가 흩어진 곳)
 ///
+/// 장면 6("귀환", 시퀀스 "tutorial_return")의 귀환 워프도 같은 터널 무대를 쓰므로 여기서 한다:
+///  s6_return        워프 아웃 → 짧은 터널 → 정거장 격납고 자리에 도착. 소행성 지대는 치운다.
+///                   정거장 구역 안에 서므로 대사가 끝나면 상점(정비 메뉴)이 열린다. 조작은 시퀀스가 끝날 때 돌려준다.
+///
 /// cue는 큐에 쌓아 한 번에 하나씩 순서대로 실행한다. 레이더 연출(radar_show/hide)은 RadarPing이 따로 받는다.
 /// Esc로 건너뛰면 남은 연출을 건너뛰고 곧바로 도착한 뒤의 상태가 된다. 프리팹: Assets/Resources/Directors/Cue/FirstWarpDirector.prefab
 /// </summary>
@@ -21,6 +25,8 @@ public class FirstWarpDirector : MonoBehaviour
 {
     private const string SequenceId = "tutorial_warp";
     private const string CuePrefix = "s3_";
+    private const string ReturnSequenceId = "tutorial_return";
+    private const string ReturnCue = "s6_return";
 
     [Header("에셋 (프리팹에서 연결)")]
     [SerializeField] private WarpTunnelStage _stage;
@@ -51,6 +57,12 @@ public class FirstWarpDirector : MonoBehaviour
     [Tooltip("소행성 지대 도착 위치 (XZ). 정거장에서 충분히 먼 곳.")]
     [SerializeField] private Vector2 _arrivalXZ = new Vector2(2600f, 2400f);
 
+    [Header("귀환 (장면 6)")]
+    [Tooltip("귀환 터널 안에 머무는 시간(초)")]
+    [SerializeField, Min(0f)] private float _returnTunnelSeconds = 3.5f;
+    [Tooltip("정거장 구역(StationZone) 중심에서 도착 위치까지 (XZ). 프롤로그가 처음 함선을 둔 자리와 같다.")]
+    [SerializeField] private Vector2 _returnDockOffset = new Vector2(0f, -55f);
+
     // ── 장면 참조 ──
     private SpaceshipController _ship;
     private Rigidbody _rb;
@@ -76,6 +88,7 @@ public class FirstWarpDirector : MonoBehaviour
     private GameObject _warpOut;
     private F3DWarpJump _warpOutJump;
     private AsteroidField _field;
+    private bool _returned;
 
     private void OnEnable()
     {
@@ -103,7 +116,7 @@ public class FirstWarpDirector : MonoBehaviour
 
     private void HandleCue(string cue)
     {
-        if (!cue.StartsWith(CuePrefix))
+        if (!cue.StartsWith(CuePrefix) && cue != ReturnCue)
             return;
 
         _queue.Enqueue(cue);
@@ -113,8 +126,10 @@ public class FirstWarpDirector : MonoBehaviour
 
     private void HandleEnded(string sequenceId, bool skipped)
     {
-        if (sequenceId != SequenceId)
+        if (sequenceId != SequenceId && sequenceId != ReturnSequenceId)
             return;
+
+        bool isReturn = sequenceId == ReturnSequenceId;
 
         if (skipped)
         {
@@ -122,20 +137,22 @@ public class FirstWarpDirector : MonoBehaviour
             StopAllCoroutines();
             _pump = null;
             _queue.Clear();
-            FinalizeWorld();
+            if (isReturn) FinalizeReturn();
+            else FinalizeWorld();
         }
         else
         {
-            StartCoroutine(FinishWhenIdle());
+            StartCoroutine(FinishWhenIdle(isReturn));
         }
     }
 
-    private IEnumerator FinishWhenIdle()
+    private IEnumerator FinishWhenIdle(bool isReturn)
     {
         while (_pump != null || _queue.Count > 0)
             yield return null;
 
-        FinalizeWorld();
+        if (isReturn) FinalizeReturn();
+        else FinalizeWorld();
     }
 
     private IEnumerator Pump()
@@ -164,6 +181,9 @@ public class FirstWarpDirector : MonoBehaviour
                 break;
             case "s3_warp_arrive":
                 yield return StepArrive();
+                break;
+            case ReturnCue:
+                yield return StepReturn();
                 break;
         }
     }
@@ -302,6 +322,88 @@ public class FirstWarpDirector : MonoBehaviour
             MoveShip(start + Vector3.forward * (40f * (1f - Mathf.Exp(-t))), rot);
             yield return null;
         }
+    }
+
+    /// <summary>장면 6 귀환: 바라보는 방향으로 워프 아웃 → 짧은 터널 → 정거장 격납고 자리에 도착.</summary>
+    private IEnumerator StepReturn()
+    {
+        TakeControl();
+
+        Vector3 start = _ship.transform.position;
+        Vector3 dir = _ship.transform.forward;
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.01f)
+            dir = Vector3.forward;
+        dir.Normalize();
+        Quaternion rot = Quaternion.LookRotation(dir);
+
+        _warpOut = Instantiate(_warpOutPrefab, start, rot);
+        _warpOutJump = _warpOut.GetComponent<F3DWarpJump>();
+        if (_warpOutJump != null)
+            _warpOutJump.DebugLoop = false;
+
+        float timeout = Time.time + 7f;
+        while (Time.time < timeout && Vector3.Distance(_ship.transform.position, start) < 110f)
+        {
+            if (_warpOutJump != null && _warpOutJump.ShipPos != null)
+                MoveShip(_warpOutJump.ShipPos.position, rot);
+
+            yield return null;
+        }
+
+        SetShipVisible(false);
+        yield return FlashTo(1f, 0.25f);
+
+        if (_warpOut != null) Destroy(_warpOut);
+        _cameraController.enabled = false;
+        if (_grid != null) _grid.gameObject.SetActive(false);
+        SetShipVisible(true);
+        _stage.Enter(_ship.transform, _rb, _cam);
+
+        yield return FlashTo(0f, 0.6f);
+
+        while (_stage.IsActive && _stage.ActiveSeconds < _returnTunnelSeconds)
+            yield return null;
+
+        yield return FlashTo(1f, 0.4f);
+        LeaveTunnel();
+        PlaceAtStation();
+        yield return FlashTo(0f, 1.0f);
+    }
+
+    /// <summary>귀환을 끝까지 봤을 때와 같은 최종 상태: 정거장 격납고 자리에 있고, 소행성 지대와 연출 오브젝트는 없다.</summary>
+    private void FinalizeReturn()
+    {
+        EnsureRefs();
+        LeaveTunnel();
+
+        if (_warpOut != null) Destroy(_warpOut);
+        _flash.gameObject.SetActive(false);
+        SetShipVisible(true);
+
+        if (!_returned)
+            PlaceAtStation();
+
+        ReleaseControl();
+    }
+
+    private void PlaceAtStation()
+    {
+        EnsureRefs();
+
+        var zone = FindObjectOfType<StationZone>();
+        Vector3 center = zone != null ? zone.transform.position : Vector3.zero;
+        Vector3 pos = new Vector3(center.x + _returnDockOffset.x, _baseY, center.z + _returnDockOffset.y);
+        MoveShip(pos, Quaternion.identity);
+        _cameraController.SnapToTarget();
+
+        // 소행성 지대는 그 자리에 남겨 두지 않는다 (함선 주위에 따라붙는 장식이라 정거장까지 따라온다)
+        AsteroidField field = _field != null ? _field : AsteroidField.Active;
+        if (field != null)
+            Destroy(field.gameObject);
+        _field = null;
+
+        _returned = true;
     }
 
     // ── 정리 ──────────────────────────────────────────

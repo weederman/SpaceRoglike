@@ -7,6 +7,7 @@ using UnityEngine.UI;
 /// <summary>
 /// 정거장 구역에 들어가면 무기 상점 UI를 열고, 무기를 고르면 터렛 장착 위치(홀로그램)를 보여준 뒤
 /// 플레이어가 클릭한 위치에 무기를 장착하고 크레딧을 차감한다.
+/// 조작이 잠긴 스토리(대사)가 재생되는 동안에는 열지 않고, 끝난 뒤 구역 안에 있으면 연다.
 /// </summary>
 public class StationShop : MonoBehaviour
 {
@@ -67,6 +68,13 @@ public class StationShop : MonoBehaviour
 
     private void Update()
     {
+        // 구역 안에서 대사가 시작되면 닫고, 끝나면 다시 연다
+        bool storyLocked = StoryPlayer.IsPlaying && !StoryPlayer.IsControlMode;
+        if (_panel.activeSelf && storyLocked)
+            Close();
+        else if (!_panel.activeSelf && !storyLocked && _zone.IsInside)
+            Open();
+
         if (_pending == null)
             return;
 
@@ -86,6 +94,9 @@ public class StationShop : MonoBehaviour
 
     private void Open()
     {
+        if (StoryPlayer.IsPlaying && !StoryPlayer.IsControlMode)
+            return; // 대사가 끝나면 Update에서 연다
+
         _panel.SetActive(true);
         RefreshAffordability(CreditWallet.Instance != null ? CreditWallet.Instance.Amount : 0);
     }

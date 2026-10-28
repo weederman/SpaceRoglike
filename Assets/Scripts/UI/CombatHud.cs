@@ -3,9 +3,10 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 전투 HUD: 화면 아래 무기 슬롯 표시(1/2… 키, 선택된 무기 강조)와 지정한 목표의 마커(거리·방위각·쉴드/선체 게이지),
-/// 화면 위쪽 가운데의 경고 표시(ShowAlert, 예: 튜토리얼 전투의 "비상 프로토콜 발동").
-/// 무기 선택(PlayerWeaponSelector)과 목표 지정(TargetingSystem)도 같은 프리팹에 붙어 있어 함께 생성된다.
+/// 전투 HUD: 화면 왼쪽 무기 슬롯 표시(1/2… 키, 선택된 무기 강조), 지정한 목표의 마커(거리·방위각·쉴드/선체 게이지,
+/// 광맥이면 남은 광물과 채굴 사거리), 화물칸 게이지, 목적지 표시(ShowWaypoint), 화면 위쪽 가운데의 경고 표시(ShowAlert).
+/// 무기 선택(PlayerWeaponSelector), 목표 지정(TargetingSystem), 채굴 장비(MiningLaser), 화물칸(CargoHold)도
+/// 같은 프리팹에 붙어 있어 함께 생성된다.
 /// 게임 시작 시 자동 생성(씬에 배치하지 않음), 씬을 다시 불러와도 유지된다.
 /// 조작이 잠긴 스토리 재생 중에는 숨고, 조작하며 듣는 스토리(control 시퀀스) 중에는 보인다.
 /// 모양은 Assets/Resources/UI/CombatHud.prefab (SCI-FI UI Pack Btn_WeaponSelect / CircularProgress / Linearprogress 기반).
@@ -25,6 +26,8 @@ public class CombatHud : MonoBehaviour
     [SerializeField] private CanvasGroup _root;
     [SerializeField] private PlayerWeaponSelector _weapons;
     [SerializeField] private TargetingSystem _targeting;
+    [SerializeField] private MiningLaser _mining;
+    [SerializeField] private CargoHold _cargoHold;
 
     [Header("무기 슬롯 (왼쪽부터 1, 2, …)")]
     [SerializeField] private SlotView[] _slots = new SlotView[0];
@@ -41,6 +44,25 @@ public class CombatHud : MonoBehaviour
     [SerializeField, Min(0f)] private float _edgeMargin = 80f;
     [Tooltip("마커 중심 아래로 정보 글자·게이지가 차지하는 높이. 화면 아래 가장자리에서 이만큼 더 띄운다.")]
     [SerializeField, Min(0f)] private float _markerBelowHeight = 80f;
+    [Tooltip("광맥 목표의 정보 문구. {0} 거리, {1} 방위각, {2} 사거리 안/밖 문구")]
+    [SerializeField] private string _oreInfoFormat = "광맥  거리 {0:0}  {2}";
+    [SerializeField] private string _oreInRangeText = "<color=#7CFFB2>채굴 가능</color>";
+    [SerializeField] private string _oreOutOfRangeText = "<color=#FF8A7A>사거리 밖</color>";
+    [Tooltip("광맥 목표일 때 아래 게이지(남은 광물) 색")]
+    [SerializeField] private Color _oreBarColor = new Color(0.75f, 0.45f, 1f, 1f);
+
+    [Header("화물칸")]
+    [SerializeField] private CanvasGroup _cargo;
+    [SerializeField] private Slider _cargoBar;
+    [SerializeField] private TMP_Text _cargoText;
+    [Tooltip("{0} 실린 양, {1} 적재 한도, {2} 비율(%)")]
+    [SerializeField] private string _cargoFormat = "화물 · 광물 {0:0} / {1:0}";
+
+    [Header("목적지 표시")]
+    [SerializeField] private RectTransform _waypoint;
+    [SerializeField] private TMP_Text _waypointText;
+    [Tooltip("{0} 이름, {1} 거리")]
+    [SerializeField] private string _waypointFormat = "{0}  {1:0}";
 
     [Header("경고 (화면 위쪽 가운데)")]
     [SerializeField] private CanvasGroup _alert;
@@ -53,6 +75,10 @@ public class CombatHud : MonoBehaviour
     private RectTransform _canvasRect;
     private SpaceshipController _player;
     private float _alertShownAt;
+    private Image _hullFill;
+    private Color _hullFillColor;
+    private Transform _waypointTarget;
+    private string _waypointLabel;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -81,6 +107,27 @@ public class CombatHud : MonoBehaviour
         _weapons.OnChanged += RefreshSlots;
         _marker.gameObject.SetActive(false);
         _alert.gameObject.SetActive(false);
+        _waypoint.gameObject.SetActive(false);
+
+        _hullFill = _hullBar.fillRect != null ? _hullBar.fillRect.GetComponent<Image>() : null;
+        if (_hullFill != null)
+            _hullFillColor = _hullFill.color;
+    }
+
+    /// <summary>목적지 표시를 띄운다 (화면 밖이면 가장자리에 붙어 방향을 알려 준다). 대상이 사라지면 저절로 숨는다.</summary>
+    public static void ShowWaypoint(Transform target, string label)
+    {
+        if (_instance == null)
+            return;
+
+        _instance._waypointTarget = target;
+        _instance._waypointLabel = label;
+    }
+
+    public static void HideWaypoint()
+    {
+        if (_instance != null)
+            _instance._waypointTarget = null;
     }
 
     /// <summary>화면 위쪽 가운데에 경고를 띄운다. HideAlert를 부를 때까지 깜빡이며 남아 있다.</summary>
@@ -118,6 +165,8 @@ public class CombatHud : MonoBehaviour
         _root.alpha = _player != null && !storyLocked ? 1f : 0f;
 
         UpdateMarker();
+        UpdateWaypoint();
+        UpdateCargo();
         UpdateAlert();
     }
 
@@ -151,7 +200,7 @@ public class CombatHud : MonoBehaviour
 
     private void UpdateMarker()
     {
-        HullHealth target = _targeting.Current;
+        Component target = _targeting.Target;
         Camera cam = Camera.main;
 
         bool show = target != null && cam != null && _player != null;
@@ -160,21 +209,8 @@ public class CombatHud : MonoBehaviour
         if (!show)
             return;
 
-        // 화면 위치 (카메라 뒤나 화면 밖이면 가장자리에 붙인다). 선체 판정 자식이 아니라 함선 중심을 따른다.
-        Rigidbody ship = target.GetComponentInParent<Rigidbody>();
-        Vector3 center = ship != null ? ship.transform.position : target.transform.position;
-        Vector3 screen = cam.WorldToScreenPoint(center);
-        if (screen.z < 0f)
-            screen = new Vector3(Screen.width - screen.x, Screen.height - screen.y, 0f);
-
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRect, screen, null, out Vector2 local))
-        {
-            // 캔버스 좌표로 가장자리에 붙인다. 아래쪽은 마커 밑의 정보 글자·게이지까지 보이도록 그만큼 더 띄운다.
-            Vector2 half = _canvasRect.rect.size * 0.5f;
-            local.x = Mathf.Clamp(local.x, -half.x + _edgeMargin, half.x - _edgeMargin);
-            local.y = Mathf.Clamp(local.y, -half.y + _edgeMargin + _markerBelowHeight, half.y - _edgeMargin);
-            _marker.anchoredPosition = local;
-        }
+        Vector3 center = TargetingSystem.PositionOf(target);
+        PlaceOnScreen(_marker, center, cam, _markerBelowHeight);
 
         // 거리와 방위각 (XZ 평면, 북쪽 = +Z = 0°, 시계 방향)
         Vector3 offset = center - _player.transform.position;
@@ -183,10 +219,75 @@ public class CombatHud : MonoBehaviour
         if (bearing < 0f)
             bearing += 360f;
 
+        if (target is MineableAsteroid ore)
+        {
+            // 광맥: 남은 광물 게이지 하나와 채굴 사거리 안/밖
+            bool inRange = _mining != null && _mining.InRange(ore);
+            _markerInfo.text = string.Format(_oreInfoFormat, offset.magnitude, bearing, inRange ? _oreInRangeText : _oreOutOfRangeText);
+            _shieldBar.gameObject.SetActive(false);
+            _hullBar.value = ore.RemainingRatio;
+            SetHullFillColor(_oreBarColor);
+            return;
+        }
+
+        var hull = (HullHealth)target;
         _markerInfo.text = string.Format(_infoFormat, offset.magnitude, bearing);
+        _shieldBar.gameObject.SetActive(true);
+        SetHullFillColor(_hullFillColor);
 
         ShieldHealth shield = _targeting.CurrentShield;
         _shieldBar.value = shield != null && shield.MaxHp > 0f ? shield.CurrentHp / shield.MaxHp : 0f;
-        _hullBar.value = target.MaxHp > 0f ? target.CurrentHp / target.MaxHp : 0f;
+        _hullBar.value = hull.MaxHp > 0f ? hull.CurrentHp / hull.MaxHp : 0f;
+    }
+
+    private void SetHullFillColor(Color color)
+    {
+        if (_hullFill != null && _hullFill.color != color)
+            _hullFill.color = color;
+    }
+
+    private void UpdateWaypoint()
+    {
+        Camera cam = Camera.main;
+        bool show = _waypointTarget != null && cam != null && _player != null;
+        if (_waypoint.gameObject.activeSelf != show)
+            _waypoint.gameObject.SetActive(show);
+        if (!show)
+            return;
+
+        PlaceOnScreen(_waypoint, _waypointTarget.position, cam, 40f);
+
+        Vector3 offset = _waypointTarget.position - _player.transform.position;
+        offset.y = 0f;
+        _waypointText.text = string.Format(_waypointFormat, _waypointLabel, offset.magnitude);
+    }
+
+    private void UpdateCargo()
+    {
+        // 실은 광물이 있거나 캘 수 있는 광맥이 있을 때만 보인다
+        bool show = _cargoHold != null && (_cargoHold.Ore > 0f || MineableAsteroid.All.Count > 0);
+        _cargo.alpha = show ? 1f : 0f;
+        if (!show)
+            return;
+
+        _cargoBar.value = _cargoHold.Ratio;
+        _cargoText.text = string.Format(_cargoFormat, _cargoHold.Ore, _cargoHold.Capacity, _cargoHold.Ratio * 100f);
+    }
+
+    /// <summary>월드 위치를 화면(캔버스) 위치로 옮긴다. 카메라 뒤나 화면 밖이면 가장자리에 붙인다.
+    /// 아래쪽은 표시 밑에 붙는 글자·게이지까지 보이도록 belowHeight만큼 더 띄운다.</summary>
+    private void PlaceOnScreen(RectTransform rect, Vector3 world, Camera cam, float belowHeight)
+    {
+        Vector3 screen = cam.WorldToScreenPoint(world);
+        if (screen.z < 0f)
+            screen = new Vector3(Screen.width - screen.x, Screen.height - screen.y, 0f);
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRect, screen, null, out Vector2 local))
+            return;
+
+        Vector2 half = _canvasRect.rect.size * 0.5f;
+        local.x = Mathf.Clamp(local.x, -half.x + _edgeMargin, half.x - _edgeMargin);
+        local.y = Mathf.Clamp(local.y, -half.y + _edgeMargin + belowHeight, half.y - _edgeMargin);
+        rect.anchoredPosition = local;
     }
 }

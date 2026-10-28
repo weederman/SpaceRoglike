@@ -1,0 +1,40 @@
+{
+  "sequences": [
+    {
+      "id": "tutorial_return",
+      "lines": [
+        { "cue": "s6_return", "text": "화물칸이 광물로 채워진 함선이 정거장으로 귀환한다." },
+        { "cue": "bg:hangar", "text": "격납고에 착륙하자 라스가 기다리고 있다." },
+
+        { "speaker": "ras",  "text": "오오! 정말 돌아왔군!" },
+        { "speaker": "hero", "text": "실망했나? 내가 폭발해서 네 투자가 날아가길 바랐던 건 아니고?" },
+        { "speaker": "ras",  "text": "천만에. 자네가 살아 돌아올 거라고 믿고 있었어." },
+        { "speaker": "hero", "text": "그럼 왜 여기서 기다리고 있었지?" },
+        { "speaker": "ras",  "text": "광물이 어디 있는지 확인하려고." },
+        { "text": "플레이어가 화물칸을 열자 희귀 광물 덩어리가 모습을 드러낸다. 라스의 표정이 밝아진다." },
+        { "speaker": "ras",  "text": "이야, 이 정도면 제법 큰돈이 되겠어. 내가 눈썰미 하나는 끝내준다니까!" },
+        { "speaker": "hero", "text": "내가 해적들을 상대하고 광물을 캐 오는 동안 넌 여기서 눈썰미를 키웠나 보군." },
+        { "speaker": "ras",  "text": "역할 분담이라는 거지." },
+
+        { "text": "라스가 정산용 데이터 패드를 건넨다." },
+        { "cue": "credits_add:300;cargo_sell:3", "speaker": "ras", "text": "약속한 보수야. 선금으로 들어간 장비값은 이미 처리했고, 광물 대금도 따로 넣어뒀어." },
+        { "speaker": "hero", "text": "다음에도 이런 일이 있으면 연락해." },
+        { "speaker": "ras",  "text": "물론이지. 자네 같은 파일럿은 흔하지 않거든." },
+
+        { "text": "라스가 돌아서다가 잠깐 멈춘다." },
+        { "speaker": "ras",  "text": "아, 참. 그 소행성 지대에서 마지막으로 워프한 해적선 말이야." },
+        { "speaker": "hero", "text": "왜?" },
+        { "speaker": "ras",  "text": "걔들이 누구한테 보고하는지는 알아보지 않는 게 좋을 거야. 적어도 지금은." },
+        { "speaker": "hero", "text": "그 말을 들으니 오히려 알아보고 싶어지는데." },
+        { "speaker": "ras",  "text": "하하! 역시 제국 아카데미 출신답군. 쓸데없는 호기심이 넘쳐." },
+        { "text": "라스가 인파 속으로 사라진다." },
+
+        { "cue": "quest_done:frontier_gold:mine_return", "speaker": "orbis", "text": "임무 완료. 보상 지급을 확인했습니다." },
+        { "speaker": "hero",  "text": "다음 임무는 조금 덜 위험했으면 좋겠군." },
+        { "speaker": "orbis", "text": "그러한 임무를 원하신다면, 위험수당이 낮은 임무를 선택하십시오." },
+        { "speaker": "hero",  "text": "...일단 장갑부터 수리하자." },
+        { "cue": "bg:off;enemies_on", "text": "화면이 전환되고, 정비 메뉴가 열린다." }
+      ]
+    }
+  ]
+}
