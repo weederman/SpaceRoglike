@@ -1,68 +1,78 @@
 # 작업 인수인계
 - 날짜: 2026-10-28
 - 브랜치: sehui
-- 기준 커밋: 281a955 노트북 연결 수월하게 하려고 올림 (스토리 코드의 마지막 커밋은 8a76b94 장면 2, 3 추가)
+- 기준 커밋: 412d123 장면 5, 6 임시 구현
 
 ## 1. 목표
 SpaceRoglike(탑다운 우주 로그라이크)의 **스토리 연출 시스템과 튜토리얼 스토리**를 장면 단위로 구현 중이다.
-프롤로그 → 튜토리얼 퀘스트 「변방의 황금」(장면 1~6)을 순서대로 만들고, 각 장면은 `Assets/Resources/Story/*.json` 대사 데이터 + 장면별 연출 담당(Director)으로 구성한다.
-지금까지 프롤로그와 장면 1~3까지 끝났고, 다음은 장면 4(첫 교전)다.
+프롤로그 → 튜토리얼 퀘스트 「변방의 황금」(장면 1~6)이 **처음부터 끝까지 한 번에 이어지게 모두 구현됐다**(장면 4~6은 "임시 구현" 상태).
+다음은 사람이 직접 키보드/마우스로 끝까지 플레이해 보고 난이도·배치·문구를 다듬는 단계다.
 
 ## 2. 완료한 것
-- **개발자 모드** (게임 중 Shift+F, `Assets/Scripts/DevMode/`): 채팅창 명령으로 적(개수·체력·쉴드·속도·공격력 등)과 플레이어(속도·체력·무적·회복)·크레딧 조절, `story play <id>`, `prologue on|off`, `pause`, `reset`. 값은 `DevTuning`이 런타임에만 덮어쓰며 에셋은 건드리지 않는다.
-- **스토리 시스템** (`Assets/Scripts/Story/`): JSON 로드(`StoryDatabase`) → 재생(`StoryPlayer`) → 나레이션바(`NarrationBar`, SCI-FI UI Pack Popup012_Cyan 기반, NPC 왼쪽/주인공 오른쪽). 기능: 선택지(`choices`/`next`/`id`), 시퀀스 연결(`then`), 외부 신호 대기(`waitFor` + `StoryPlayer.Signal`), 한 줄 다중 cue(`;`), 건너뛰기(Esc, 선택지 앞에서 멈춤), 배경 이미지(`bg:이름`), 퀘스트(`quest_accept`, `quest_done`), 튜토리얼 안내창(`tutorial_show/hide`), 레이더 연출(`radar_show/hide`).
-- **프롤로그** (`PrologueDirector`, `Resources/Directors/PrologueDirector.prefab`): 게임 시작 시 자동 재생. 푸른 워프 터널 → 폭풍(파랑→빨강, 경고창, WarpJumpOut) → 화이트아웃 → 표류 + 설명창 → 순찰함 2척 접근 → 압류(견인 광선) → 보상 함선 → 정거장에 붙어서 시작.
-- **장면 1 술집**(`TutorialTavern.json`, 선택지 3분기 + 임무 수락), **장면 2 격납고**(`TutorialHangar.json`, 출항 전 안내창), **장면 3 첫 워프**(`TutorialWarp.json` + `FirstWarpDirector`): 출항, 비콘 클릭 선택, 충전, 워프 터널, 도착, 레이더. 프롤로그 → 장면 1 → 2 → 3이 `then`으로 끊김 없이 이어지고, 이어지는 동안 적 스폰과 조작은 막혀 있다가 마지막에 돌아온다.
-- **소행성 지대** (`AsteroidField`): 플레이어 주위에 암석 최대 10개 + 잔해 5개, 카메라를 향한 빌보드.
-- **플레이어 속도** 60 / 가속도 30으로 상향(씬 `SampleScene`의 플레이어 인스턴스 값).
-- **기기 간 인수인계 체계**: `.claude/commands/handoff.md`(저장), `resume-work.md`(이어받기), 이 파일, `CLAUDE.md`, 장면 4~6 원문 `docs/story/scenes-4-6.md`. 모두 커밋됨.
+- **스토리 시스템** (`Assets/Scripts/Story/`): JSON(`Resources/Story/*.json`) → `StoryDatabase` → `StoryPlayer` → `NarrationBar`. 선택지, `then` 연결, `waitFor` + `StoryPlayer.Signal`, 다중 cue(`;`), Esc 건너뛰기, `bg:`, `quest_accept/done`, `tutorial_show/hide`(이미지 포함), `radar_show/hide`.
+  - **`"control": true` 시퀀스**(조작하며 듣는 대사): 조작이 잠기지 않고, 대사는 시간 또는 `waitFor` 신호로만 넘어간다(클릭/Esc로 안 넘어감, 선택지 불가). `StoryPlayer.IsControlMode`.
+- **프롤로그, 장면 1 술집, 장면 2 격납고, 장면 3 첫 워프** — 이전부터 완료. 장면 3 도착 시 임무 목표 1번 완료 처리.
+- **장면 4 첫 교전** (`TutorialCombat.json`, `CombatTutorialDirector` + `Resources/Directors/Cue/CombatTutorialDirector.prefab`, `Scripts/Enemy/PirateShip.cs`): 해적 3척 접근·통신 → 전투 튜토리얼 4단계(목표 지정 → 레이저 → 발칸 → 피격) → 1척 격파 시 1척 도주 → 2척째 격파 시 마지막 1척 워프 이탈 → 마무리 대화.
+  - 해적 AI: 평소엔 플레이어에서 170~300 떨어진 **소행성 뒤에 숨어** 떠다니고(150 안에 오면 반격), 8~12초마다 한 방향에 **모여서 공격**(6~8초) 후 다시 흩어진다.
+  - 플레이어 선체 하한 30%. 닿으면 **비상 프로토콜**: 화면 위쪽 경고 + 쉴드 재가동·무적(피격 연출만).
+- **전투 시스템**: 무기 슬롯 1/2키 전환(`PlayerWeaponSelector`), 목표 지정 Tab/클릭(`TargetingSystem`, 함선·광맥 모두), 전투 HUD(`CombatHud` + `Resources/UI/CombatHud.prefab`: 무기 슬롯, 목표 마커, 화물 게이지, 목적지 표시, 경고), 발사 간격 강제, 자기 함선 피격 방지(`HitResolver.Raycast`), 피격 이벤트 `HitResolver.OnHit`.
+- **장면 5 채굴** (`TutorialMining.json`, `MiningTutorialDirector` + 프리팹): 목적지 표시 따라 비행 → 광맥 드러남 → 채굴 튜토리얼(`mining.jpg`) → 65% 대사 → 레이더 + 해적 3척 원거리 대기·무전 → 화물칸 가득 → 해적 워프 후퇴.
+  - 채굴: `MiningLaser`(광맥 지정 후 사거리 150 안에서 F 길게, 빔 + 광석 파편 연출), `CargoHold`(한도 100 = 의뢰 목표치), `MineableAsteroid`(장식 `AsteroidField`와 별개, 보랏빛 광맥).
+- **장면 6 귀환·정산** (`TutorialReturn.json`, 귀환 워프는 `FirstWarpDirector`의 `s6_return`): 워프 → 정거장 도착(소행성 지대 제거) → 격납고 배경 대화 → `credits_add:300;cargo_sell:3` → 목표 3번 완료 → 마지막 줄에서 상점(정비 메뉴) 열림 + `enemies_on`.
+- **버그 수정**: 프롤로그가 스토리 전체가 끝날 때까지 함선·터렛을 꺼 두던 문제(레이저 미발사·이동 불가·HUD 숨김의 원인), 카메라 떨림(Rigidbody 보간 + 지수 감쇠 추적), 탄이 반대편 터렛/자기 쉴드에 맞던 문제, 연타 시 발사 간격 무시.
+- **소행성 간격**: 큰 암석끼리 가장자리 간격 30 이상(`AsteroidField._minRockGap`), 광맥 소행성과도 겹치지 않음.
+- **상점**: 조작이 잠긴 대사 중에는 열리지 않고 끝나면 연다(`StationShop`).
+- **문서**: 장면 4~6 원문과 설계 결정 `docs/story/scenes-4-6.md`.
 
 ## 3. 결정 사항
 채택:
-- **대사 데이터는 JSON** (Resources/Story). 긴 대사를 코드 없이 편집하고 diff로 보기 쉬움. 여러 파일로 나눠도 자동 병합.
-- **UI는 SCI-FI UI Pack 프리팹 기반** (사용자 지시). 나레이션바는 `Resources/UI/NarrationBar.prefab`에서 모양을 바꾼다.
-- **연출은 "cue 이름 → Director가 처리"** 구조. Director는 cue를 큐에 쌓아 한 번에 하나씩 실행(빨리 넘겨도 겹치지 않음). 건너뛰기는 중간 연출을 건너뛰고 "끝났을 때와 같은 최종 상태"로 직행한다. 장면별 Director 프리팹은 `Resources/Directors/Cue/`에 두면 자동 생성.
-- **씬 파일을 건드리지 않는 방식**: 런타임에 `Resources` 프리팹을 생성(StoryPlayer, 프롤로그 Director 등). 씬 수정은 사용자가 요청했을 때만(플레이어 속도 한 번).
-- **정거장에 붙어서 시작**: 정거장은 모델 없이 구역(`StationZone`)+흰 평면뿐이라, 구역 위치 기준 `(0,5,445)`(`_dockOffset`)에 함선을 놓는다. 구역 안이라 상점 패널이 자동으로 열린다(의도된 동작).
-- **원래 함선 vs 새 코르벳**: 코르벳 모델이 하나뿐이라 프롤로그 동안은 노란 `F3_Yellow` 머티리얼을 입히고 보상 함선 지급 때 회색으로 되돌린다. (끄려면 `PrologueDirector`의 `_oldShipMaterial` 비우기)
-- **비콘 선택은 마우스 클릭만** 인정. Space/Enter는 대사 넘기기와 겹쳐 실수로 선택되므로 제외.
-- **한글**: SCI-FI UI Pack 폰트(Play, Aldrich)에 한글이 없어서, 실행 PC의 맑은 고딕 파일을 런타임에 TMP 대체 폰트로 붙인다(`GameFonts`). 출시 전에는 OFL 한글 폰트(Noto Sans KR/Pretendard)로 TMP 폰트 에셋을 만들어 `Resources/Fonts/KoreanFallback`에 두면 코드 수정 없이 우선 적용된다. TMP Settings의 `Modern Hangul Line Breaking`을 켰다(단어 단위 줄바꿈).
-- **플레이어 속도 60/30**: 측정 결과 상태 이상은 없었고(이야기 직후와 새 시작이 동일), 체감 문제여서 사용자가 2배를 선택.
+- **대사 데이터는 JSON**, **UI는 SCI-FI UI Pack 프리팹 기반**, **연출은 cue → 장면별 Director**(건너뛰기 시 최종 상태로 직행), **씬 파일 수정 없이 Resources 프리팹을 런타임 생성** — 이전부터 유지.
+- **조작 잠금은 `GameInputLock`으로만.** 연출 담당이 터렛 컴포넌트를 직접 끄던 코드를 제거하고, 잠긴 동안 터렛이 마우스를 따라 돌지 않게 `F3DPlayerTurretController`에서 처리.
+- **프롤로그는 control 시퀀스가 시작되면 조작을 돌려준다**(`PrologueDirector.FinishWhenStoryIdle`). 장면 1~6이 `then`으로 이어져 스토리가 "재생 중"으로 유지되기 때문.
+- **장면 4 설계**(사용자 선택): 무기 1/2키 전환 + 좌클릭 발사 / 목표 지정은 정보 표시만(조준은 마우스) / 튜토리얼 중 선체 하한 30% / 1척 격파 → 1척 도주 → 1척 워프.
+- **해적 AI는 숨었다가 모여서 공격**(사용자 요청): 기존 공전 AI(`EnemyOrbitController`)는 해적에서 끄고 `PirateShip`이 직접 조향. 이유: 플레이어를 중심으로 계속 도는 적은 플레이어가 가만히 있어도 되고 조준하기 어려웠다.
+- **해적 피해는 전역 수치(`WeaponStatsTable`)를 건드리지 않고** Director 프리팹의 `PirateShip.Tuning.fireInterval`(4.5초)로 조절. 다른 적도 같은 표를 쓰기 때문.
+- **비상 프로토콜 연출 = 쉴드 재가동 + 무적 + 경고**: 체력 고정만으로는 플레이어가 "방어 중"임을 알 수 없어서.
+- **장면 5 설계**(사용자 선택): 채굴은 광맥 지정 후 F 길게 누르기 / 해적 증원은 **기본 튜토리얼형**(무전만, 가득 차면 후퇴) / 라스의 좌표는 목적지 표시를 보고 직접 비행 / 장면 6까지 한 번에 구현.
+- **귀환 워프는 `FirstWarpDirector`에 추가**: 터널 무대·워프 이펙트·소행성 지대 참조를 이미 갖고 있어서.
+- **"정비 메뉴" = 기존 정거장 상점**: 수리 기능이 아직 없음. 정거장 도착 위치가 상점 구역 안(`(0,5,445)`)이라 대사가 끝나면 자동으로 열린다.
 
 버린 대안과 이유:
-- **ScriptableObject 대사 데이터** → 긴 대사 편집/병합이 불편해서 JSON 채택.
-- **코드로 만든 임시 나레이션바 UI** → 사용자가 Popup012_Cyan 기반을 지정해 프리팹 방식으로 교체.
-- **FORGE3D `ClusterEmitter` 그대로 사용** → 어느 씬에서도 쓰이지 않고, 생성한 성운을 정리하는 기능이 없어 우리 쪽 `WarpClusterFlow`(풀링·팔레트 교체·정리)를 만듦.
-- **`Effects/Heat/WarpTunnel.vfx`, `WarpTunnelProfile.asset`** → VFX Graph / Post Processing 패키지가 없고 빌트인 파이프라인이라 사용 불가.
-- **FORGE3D `debris_rock/debris_junk`를 소행성으로** → 폭발 파편용 입자 클라우드(작은 청록 점들)라 부적합. 2D Space Kit의 탑다운 소행성/잔해 스프라이트 사용. 처음엔 바닥에 눕혔다가 사용자 요청으로 카메라를 향한 빌보드로 변경.
-- **소행성 110개 고정 배치** → 화면이 가득 차서, 플레이어 주위 최대 10개를 재사용(멀어지면 앞쪽으로 옮김)하는 방식으로 변경. 대신 같은 자리에 고정된 지형은 아니다.
-- **FORGE3D `pulsewave` 프리팹을 비콘으로** → 한 번 퍼지는 충격파라 부적합. 링 3개+코어를 코드로 생성(`WarpBeacon`).
-- **사용자가 씬에서 바꿔 둔 카메라 위치를 워프 카메라로** → 런타임에 `CameraController`가 위치를 덮어써서 쓰이지 않음. 워프 전용 바텀업 추적 카메라를 따로 만듦.
-- **`PrologueDirector`를 `WarpTunnelStage`로 리팩터링** → 이미 검증된 프롤로그가 깨질 위험이 있어 보류. 터널 코드가 두 벌 있다(다음 단계 참고).
-- **WEBP 이미지 그대로 사용** → Unity가 못 읽어서 JPG로 변환해 사용.
-- **Esc 건너뛰기가 선택지까지 대신 고르게** → 선택은 대신 해줄 수 없어서 선택지 앞에서 멈추도록 함.
+- **해적 전투 연계형(장면 5에서 해적 1척 추가 교전)** → 원문 문서와 사용자 모두 첫 플레이는 채굴·귀환에 집중하는 쪽을 택함.
+- **3번 슬롯 채굴 레이저(좌클릭으로 조준해 채굴)** → 무기와 조작이 섞여 헷갈림. 지정 후 F 키로 분리.
+- **지정만 하면 자동 채굴** → 너무 수동적이라 제외.
+- **연출로 광맥까지 자동 이동** → 사용자가 직접 비행을 선택.
+- **목적지 표시로 목표 마커(광맥 자동 지정) 재사용** → 튜토리얼의 "목표 지정" 단계가 무의미해져서 별도 노란 표시를 만듦.
+- **전역 적 발칸 공격력 하향** → 일반 적에도 영향.
+- **채굴 빔·파편을 HUD 캔버스 아래에 두기** → 캔버스 배율(약 0.5) 때문에 파편이 작아져서 별도 `MiningLaserFX` 루트로 분리.
+- **팁 패널을 체력바 자리에 겹쳐 오른쪽 위 끝으로** → 기존 HUD 체력바(오른쪽 위)를 가려서 그 바로 아래(-24,-84), 82% 크기로.
+- (이전 결정 유지) ScriptableObject 대사, ClusterEmitter, VFX Graph 터널, FORGE3D 파편 소행성, 소행성 110개 고정 배치, pulsewave 비콘, `PrologueDirector`→`WarpTunnelStage` 리팩터링 보류, WEBP 이미지.
 
 ## 4. 현재 상태·주의
-- 모든 작업이 커밋됨(2026-10-28 기준). 슬래시 명령(`/handoff`, `/resume-work`)은 **Claude Code를 새로 시작한 세션부터** 인식된다. 명령을 만든 세션에서는 등록되지 않았다. `git status`에 남는 것은 `Assets/SCI-FI UI Pack Pro` 수정뿐인데 사용자의 임포트 작업이므로 건드리지 않는다.
-- **장면 3은 사용자 테스트 중.** 비콘 클릭 경로는 사용자가 직접 한 번 확인했다. 그 외 자동 테스트는 코드로 함수를 호출하는 방식이라 실제 키보드/마우스 입력은 사람이 확인해야 한다.
-- 장면 3이 끝나면 함선은 소행성 지대(`(2600, 5, 2400)`)에서 조작 가능해지는데, 기존 `EnemySpawner`가 정거장 근처 `(20,5,180)`에 적 1기를 스폰해 3,500 거리를 날아온다. 장면 4가 이 자리를 대신할 예정.
-- 프롤로그는 **실행할 때마다** 자동 재생된다(저장 시스템이 없음). 건너뛰기: 개발자 모드 `prologue off`(PlayerPrefs `dev.skipPrologue`, 이 기기 에디터에만 저장).
-- 임시 문구(수정 필요): 압류 경고창 본문, 보상 함선 지급 안내창, 워프 모듈 고장 설명창, 폭풍 경고창 본문, 임무 목표 3줄(원문 축약) — 프리팹/JSON에서 직접 수정.
-- 술집 와이드샷 배경(`tavern.jpg`)에 "ARCCORP BAR" 간판이 있어 Star Citizen 콘셉트 아트로 보인다 → **출시 전 교체하거나 라이선스 확인**.
-- **이 기기에만 있는 것**:
-  - Claude 메모리(`C:\Users\SAEHEE\.claude\projects\...\memory`)에 있는 스토리/설계 메모는 저장소에 없다.
-  - 장면 4~6 대사 원문은 `docs/story/scenes-4-6.md`에 저장했다(이미지 링크 줄 제외). **참고용 첨부 이미지는 저장소에 없다** — 필요하면 사용자에게 다시 받는다.
-  - 개발자 모드의 `prologue off` 설정(PlayerPrefs).
+- **모든 변경이 커밋됨**(412d123). `git status` 깨끗함.
+- **사람이 직접 끝까지 플레이한 적이 없다.** 자동 테스트는 신호·피해·채굴량을 코드로 넣어 진행했다. 실제 F 채굴, Tab/클릭 지정, 1/2 전환, 해적 숨기/모여서 공격의 체감은 미확인.
+- **해적 난이도 조정은 사용자가 보류**("나중에"). 가만히 있으면 한 번 모여서 공격할 때 선체가 약 350 깎여 두 번째 공격쯤 비상 프로토콜이 발동한다.
+- 알려진 문제·임시:
+  - 광맥 쪽 접근 방향에 따라 오른쪽 위 튜토리얼 안내창이 광맥 소행성을 가릴 수 있다.
+  - 장면 4 해적 격파 시 기존 적 프리팹의 처치 보상이 들어가 장면 6 크레딧이 정산액(600)보다 많다.
+  - 정산 금액(300 + 광물 단가 3)은 임시값. 마무리 대사의 "장갑 손상률 18%"는 고정 문구.
+  - 무기 아이콘은 UI 팩의 소총 아이콘(임시), 광맥 소행성·파편은 2D Space Kit 그림을 보라색으로 물들인 임시 연출.
+  - 퀘스트 목표 창은 3개 모두 완료돼도 화면에 남는다(닫는 cue 없음).
+  - 장면 6 끝에서 `enemies_on`으로 일반 적 스폰이 켜져, 상점이 열린 정거장 근처에 적이 나온다(원래 게임 루프와 같음).
+- 출시 전 교체 필요(라이선스): `Resources/Story/Tutorials/*.jpg` 5장(상용 게임 화면), 술집 배경 `tavern.jpg`(Star Citizen 콘셉트 아트로 보임).
+- **이 기기에만 있는 것**: 개발자 모드 `prologue off` 설정(PlayerPrefs, 에디터 로컬). Claude 메모리 폴더 경로가 기기마다 다르다(`C:\Users\<사용자>\.claude\projects\...`).
 - 함정:
-  - Unity MCP `execute_code`는 같은 코드를 **여러 번 실행**하는 경우가 있다 → 테스트 코드는 멱등하게(이미 있으면 건너뛰기) 쓸 것.
-  - JSON을 고친 뒤에는 **`refresh_unity` 후 Play**해야 새 내용이 읽힌다.
-  - Play 모드 테스트 중 씬 변경 표시가 남을 수 있다 → 저장하지 말 것(씬 파일 누수 방지). 테스트 후 `git status`로 씬 확인.
-  - `StoryPlayer`는 `DontDestroyOnLoad`다. 시퀀스가 끝나기 전에는 `GameInputLock` 때문에 조작이 막힌다.
-  - 적 최고 속도(12)에 비해 플레이어가 60이다. 전투가 쉬워지면 적 속도/가속도를 올려야 한다.
+  - Unity가 백그라운드면 컴파일이 멈춘다 → 컴파일 요청 전에 Unity 창을 앞으로(PowerShell `WScript.Shell.AppActivate`). Play 전에 새 코드가 들어갔는지 확인.
+  - **control 시퀀스 중에 `StoryPlayer.Skip()`을 코드로 부르면 그 시퀀스가 통째로 빨리 감긴다**(Esc 키는 막혀 있지만 API는 막지 않음). 테스트 시 control 구간에서는 Skip 대신 `Signal`을 쓸 것.
+  - `execute_code`는 같은 코드가 여러 번 실행될 수 있다 → 멱등하게. JSON 수정 후엔 `refresh_unity` 후 Play.
+  - 전투 HUD 레이아웃(1920x1080 기준): 왼쪽 위 크레딧·퀘스트 창, 그 아래 화물 게이지(y +150), 왼쪽 가운데 무기 슬롯, 아래 대사창, 오른쪽 위 체력바(씬 HUD)와 그 아래 튜토리얼 안내창. 새 UI를 넣을 때 겹침 확인.
+  - `F3DFXController` 등 FORGE3D 코드에 `[추가]` 주석으로 표시한 수정이 있다(에셋 업데이트 시 덮어쓰이지 않게 주의).
 
 ## 5. 다음 단계
-1. **장면 3 마무리**: `TutorialWarp.json`의 도착 줄(`s3_warp_arrive` 이후)에 `quest_done:frontier_gold:go_beacon`을 추가해 도착 시 임무 목표 1번이 취소선으로 바뀌게 한다. 끝난 기준: Play 모드에서 도착하면 왼쪽 위 목표 창의 첫 줄이 취소선.
-2. **장면 4 준비**: 대사 원문은 `docs/story/scenes-4-6.md`를 기준으로 한다. 그 전에 `EnemySpawner`가 장면 3 직후 불필요하게 스폰하지 않도록 장면 4 시작까지 게이트할지 정한다.
-3. **장면 4 구현** (`TutorialCombat.json` 새로 + `tutorial_warp`의 `then` 연결): 해적선 3척을 레이더 신호 위치(`RadarPing`의 각도)와 맞춰 접근시키고, 해적 선장 통신 화자(`Speakers.json` 추가), 4단계 전투 안내(목표 지정 → 레이저 → 발칸 → 기동)를 `tutorial_show`와 `waitFor` 신호로 구성. **목표 지정(타깃팅) 시스템은 아직 없어서** 새로 만들어야 한다. 끝난 기준: 해적 2척 격파, 1척 워프 이탈 후 오르비스 대사까지 재생되고 조작이 돌아옴.
-4. **장면 5(채굴)·6(귀환/정산)** (원문: `docs/story/scenes-4-6.md`): 채굴 대상 소행성은 장식용 `AsteroidField`와 **별도 오브젝트**로 만든다. 장면 5의 해적 증원은 원문의 두 안(후퇴형/전투 연계형) 중 사용자와 정한 쪽으로.
-5. **정리 작업**: `PrologueDirector`의 터널·카메라 코드를 `WarpTunnelStage`로 합치기(중복 제거, 프롤로그 전체 재생으로 회귀 확인), 프롤로그를 "처음 한 번만" 재생하도록 저장 플래그 도입, 임시 문구 확정, 한글 폰트 번들, 술집 배경 이미지 교체/라이선스 확인.
+1. **장면 1~6 수동 플레이 확인**: 사용자가 Play에서 처음부터 끝까지 실제 입력으로 진행하며 문제를 적는다. 끝난 기준: 레이저/발칸 명중, Tab 지정, F 채굴, 해적 격파·도주·워프, 귀환 정산까지 막힘 없이 도달하고 콘솔 에러 0.
+2. **해적 난이도 조정**(사용자가 요청할 때): `Resources/Directors/Cue/CombatTutorialDirector.prefab`의 `_pirateTuning`(fireInterval, attackDistance), `_lurkSeconds`/`_attackSeconds`만 조절. 끝난 기준: 사용자가 정한 목표(예: 가만히 있으면 첫 공격 후 선체 70% 이상) 측정 확인.
+3. **튜토리얼 안내창과 광맥 겹침 해소**(1번에서 거슬리면): `MiningTutorialDirector.prefab`의 `_oreAngle`/`_reachDistance` 또는 `Resources/UI/TutorialTips.prefab` 크기 조정. 끝난 기준: 광맥에 접근해 채굴하는 동안 광맥이 안내창에 가리지 않음.
+4. **프롤로그 "처음 한 번만" 재생**: `PrologueDirector`에 저장 플래그(PlayerPrefs 등) 도입, 개발자 모드 `prologue on`으로 다시 볼 수 있게. 끝난 기준: 두 번째 실행부터 정거장에서 바로 시작.
+5. **정거장 수리 기능**("일단 장갑부터 수리하자"): 상점에 선체 수리 항목 추가(`StationShop`, SCI-FI UI Pack 기반). 끝난 기준: 크레딧을 내고 선체가 최대로 회복.
+6. **`PrologueDirector`의 터널·카메라 코드를 `WarpTunnelStage`로 통합**: 끝난 기준: 프롤로그 전체 재생과 장면 3·6 워프가 이전과 같게 동작.
+7. **출시 전 교체**: 튜토리얼 이미지 5장·술집 배경·무기 아이콘·광맥 그림, 한글 OFL 폰트 TMP 에셋을 `Resources/Fonts/KoreanFallback`에.

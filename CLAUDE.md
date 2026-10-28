@@ -39,5 +39,8 @@
 8. **UI 문자열에 `&gt;` 같은 HTML 엔티티를 쓰지 않는다** (TMP 리치텍스트에서 그대로 출력됨). `>`를 그대로 쓴다.
 9. **풀링/키네마틱**: Kinematic Rigidbody에는 `velocity`를 대입하지 않는다 (`isKinematic` 확인).
 10. 사용자와 대화는 한국어로 한다.
+11. **컴파일 요청 전에 Unity 창을 앞으로** 가져온다(백그라운드면 컴파일이 멈춘다). Play 전에 새 코드가 반영됐는지 확인한다.
+12. 테스트 코드에서 **control 시퀀스 중에는 `StoryPlayer.Skip()`을 쓰지 않고** `StoryPlayer.Signal`로 진행한다 (Skip은 그 시퀀스를 통째로 빨리 감는다).
+13. 전투·튜토리얼용 수치 조정은 전역 `WeaponStatsTable`이 아니라 **해당 장면 Director 프리팹의 값**으로 한다 (일반 적도 같은 표를 쓴다).
 
 진행 중 작업은 docs/handoff.md 참고 (/resume-work)
