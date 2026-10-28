@@ -156,12 +156,14 @@ namespace FORGE3D
                     Time.deltaTime *
                     velocity;
 
-                if (Physics.Raycast(
+                // [수정] 쏜 함선 자신(쉴드·선체·반대편 터렛)과 트리거는 무시한다
+                if (HitResolver.Raycast(
                     transform.position,
                     transform.forward,
-                    out hitPoint,
                     step.magnitude * RaycastAdvance,
-                    layerMask))
+                    layerMask,
+                    controller != null ? controller.ShipRoot : null,
+                    out hitPoint))
                 {
                     isHit = true;
 

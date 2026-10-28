@@ -44,6 +44,10 @@ public abstract class ShipMovementBase : MonoBehaviour
         rb.drag = 0.05f;
         rb.angularDrag = 0.5f;
 
+        // 물리(FixedUpdate)와 화면 프레임 사이를 보간한다. 꺼져 있으면 고속에서 함선 위치가
+        // 프레임마다 들쭉날쭉해져, 따라가는 카메라가 떨린다.
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+
         // XZ 평면에서만 움직이고 Y축으로만 회전한다
         rb.constraints =
             RigidbodyConstraints.FreezePositionY |

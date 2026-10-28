@@ -143,11 +143,13 @@ public class CameraController : MonoBehaviour
         Vector3 targetPosition =
             target.position + offset;
 
+        // 프레임 시간이 들쭉날쭉해도 같은 속도로 따라가도록 지수 감쇠로 보간한다
+        // (Lerp(followSpeed * deltaTime)는 프레임마다 따라가는 비율이 달라져 고속에서 떨림이 보인다)
         transform.position =
             Vector3.Lerp(
                 transform.position,
                 targetPosition,
-                followSpeed * Time.deltaTime
+                1f - Mathf.Exp(-followSpeed * Time.deltaTime)
             );
 
         LookAtTarget();

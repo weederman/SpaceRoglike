@@ -20,7 +20,7 @@
         { "text": "별빛이 길게 늘어나고, 함선이 공간을 가로지른다.", "delay": 9 },
 
         { "cue": "s3_warp_arrive", "text": "잠시 후 워프가 종료된다. 눈앞에는 거대한 암석들과 부서진 선박 잔해가 흩어져 있다." },
-        { "speaker": "orbis", "text": "목적지 도착. 주변 스캔을 시작합니다." },
+        { "cue": "quest_done:frontier_gold:go_beacon", "speaker": "orbis", "text": "목적지 도착. 주변 스캔을 시작합니다." },
 
         { "cue": "radar_show", "text": "레이더에 붉은 신호 세 개가 점멸한다." },
         { "speaker": "orbis", "text": "경고. 미등록 함선 세 척이 접근 중입니다. 무장 신호 확인. 해적일 가능성이 높습니다." },

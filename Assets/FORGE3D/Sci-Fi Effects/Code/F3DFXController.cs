@@ -30,6 +30,28 @@ namespace FORGE3D
         // 데미지는 WeaponStatsTable에서 (무기 종류, 쏜 쪽)으로 찾는다.
         [Header("Damage")] public WeaponOwner owner = WeaponOwner.Player;
 
+        // [추가] 이 터렛이 달린 함선의 루트. 발사체/빔이 자기 함선에 맞지 않도록 무시할 때 쓴다.
+        private Transform shipRoot;
+
+        public Transform ShipRoot
+        {
+            get
+            {
+                if (shipRoot == null)
+                {
+                    var body = GetComponentInParent<Rigidbody>();
+                    shipRoot = body != null ? body.transform : transform.root;
+                }
+
+                return shipRoot;
+            }
+        }
+
+        // [추가] 플레이어가 빠르게 연타해도 무기 발사 간격(WeaponStatsTable)보다 빨리 쏘지 않도록
+        // 마지막 발사 시각을 기억하고, 간격이 덜 지났으면 첫 발을 그만큼 늦춘다.
+        private float lastShotTime = float.NegativeInfinity;
+        private Coroutine pendingFire;
+
         // Current firing socket
         private int curSocket = 0;
 
@@ -142,46 +164,31 @@ namespace FORGE3D
             {
                 case F3DFXType.Vulcan:
                     // Fire vulcan at specified rate until canceled
-                    timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.Vulcan), Vulcan);
-                    // Invoke manually before the timer ticked to avoid initial delay
-                    Vulcan();
+                    StartRepeating(F3DFXType.Vulcan, Vulcan);
                     break;
 
                 case F3DFXType.SoloGun:
-                    timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.SoloGun), SoloGun);
-                    SoloGun();
+                    StartRepeating(F3DFXType.SoloGun, SoloGun);
                     break;
 
                 case F3DFXType.Sniper:
-                    timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.Sniper), Sniper);
-                    Sniper();
+                    StartRepeating(F3DFXType.Sniper, Sniper);
                     break;
 
                 case F3DFXType.ShotGun:
-                    timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.ShotGun), ShotGun);
-                    ShotGun();
+                    StartRepeating(F3DFXType.ShotGun, ShotGun);
                     break;
 
                 case F3DFXType.Seeker:
-                    timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.Seeker), Seeker);
-                    Seeker();
+                    StartRepeating(F3DFXType.Seeker, Seeker);
                     break;
 
                 case F3DFXType.RailGun:
-                    timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.RailGun), RailGun);
-                    RailGun();
+                    StartRepeating(F3DFXType.RailGun, RailGun);
                     break;
 
                 case F3DFXType.PlasmaGun:
-                    timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.PlasmaGun), PlasmaGun);
-                    PlasmaGun();
+                    StartRepeating(F3DFXType.PlasmaGun, PlasmaGun);
                     break;
 
                 case F3DFXType.PlasmaBeam:
@@ -201,22 +208,62 @@ namespace FORGE3D
 
                 case F3DFXType.FlameRed:
                     // [수정] 화염 루프 대신 미사일 발사체 한 발씩 발사하도록 변경
-                    timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.FlameRed), FlameRed);
-                    FlameRed();
+                    StartRepeating(F3DFXType.FlameRed, FlameRed);
                     break;
 
                 case F3DFXType.LaserImpulse:
-                    timerID = F3DTime.time.AddTimer(
-                        WeaponStatsTable.GetFireInterval(F3DFXType.LaserImpulse), LaserImpulse);
-                    LaserImpulse();
+                    StartRepeating(F3DFXType.LaserImpulse, LaserImpulse);
                     break;
             }
         }
 
-        // Stop firing 
+        // [추가] 첫 발을 쏘고 발사 간격마다 반복한다. 플레이어는 직전 발사 후 간격이 덜 지났으면
+        // 남은 시간만큼 기다렸다가 쏜다(연타로 간격을 건너뛰지 못하게).
+        // 적은 EnemyTurretController가 자체 간격으로 Fire/Stop을 부르므로 기존처럼 바로 쏜다.
+        private void StartRepeating(F3DFXType type, Action shot)
+        {
+            float interval = WeaponStatsTable.GetFireInterval(type);
+            float wait = lastShotTime + interval - Time.time;
+
+            if (owner == WeaponOwner.Player && wait > 0f)
+            {
+                pendingFire = StartCoroutine(StartRepeatingAfter(wait, interval, shot));
+                return;
+            }
+
+            BeginRepeating(interval, shot);
+        }
+
+        private IEnumerator StartRepeatingAfter(float wait, float interval, Action shot)
+        {
+            yield return new WaitForSeconds(wait);
+            pendingFire = null;
+            BeginRepeating(interval, shot);
+        }
+
+        private void BeginRepeating(float interval, Action shot)
+        {
+            Action trackedShot = () =>
+            {
+                lastShotTime = Time.time;
+                shot();
+            };
+
+            timerID = F3DTime.time.AddTimer(interval, trackedShot);
+            // Invoke manually before the timer ticked to avoid initial delay
+            trackedShot();
+        }
+
+        // Stop firing
         public void Stop()
         {
+            // [추가] 간격을 기다리던 첫 발은 버튼을 떼면 취소
+            if (pendingFire != null)
+            {
+                StopCoroutine(pendingFire);
+                pendingFire = null;
+            }
+
             // Remove firing timer
             if (timerID != -1)
             {

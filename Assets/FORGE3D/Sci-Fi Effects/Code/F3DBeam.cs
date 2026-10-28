@@ -127,11 +127,14 @@ namespace FORGE3D
             // 3D RAYCAST
             // ========================================================
 
-            if (Physics.Raycast(
-                ray,
-                out hitPoint,
+            // [수정] 쏜 함선 자신(쉴드·선체·반대편 터렛)과 트리거는 무시한다
+            if (HitResolver.Raycast(
+                ray.origin,
+                ray.direction,
                 MaxBeamLength,
-                layerMask))
+                layerMask,
+                controller != null ? controller.ShipRoot : null,
+                out hitPoint))
             {
                 // Get current beam length
                 beamLength =
