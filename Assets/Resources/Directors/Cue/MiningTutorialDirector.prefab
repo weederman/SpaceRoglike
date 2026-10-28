@@ -44,8 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc40a75480d06414abe8c89ca174802c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _oreMesh: {fileID: 4300000, guid: 4514a249f7ca7d44b8eb4cbd48174504, type: 3}
-  _oreMaterial: {fileID: 2100000, guid: 2435a007baa55bf4f91f854a3d5f4737, type: 2}
+  _oreLooks:
+  - model: {fileID: 1056666096333670, guid: f603e71ddc270d54192200e95673e2a6, type: 3}
+    glow: {r: 0.35, g: 0.8, b: 1, a: 1}
+  - model: {fileID: 1822345149752838, guid: 45b62242ff99b0a48a47f713cd6d1687, type: 3}
+    glow: {r: 1, g: 0.5, b: 0.15, a: 1}
+  - model: {fileID: 1846397802687310, guid: 8c22678d7aa562145804b6f0af7e603a, type: 3}
+    glow: {r: 1, g: 0.4, b: 0.35, a: 1}
   _oreSize: 120
   _oreHeight: -30
   _oreAmount: 140

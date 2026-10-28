@@ -6,6 +6,7 @@ using UnityEngine.UI;
 /// <summary>
 /// 항성계 지도 창 (M 키). 항성을 가운데 두고 궤도(행성 궤도 = 선, 소행성 벨트 = 띠), 행성, 정거장, 워프 비콘(레벨 색), 내 위치를 그린다.
 /// 장소를 클릭해 고르면 오른쪽에 정보가 나오고, "워프"를 누르면 StarSystemWarp로 그곳에 워프한다.
+/// 마우스 휠로 커서 위치를 기준으로 확대/축소하고, 끌어서 지도를 옮긴다(표시 아이콘 크기는 그대로, 위치만 벌어진다).
 /// 지도를 열어 둔 동안은 조작이 잠긴다. 스토리 재생 중에는 열 수만 있고(조작하며 듣는 장면) 워프는 할 수 없다.
 /// 지도를 닫아 둔 동안에는 화면 위쪽에 지금 있는 지역 이름을 보여준다.
 /// 모양은 Assets/Resources/UI/StarMap.prefab (SCI-FI UI Pack Window010_Cyan 기반)이 정하고, StarSystem 프리팹이 생성한다.
@@ -31,6 +32,12 @@ public class StarMapUI : MonoBehaviour
     [SerializeField] private Sprite _homeIcon;
     [SerializeField] private RectTransform _playerMarker;
 
+    [Header("확대 / 이동")]
+    [Tooltip("확대 배율 범위 (1 = 항성계 전체가 보이는 크기)")]
+    [SerializeField] private Vector2 _zoomRange = new Vector2(1f, 8f);
+    [Tooltip("휠 한 칸에 확대되는 배율")]
+    [SerializeField, Min(1.01f)] private float _zoomStep = 1.25f;
+
     [Header("색")]
     [SerializeField] private Color _planetOrbitColor = new Color(0.45f, 0.85f, 1f, 0.35f);
     [SerializeField] private Color _beltColor = new Color(0.75f, 0.6f, 0.45f, 0.16f);
@@ -55,6 +62,11 @@ public class StarMapUI : MonoBehaviour
     private readonly List<StarMapMarker> _markers = new List<StarMapMarker>();
     private StarMapMarker _selected;
     private float _scale;
+
+    // 확대/이동: 지도 위의 것들은 항성계 좌표를 기억해 두었다가 배율과 이동량이 바뀔 때마다 자리를 다시 잡는다
+    private readonly List<(RectTransform rect, Vector2 system)> _placed = new List<(RectTransform, Vector2)>();
+    private float _zoom = 1f;
+    private Vector2 _pan;
 
     public bool IsOpen => _window.activeSelf;
 
@@ -87,7 +99,8 @@ public class StarMapUI : MonoBehaviour
         }
 
         _title.text = $"항성계 지도 · {_system.Data.systemName}";
-        _hint.text = $"{_toggleKey}: 지도 닫기    장소를 클릭해 선택";
+        _hint.text = $"휠: 확대·축소    드래그: 이동    {_toggleKey}: 닫기";
+        SetupViewport();
         BuildMap();
 
         StarSystem.OnAreaChanged += HandleAreaChanged;
@@ -147,6 +160,27 @@ public class StarMapUI : MonoBehaviour
 
     // ── 지도 ──────────────────────────────────────────
 
+    /// <summary>지도 영역이 휠/드래그를 받고, 확대해서 영역 밖으로 나간 부분은 잘리게 한다</summary>
+    private void SetupViewport()
+    {
+        if (_mapArea.GetComponent<RectMask2D>() == null)
+            _mapArea.gameObject.AddComponent<RectMask2D>();
+
+        // 빈 곳에서도 휠/드래그를 받도록 보이지 않는 판을 깐다
+        if (_mapArea.GetComponent<Graphic>() == null)
+        {
+            var catcher = _mapArea.gameObject.AddComponent<Image>();
+            catcher.color = new Color(0f, 0f, 0f, 0f);
+            catcher.raycastTarget = true;
+        }
+
+        StarMapViewport viewport = _mapArea.GetComponent<StarMapViewport>();
+        if (viewport == null)
+            viewport = _mapArea.gameObject.AddComponent<StarMapViewport>();
+        viewport.Scrolled += HandleScroll;
+        viewport.Dragged += HandleDrag;
+    }
+
     private void BuildMap()
     {
         StarSystemData data = _system.Data;
@@ -155,25 +189,18 @@ public class StarMapUI : MonoBehaviour
         if (data.starSprite != null)
             _star.sprite = data.starSprite;
 
-        _rings.Clear();
         for (int i = 0; i < data.orbits.Length; i++)
         {
             StarSystemData.Orbit o = data.orbits[i];
-            if (o.kind == StarSystemData.OrbitKind.Planet)
-            {
-                _rings.AddRing(o.radius * _scale, 1.5f, _planetOrbitColor);
+            if (o.kind != StarSystemData.OrbitKind.Planet)
+                continue;
 
-                Image planet = Instantiate(_planetTemplate, _planetTemplate.transform.parent);
-                planet.gameObject.SetActive(true);
-                planet.name = $"Planet_{o.name}";
-                planet.sprite = o.planetSprite;
-                planet.rectTransform.anchoredPosition = ToMap(data.PlanetPosition(i));
-                planet.rectTransform.sizeDelta *= Mathf.Lerp(0.8f, 1.3f, Mathf.InverseLerp(0.7f, 1.6f, o.planetScale));
-            }
-            else
-            {
-                _rings.AddRing(o.radius * _scale, Mathf.Max(4f, o.beltWidth * _scale), _beltColor);
-            }
+            Image planet = Instantiate(_planetTemplate, _planetTemplate.transform.parent);
+            planet.gameObject.SetActive(true);
+            planet.name = $"Planet_{o.name}";
+            planet.sprite = o.planetSprite;
+            planet.rectTransform.sizeDelta *= Mathf.Lerp(0.8f, 1.3f, Mathf.InverseLerp(0.7f, 1.6f, o.planetScale));
+            _placed.Add((planet.rectTransform, data.PlanetPosition(i)));
         }
 
         for (int i = 0; i < data.stations.Length; i++)
@@ -192,6 +219,68 @@ public class StarMapUI : MonoBehaviour
         }
 
         _playerMarker.SetAsLastSibling();
+        ApplyView();
+    }
+
+    /// <summary>궤도 고리와 지도 위의 모든 것을 지금 배율·이동량에 맞춰 다시 놓는다</summary>
+    private void ApplyView()
+    {
+        StarSystemData data = _system.Data;
+        float s = _scale * _zoom;
+
+        _rings.Clear();
+        _rings.Offset = _pan;
+        foreach (StarSystemData.Orbit o in data.orbits)
+        {
+            if (o.kind == StarSystemData.OrbitKind.Planet)
+                _rings.AddRing(o.radius * s, 1.5f, _planetOrbitColor);
+            else
+                _rings.AddRing(o.radius * s, Mathf.Max(4f, o.beltWidth * s), _beltColor);
+        }
+
+        _star.rectTransform.anchoredPosition = _pan;
+        foreach ((RectTransform rect, Vector2 system) in _placed)
+            rect.anchoredPosition = ToMap(system);
+    }
+
+    private void HandleScroll(Vector2 screenPosition, float amount)
+    {
+        if (Mathf.Abs(amount) < 0.01f)
+            return;
+
+        float zoom = Mathf.Clamp(_zoom * Mathf.Pow(_zoomStep, Mathf.Sign(amount)), _zoomRange.x, _zoomRange.y);
+        if (Mathf.Approximately(zoom, _zoom))
+            return;
+
+        // 커서 아래에 있던 항성계 지점이 확대 뒤에도 커서 아래에 남도록 이동량을 맞춘다
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_mapArea, screenPosition, null, out Vector2 local))
+        {
+            Vector2 under = (local - _pan) / (_scale * _zoom);
+            _pan = local - under * (_scale * zoom);
+        }
+
+        _zoom = zoom;
+        ClampPan();
+        ApplyView();
+    }
+
+    private void HandleDrag(Vector2 screenDelta)
+    {
+        // 화면 픽셀 → 캔버스 단위 (캔버스 배율)
+        Canvas canvas = _mapArea.GetComponentInParent<Canvas>();
+        float factor = canvas != null ? canvas.scaleFactor : 1f;
+        _pan += screenDelta / Mathf.Max(0.01f, factor);
+        ClampPan();
+        ApplyView();
+    }
+
+    /// <summary>항성계가 지도 영역 밖으로 완전히 벗어나지 않게 한다</summary>
+    private void ClampPan()
+    {
+        float limit = _mapRadius * _zoom;
+        _pan = Vector2.ClampMagnitude(_pan, limit);
+        if (_zoom <= _zoomRange.x + 0.001f)
+            _pan = Vector2.zero; // 전체 보기에서는 가운데로
     }
 
     private StarMapMarker CreateMarker(StarMapMarker template, StarSystem.Location location, Vector2 position, Color color, string label)
@@ -199,7 +288,7 @@ public class StarMapUI : MonoBehaviour
         StarMapMarker marker = Instantiate(template, template.transform.parent);
         marker.gameObject.SetActive(true);
         marker.name = $"Marker_{_system.LocationName(location)}";
-        ((RectTransform)marker.transform).anchoredPosition = ToMap(position);
+        _placed.Add(((RectTransform)marker.transform, position));
         marker.Bind(location, color, label);
         marker.Clicked += Select;
         _markers.Add(marker);
@@ -208,7 +297,7 @@ public class StarMapUI : MonoBehaviour
 
     private Vector2 ToMap(Vector2 system)
     {
-        return system * _scale;
+        return system * (_scale * _zoom) + _pan;
     }
 
     private StarMapMarker FindMarker(StarSystem.Location location)

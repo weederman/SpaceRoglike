@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 채굴할 수 있는 광맥 소행성. 장식용 AsteroidField와 별개의 오브젝트로, 연출 담당(예: MiningTutorialDirector)이 만들고 Init으로 모양을 정한다.
-/// 3D 소행성 모델(FreeSciFi 용암 소행성 메시 + 발광 균열 재질)이며 천천히 구른다.
-/// 균열 발광은 흑백 마스크(Assets/Materials/Asteroids/AsteroidVein_Mask.png, 원본 발광 텍스처를 흑백으로 바꾼 것)에 광맥 색을 곱해 낸다. 처음엔 균열이 꺼진 평범한 암석이고,
-/// 광맥이 드러나면(Reveal) 균열이 보랏빛으로 빛나고 보랏빛 조명이 주변 함선을 비춘다. 채굴 빔이 닿는 동안 더 밝아지고, 다 캐면 사그라든다.
+/// 채굴할 수 있는 희귀(광맥) 소행성. 장식용 AsteroidField와 별개의 오브젝트로, 연출 담당(예: MiningTutorialDirector)이 만들고 Init으로 모양을 정한다.
+/// 모양은 FreeSciFi Planet Asteroids 모델(용암 소행성 파랑/빨강, Tinniuq) 중 하나이며 천천히 구른다.
+/// 처음엔 발광이 꺼진 평범한 암석이고, 광맥이 드러나면(Reveal) 모델 본래의 발광(용암 균열)이 켜지며 광맥 색 조명이 주변을 비춘다.
+/// 채굴 빔이 닿는 동안 더 밝아지고, 다 캐면 사그라든다. 발광이 없는 모델은 표면이 광맥 색을 띠고 조명만 켜진다.
 /// 채굴 장비(MiningLaser)가 Extract로 광물을 꺼내 간다. 목표 지정(TargetingSystem)의 대상이 된다(All 목록).
 /// </summary>
 public class MineableAsteroid : MonoBehaviour
@@ -13,21 +14,36 @@ public class MineableAsteroid : MonoBehaviour
     private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
     private static readonly int ColorId = Shader.PropertyToID("_Color");
 
+    /// <summary>희귀 소행성의 모양 하나와 그 광맥 빛깔</summary>
+    [Serializable]
+    public class Look
+    {
+        public GameObject model;
+        [Tooltip("광맥이 드러났을 때 주변을 비추는 조명 색 (모델의 발광 색에 맞춘다)")]
+        public Color glow = new Color(0.72f, 0.35f, 1f, 1f);
+    }
+
     /// <summary>지금 남아 있는 광맥 소행성 전부 (목표 지정 후보)</summary>
     public static readonly List<MineableAsteroid> All = new List<MineableAsteroid>();
 
-    [SerializeField] private Color _veinColor = new Color(0.72f, 0.35f, 1f, 1f);
-    [Tooltip("드러난 광맥의 발광 세기 (HDR 배율)")]
-    [SerializeField, Min(0f)] private float _veinIntensity = 3f;
+    [Tooltip("드러난 광맥의 발광 세기 (모델 본래 발광에 곱한다)")]
+    [SerializeField, Min(0f)] private float _glowIntensity = 1.6f;
     [SerializeField, Min(0.05f)] private float _revealSeconds = 1.6f;
     [SerializeField, Min(0f)] private float _lightRange = 160f;
     [Tooltip("구르는 속도 (도/초)")]
     [SerializeField, Min(0f)] private float _tumble = 4f;
 
+    private sealed class Surface
+    {
+        public Material material;
+        public Color baseColor;
+        public Color emission;  // 모델 본래의 발광 색 (없으면 검정)
+    }
+
+    private readonly List<Surface> _surfaces = new List<Surface>();
     private Transform _model;
-    private Material _material;
     private Light _light;
-    private Color _baseColor = Color.white;
+    private Color _glow;
 
     private float _size;
     private float _ore;
@@ -44,44 +60,73 @@ public class MineableAsteroid : MonoBehaviour
     public bool HasOre => _ore > 0f;
     public bool IsRevealed => _reveal >= 1f;
 
-    /// <summary>모양(메시, 발광 균열이 있는 재질, 긴 쪽 기준 월드 크기)과 광물 매장량을 정한다.</summary>
-    public void Init(Mesh mesh, Material material, float size, float ore)
+    /// <summary>모양(모델과 광맥 빛깔, 긴 쪽 기준 월드 크기)과 광물 매장량을 정한다.</summary>
+    public void Init(Look look, float size, float ore)
     {
         _size = size;
         _ore = _oreMax = ore;
+        _glow = look != null ? look.glow : Color.white;
 
-        var modelGo = new GameObject("Model");
-        modelGo.transform.SetParent(transform, false);
-        _model = modelGo.transform;
-        modelGo.AddComponent<MeshFilter>().sharedMesh = mesh;
-        var renderer = modelGo.AddComponent<MeshRenderer>();
-        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        if (look != null && look.model != null)
+        {
+            GameObject model = Instantiate(look.model, transform);
+            model.name = "Model";
+            model.transform.localPosition = Vector3.zero;
+            _model = model.transform;
 
-        // 균열의 빛을 이 소행성만 바꿀 수 있게 재질을 복제한다
-        _material = new Material(material);
-        _material.EnableKeyword("_EMISSION");
-        _material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
-        if (_material.HasProperty(ColorId))
-            _baseColor = _material.GetColor(ColorId);
-        renderer.sharedMaterial = _material;
+            // 장식용 판정은 쓰지 않는다 (채굴·목표 지정은 거리로 판정)
+            foreach (Collider c in model.GetComponentsInChildren<Collider>(true))
+                Destroy(c);
 
-        Vector3 b = mesh != null ? mesh.bounds.size : Vector3.one;
-        float longSide = Mathf.Max(b.x, Mathf.Max(b.y, b.z));
-        _model.localScale = Vector3.one * (size / Mathf.Max(0.001f, longSide));
+            // 광맥 빛을 이 소행성만 바꿀 수 있게 재질을 복제한다 (renderer.materials가 복제본을 만든다)
+            foreach (Renderer r in model.GetComponentsInChildren<Renderer>(true))
+            {
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                foreach (Material m in r.materials)
+                {
+                    var surface = new Surface
+                    {
+                        material = m,
+                        baseColor = m.HasProperty(ColorId) ? m.GetColor(ColorId) : Color.white,
+                        emission = m.IsKeywordEnabled("_EMISSION") && m.HasProperty(EmissionColorId) ? m.GetColor(EmissionColorId) : Color.black,
+                    };
+                    m.EnableKeyword("_EMISSION");
+                    m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+                    _surfaces.Add(surface);
+                }
+            }
 
-        _baseRotation = Random.rotation;
-        _spinAxis = Random.onUnitSphere;
+            float longest = LongestSide(model);
+            if (longest > 0.001f)
+                _model.localScale = Vector3.one * (size / longest);
+        }
+
+        _baseRotation = UnityEngine.Random.rotation;
+        _spinAxis = UnityEngine.Random.onUnitSphere;
 
         var lightGo = new GameObject("VeinLight");
         lightGo.transform.SetParent(transform, false);
         lightGo.transform.localPosition = new Vector3(0f, size * 0.6f, 0f); // 위쪽(카메라 쪽)에서 주변을 비춘다
         _light = lightGo.AddComponent<Light>();
         _light.type = LightType.Point;
-        _light.color = _veinColor;
+        _light.color = _glow;
         _light.range = _lightRange;
         _light.intensity = 0f;
 
         UpdateLook();
+    }
+
+    private static float LongestSide(GameObject root)
+    {
+        var bounds = new Bounds();
+        bool any = false;
+        foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
+        {
+            if (!any) { bounds = r.bounds; any = true; }
+            else bounds.Encapsulate(r.bounds);
+        }
+
+        return any ? Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z)) : 0f;
     }
 
     private void OnEnable()
@@ -96,11 +141,14 @@ public class MineableAsteroid : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (_material != null)
-            Destroy(_material);
+        foreach (Surface s in _surfaces)
+        {
+            if (s.material != null)
+                Destroy(s.material);
+        }
     }
 
-    /// <summary>표면의 보랏빛 광맥이 드러난다. instant면 바로(건너뛰기).</summary>
+    /// <summary>표면의 광맥이 드러난다. instant면 바로(건너뛰기).</summary>
     public void Reveal(bool instant)
     {
         _revealing = true;
@@ -119,10 +167,8 @@ public class MineableAsteroid : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (_model == null)
-            return;
-
-        _model.localRotation = Quaternion.AngleAxis(Time.time * _tumble, _spinAxis) * _baseRotation;
+        if (_model != null)
+            _model.localRotation = Quaternion.AngleAxis(Time.time * _tumble, _spinAxis) * _baseRotation;
 
         if (_revealing && _reveal < 1f)
             _reveal = Mathf.Min(1f, _reveal + Time.deltaTime / _revealSeconds);
@@ -138,10 +184,16 @@ public class MineableAsteroid : MonoBehaviour
         float strength = Mathf.SmoothStep(0f, 1f, _reveal) * Mathf.Lerp(0.25f, 1f, RemainingRatio);
         float glow = (pulse + _miningGlow * 0.6f) * strength;
 
-        _material.SetColor(EmissionColorId, _veinColor * (_veinIntensity * glow));
-        if (_material.HasProperty(ColorId))
-            _material.SetColor(ColorId, Color.Lerp(_baseColor, _baseColor * Color.Lerp(Color.white, _veinColor, 0.35f), strength));
+        foreach (Surface s in _surfaces)
+        {
+            s.material.SetColor(EmissionColorId, s.emission * (_glowIntensity * glow));
 
-        _light.intensity = (2.5f + _miningGlow * 3f) * strength;
+            // 본래 발광이 없는 재질은 표면이 광맥 색을 살짝 띤다
+            if (s.emission.maxColorComponent < 0.01f && s.material.HasProperty(ColorId))
+                s.material.SetColor(ColorId, Color.Lerp(s.baseColor, s.baseColor * Color.Lerp(Color.white, _glow, 0.5f), strength));
+        }
+
+        if (_light != null)
+            _light.intensity = (2.5f + _miningGlow * 3f) * strength;
     }
 }

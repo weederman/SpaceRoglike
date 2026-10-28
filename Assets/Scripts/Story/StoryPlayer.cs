@@ -62,6 +62,9 @@ public class StoryPlayer : MonoBehaviour
     private const string RadarPrefabPath = "UI/RadarPing";
     private const string CueDirectorFolder = "Directors/Cue";
 
+    // 대사가 한 줄 넘어갈 때마다 내는 소리 (SoundTable 이름)
+    private const string LineSound = "dialogue_click";
+
     private static StoryPlayer _instance;
 
     private NarrationBar _bar;
@@ -609,6 +612,7 @@ public class StoryPlayer : MonoBehaviour
         }
 
         _bar.Show(speakerName, color, line.text, rightSide);
+        GameAudio.Play(LineSound);
     }
 
     private static void FireChoice(string lineId, string choiceId, int index)

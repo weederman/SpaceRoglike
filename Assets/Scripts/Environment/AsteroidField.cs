@@ -7,6 +7,8 @@ using UnityEngine;
 /// 함선 앞쪽 가장자리로 옮겨져 서서히 나타난다(암석은 작게 시작해 커진다). 그래서 어디로 가도 주변 밀도가 같고, 화면이 암석으로 가득 차지 않는다.
 /// 암석은 3D 소행성 모델(FreeSciFi 소행성 메시 + 회색 암석 재질)이며, 함선이 다니는 높이보다 조금 아래에 놓여 함선이 그 위를 지나간다.
 /// 저마다 다른 축으로 천천히 구른다. 잔해 조각은 2D Space Kit 스프라이트를 카메라를 향해 세운다(빌보드). 장식용이라 충돌체는 없다.
+/// 함선 주위에는 소행성 벨트의 먼지(Asteroid Field Creator의 Blob Dust 파티클을 이 크기에 맞게 줄인 것)가 떠돈다.
+/// 먼지는 월드에 남으므로 함선이 지나가면 뒤로 흘러가 보인다.
 /// 큰 암석끼리는 가장자리 사이가 최소 _minRockGap만큼 떨어지게 놓는다 (잔해 조각은 작아서 간격을 따지지 않는다).
 /// 난수는 시드가 고정이라 같은 움직임이면 같은 배치가 나온다.
 /// 해적선 등이 암석 사이에 숨을 자리를 찾을 수 있도록 지금 놓인 암석 목록을 GetRocks로 알려 준다.
@@ -34,6 +36,17 @@ public class AsteroidField : MonoBehaviour
 
     [Header("잔해 (스프라이트)")]
     [SerializeField] private Sprite[] _wrecks;
+
+    [Header("먼지 (Asteroid Field Creator 파티클)")]
+    [Tooltip("벨트에 떠도는 먼지. 원래는 성운 크기라 아래 값으로 실행 중에 줄여 쓴다.")]
+    [SerializeField] private ParticleSystem _dustPrefab;
+    [Tooltip("함선 주위에 먼지가 생기는 반지름")]
+    [SerializeField, Min(10f)] private float _dustRadius = 650f;
+    [SerializeField] private Vector2 _dustSize = new Vector2(120f, 420f);
+    [SerializeField, Range(0f, 1f)] private float _dustAlpha = 0.6f;
+    [SerializeField] private Color _dustColor = new Color(0.75f, 0.62f, 0.48f, 1f);
+    [Tooltip("함선이 다니는 높이 기준 먼지의 높이")]
+    [SerializeField] private float _dustHeight = -40f;
 
     [Header("개수 (플레이어 주위에 동시에 존재하는 최대 개수)")]
     [SerializeField, Min(0)] private int _maxRocks = 10;
@@ -77,6 +90,7 @@ public class AsteroidField : MonoBehaviour
     }
 
     private readonly List<Piece> _pieces = new List<Piece>();
+    private Transform _dust;
     private System.Random _rng;
     private Transform _target;
     private Camera _camera;
@@ -110,6 +124,7 @@ public class AsteroidField : MonoBehaviour
 
         CreateRocks(_maxRocks);
         CreateWrecks(_maxWrecks);
+        CreateDust();
 
         // 처음에는 카메라가 보는 앞쪽에 몰아서 놓아, 도착하자마자 암석들이 눈에 들어오게 한다
         foreach (Piece p in _pieces)
@@ -139,6 +154,44 @@ public class AsteroidField : MonoBehaviour
 
             _pieces.Add(new Piece { transform = go.transform, meshFilter = filter, meshRenderer = renderer });
         }
+    }
+
+    private void CreateDust()
+    {
+        if (_dustPrefab == null)
+            return;
+
+        ParticleSystem dust = Instantiate(_dustPrefab, transform);
+        dust.name = "Dust";
+        dust.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        _dust = dust.transform;
+        _dust.position = (_target != null ? _target.position : transform.position) + Vector3.up * _dustHeight;
+
+        ParticleSystem.MainModule main = dust.main;
+        main.simulationSpace = ParticleSystemSimulationSpace.World; // 함선이 지나가면 뒤로 흘러간다
+        main.startSize = new ParticleSystem.MinMaxCurve(_dustSize.x, _dustSize.y);
+        main.startLifetime = 40f;
+        main.maxParticles = 120;
+        main.prewarm = true;
+        main.startColor = new Color(_dustAlpha, _dustAlpha, _dustAlpha, _dustAlpha); // 미리 곱한 알파 재질
+
+        // 원래 곡선은 900초 수명에 맞춰 아주 천천히 진해지므로, 금방 나타났다 사라지게 바꾼다
+        var gradient = new Gradient();
+        gradient.SetKeys(
+            new[] { new GradientColorKey(_dustColor, 0f), new GradientColorKey(_dustColor, 1f) },
+            new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.15f), new GradientAlphaKey(1f, 0.8f), new GradientAlphaKey(0f, 1f) });
+        ParticleSystem.ColorOverLifetimeModule colorOverLifetime = dust.colorOverLifetime;
+        colorOverLifetime.enabled = true;
+        colorOverLifetime.color = new ParticleSystem.MinMaxGradient(gradient);
+
+        ParticleSystem.ShapeModule shape = dust.shape;
+        shape.radius = _dustRadius;
+        shape.scale = new Vector3(1f, 0.15f, 1f); // 벨트처럼 납작하게
+
+        ParticleSystem.EmissionModule emission = dust.emission;
+        emission.rateOverTime = 3f;
+
+        dust.Play();
     }
 
     private void CreateWrecks(int count)
@@ -292,6 +345,9 @@ public class AsteroidField : MonoBehaviour
             _camera = Camera.main;
 
         Vector3 center = _target != null ? _target.position : transform.position;
+        if (_dust != null)
+            _dust.position = center + Vector3.up * _dustHeight;
+
         Quaternion facing = _camera != null ? _camera.transform.rotation : Quaternion.identity;
         float time = Time.time;
         float aroundSqr = _aroundRadius * _aroundRadius;

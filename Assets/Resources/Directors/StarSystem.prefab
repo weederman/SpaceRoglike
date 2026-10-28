@@ -207,7 +207,9 @@ MonoBehaviour:
   _areaExitRadius: 1800
   _stationArrivalOffset: {x: 0, y: -260}
   _beaconArrivalOffset: {x: -150, y: -90}
-  _stationSprite: {fileID: 21300000, guid: e8c31d2fa3f34be4c81690a90d57718e, type: 3}
+  _stationModel: {fileID: 7955569653642503555, guid: 488f9af42410c95419059646f23061be, type: 3}
+  _stationModelLength: 480
+  _stationModelDepth: 110
   _stationSize: 300
   _beaconPrefab: {fileID: 2210477213942963215, guid: 76b93c134c4675449ab348389a660b2c, type: 3}
   _asteroidFieldPrefab: {fileID: 3971264978344526677, guid: 5a88a5c45df58294ca29177c6353e445, type: 3}
@@ -251,6 +253,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _system: {fileID: 8439074314848691082}
   _stage: {fileID: 2804573416159024721}
-  _chargeSeconds: 1.2
+  _gatePrefab: {fileID: 184734, guid: f84d57d8fee5f714e86b7e77e277838f, type: 3}
+  _gateDistance: 170
+  _dashSeconds: 2
   _flashSeconds: 0.25
   _tunnelSeconds: {x: 2.5, y: 5}

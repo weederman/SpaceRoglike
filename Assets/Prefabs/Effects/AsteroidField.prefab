@@ -58,6 +58,12 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 1ac351cd14b08e04db823ec9346d42f8, type: 3}
   - {fileID: 21300000, guid: f0e169203ece9a743b398a34d45a0269, type: 3}
   - {fileID: 21300000, guid: e1352270d3e737942b035266f61965d4, type: 3}
+  _dustPrefab: {fileID: 1707504235149562677, guid: 2f39da434c474b94f9e0d98e6c376766, type: 3}
+  _dustRadius: 650
+  _dustSize: {x: 120, y: 420}
+  _dustAlpha: 0.6
+  _dustColor: {r: 0.75, g: 0.62, b: 0.48, a: 1}
+  _dustHeight: -40
   _maxRocks: 10
   _maxWrecks: 5
   _clearRadius: 80

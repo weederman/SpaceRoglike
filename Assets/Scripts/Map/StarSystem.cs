@@ -4,7 +4,9 @@ using UnityEngine;
 /// <summary>
 /// 게임 월드에 항성계 맵(StarSystemData)을 펼친다.
 ///  - 씬에 놓인 정거장(StationZone.Home)이 데이터의 모항 정거장 자리에 오도록 항성(원점)의 월드 위치를 정한다.
-///    그래서 씬은 그대로 두고, 나머지 정거장 9곳은 런타임에 만든다(정거장 그림 + 구역 → 어느 정거장이든 상점이 열린다).
+///    그래서 씬은 그대로 두고, 나머지 정거장 9곳은 런타임에 만든다(구역 → 어느 정거장이든 상점이 열린다).
+///  - 정거장 10곳 모두 Trading Outpost 3D 모델로 보인다(함선이 다니는 높이보다 아래에 놓여 함선이 위로 지나간다).
+///    모항의 흰 평면과 런타임 정거장의 구역 판정면은 보이지 않게 하고 판정에만 쓴다.
 ///  - 플레이어가 어떤 장소(정거장/워프 비콘) 가까이에 있는지 판정해 "지역"으로 알린다(OnAreaChanged).
 ///    소행성 벨트의 비콘 지역에 들어오면 비콘(레벨 색)과 소행성 지대를 깔고, 벗어나면 치운다.
 ///  - 궤도 사이 이동은 워프로만 한다(StarSystemWarp). 지역 안에서만 직접 비행한다.
@@ -62,10 +64,14 @@ public class StarSystem : MonoBehaviour
     [Tooltip("비콘이 화면 오른쪽 위에 보이도록 비콘의 왼쪽 아래에 도착한다")]
     [SerializeField] private Vector2 _beaconArrivalOffset = new Vector2(-150f, -90f);
 
-    [Header("정거장 (모항 외 9곳)")]
-    [Tooltip("정거장 그림 (위에서 내려다본 모습, 바닥에 눕힌다). 3D 정거장 모델이 생기면 교체.")]
-    [SerializeField] private Sprite _stationSprite;
-    [Tooltip("정거장 그림의 긴 변 월드 크기. 이 범위가 정거장 구역(상점이 열리는 곳)이다.")]
+    [Header("정거장")]
+    [Tooltip("정거장 모델 (Trading Outpost)")]
+    [SerializeField] private GameObject _stationModel;
+    [Tooltip("정거장 모델의 긴 쪽 월드 크기")]
+    [SerializeField, Min(10f)] private float _stationModelLength = 480f;
+    [Tooltip("정거장 모델 중심을 함선이 다니는 높이보다 이만큼 아래에 둔다 (함선이 위로 지나가게)")]
+    [SerializeField] private float _stationModelDepth = 110f;
+    [Tooltip("모항 외 정거장의 구역(상점이 열리는 곳) 한 변의 월드 크기")]
     [SerializeField, Min(10f)] private float _stationSize = 300f;
 
     [Header("비콘 지역")]
@@ -160,32 +166,62 @@ public class StarSystem : MonoBehaviour
     {
         for (int i = 0; i < _data.stations.Length; i++)
         {
-            if (i == _data.homeStation)
-                continue;
-
             StarSystemData.Station s = _data.stations[i];
             Vector3 pos = StationWorld(i);
 
             var go = new GameObject($"Station_{s.name}");
             go.transform.SetParent(transform, false);
             go.transform.position = pos;
+            CreateStationModel(go.transform, s.angle);
 
-            // 위에서 내려다본 정거장 그림을 바닥에 눕힌다 (모항의 흰 평면과 같은 높이)
-            var art = new GameObject("Art");
-            art.transform.SetParent(go.transform, false);
-            art.transform.localRotation = Quaternion.Euler(90f, s.angle, 0f);
-            var renderer = art.AddComponent<SpriteRenderer>();
-            renderer.sprite = _stationSprite;
-            renderer.sortingOrder = -30; // 함선·소행성보다 뒤
-            if (_stationSprite != null)
-            {
-                float longSide = Mathf.Max(_stationSprite.bounds.size.x, _stationSprite.bounds.size.y);
-                art.transform.localScale = Vector3.one * (_stationSize / longSide);
-            }
+            if (i == _data.homeStation)
+                continue; // 모항은 씬의 정거장 구역을 쓴다
+
+            // 구역 판정면: 보이지 않는 평면 (상점이 열리는 범위)
+            GameObject area = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            area.name = "ZoneArea";
+            Destroy(area.GetComponent<Collider>());
+            area.transform.SetParent(go.transform, false);
+            area.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            area.transform.localScale = new Vector3(_stationSize, _stationSize, 1f);
+            var renderer = area.GetComponent<MeshRenderer>();
+            renderer.forceRenderingOff = true;
 
             var zone = go.AddComponent<StationZone>();
             zone.Init(renderer, s.name);
         }
+
+        // 모항의 흰 평면은 판정에만 쓰고 보이지 않게 한다 (모델이 대신 보인다)
+        StationZone home = StationZone.Home;
+        if (home != null && home.Area != null && _stationModel != null)
+            home.Area.forceRenderingOff = true;
+    }
+
+    private void CreateStationModel(Transform station, float yaw)
+    {
+        if (_stationModel == null)
+            return;
+
+        GameObject model = Instantiate(_stationModel, station);
+        model.name = "Model";
+        model.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+        model.transform.position = new Vector3(station.position.x, Origin.y - _stationModelDepth, station.position.z);
+
+        // 장식용이라 판정은 없다 (상점 구역은 StationZone이 따로 판정한다)
+        foreach (Collider c in model.GetComponentsInChildren<Collider>(true))
+            Destroy(c);
+
+        var bounds = new Bounds();
+        bool any = false;
+        foreach (Renderer r in model.GetComponentsInChildren<Renderer>(true))
+        {
+            if (!any) { bounds = r.bounds; any = true; }
+            else bounds.Encapsulate(r.bounds);
+        }
+
+        float longest = any ? Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z)) : 0f;
+        if (longest > 0.001f)
+            model.transform.localScale = Vector3.one * (_stationModelLength / longest);
     }
 
     // ── 좌표 ──────────────────────────────────────────

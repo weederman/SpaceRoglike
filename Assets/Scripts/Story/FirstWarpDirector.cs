@@ -11,7 +11,8 @@ using UnityEngine.UI;
 ///  s3_depart        함선이 정거장에서 빠져나가 속도를 올린다 (정거장이 뒤로 멀어진다)
 ///  s3_beacon_show   앞쪽에 워프 비콘이 나타난다. 이 줄의 waitFor 때문에 플레이어가 비콘을 클릭해야 다음으로 넘어간다
 ///  s3_warp_charge   엔진이 푸른빛으로 차오른다 (충전)
-///  s3_warp_go       워프 아웃 이펙트와 함께 함선이 쏘아져 나가 푸른 워프 터널로 들어간다
+///  s3_warp_go       앞쪽에 워프 게이트(워프 아웃 이펙트)가 열리고, 함선이 감속 없이 게이트로 돌진해 그대로 푸른 워프 터널로 들어간다
+///                   (터널 안에서는 워프 엔진음이 반복된다)
 ///  s3_warp_arrive   하얗게 번쩍인 뒤 소행성 지대에 도착한다 (암석과 선박 잔해가 흩어진 곳)
 ///
 /// 장면 6("귀환", 시퀀스 "tutorial_return")의 귀환 워프도 같은 터널 무대를 쓰므로 여기서 한다:
@@ -27,6 +28,7 @@ public class FirstWarpDirector : MonoBehaviour
     private const string CuePrefix = "s3_";
     private const string ReturnSequenceId = "tutorial_return";
     private const string ReturnCue = "s6_return";
+    private const string InWarpSound = "inwarp"; // SoundTable 이름
 
     [Header("에셋 (프리팹에서 연결)")]
     [SerializeField] private WarpTunnelStage _stage;
@@ -52,6 +54,10 @@ public class FirstWarpDirector : MonoBehaviour
 
     [Header("충전 / 도착")]
     [SerializeField] private float _chargeSeconds = 2.2f;
+    [Tooltip("함선 앞쪽에 워프 게이트를 여는 거리. 함선은 멈춘 상태에서 점점 빨라지며 이 거리를 돌진한다.")]
+    [SerializeField, Min(10f)] private float _gateDistance = 170f;
+    [Tooltip("게이트까지 돌진하는 시간(초). 감속하지 않고 닿는 순간 터널로 들어간다.")]
+    [SerializeField, Min(0.2f)] private float _dashSeconds = 2f;
     [Tooltip("워프 터널 안에 최소한 머무는 시간(초). 대사를 빨리 넘겨도 이 시간은 터널을 보여준다.")]
     [SerializeField] private float _minTunnelSeconds = 5f;
     [Tooltip("소행성 지대 도착 위치 (XZ). 항성계(StarSystem)가 있으면 그 튜토리얼 비콘(레벨 1)에 도착하고, 없을 때만 이 값을 쓴다.")]
@@ -86,7 +92,6 @@ public class FirstWarpDirector : MonoBehaviour
     private bool _arrived;
     private WarpBeacon _beacon;
     private GameObject _warpOut;
-    private F3DWarpJump _warpOutJump;
     private AsteroidField _field;
     private bool _returned;
 
@@ -100,6 +105,7 @@ public class FirstWarpDirector : MonoBehaviour
     {
         StoryPlayer.OnCue -= HandleCue;
         StoryPlayer.OnSequenceEnded -= HandleEnded;
+        GameAudio.StopLoop(this);
     }
 
     private void Awake()
@@ -260,38 +266,37 @@ public class FirstWarpDirector : MonoBehaviour
         TakeControl();
         EnsureDeparted();
 
-        Vector3 dir = _departDirection.normalized;
-        _warpOut = Instantiate(_warpOutPrefab, _ship.transform.position, Quaternion.LookRotation(dir));
-        _warpOutJump = _warpOut.GetComponent<F3DWarpJump>();
-        if (_warpOutJump != null)
-            _warpOutJump.DebugLoop = false; // 프리팹은 4초마다 반복 재생하도록 되어 있다 (Start 전에 끈다)
+        yield return DashIntoTunnel(_ship.transform.position, _departDirection.normalized);
 
-        // 이펙트가 충전하다가 함선을 쏘아 보낸다. 충분히 멀어질 때까지 이펙트가 정한 위치를 따라간다.
-        float timeout = Time.time + 7f;
-        Quaternion rot = Quaternion.LookRotation(dir);
-        while (Time.time < timeout && Vector3.Distance(_ship.transform.position, _departEnd) < 110f)
-        {
-            if (_warpOutJump != null && _warpOutJump.ShipPos != null)
-                MoveShip(_warpOutJump.ShipPos.position, rot);
-
-            yield return null;
-        }
-
-        // 쏘아져 나가며 사라지고 하얗게 번쩍인 뒤 터널 안으로
-        SetShipVisible(false);
-        yield return FlashTo(1f, 0.25f);
-
-        if (_warpOut != null) Destroy(_warpOut);
         if (_beacon != null) Destroy(_beacon.gameObject);
         _beacon = null;
         _chargeLight.enabled = false;
 
+        yield return FlashTo(0f, 0.7f);
+    }
+
+    /// <summary>
+    /// 앞쪽에 워프 게이트를 열고, 함선이 감속 없이 점점 빨라지며 돌진한다. 게이트에 닿으면 같은 속도로 계속 나아가는 채로
+    /// 하얗게 번쩍이고 곧바로 워프 터널로 들어간다. 섬광이 덮인 상태로 끝나니, 부르는 쪽이 섬광을 걷는다.
+    /// </summary>
+    private IEnumerator DashIntoTunnel(Vector3 start, Vector3 dir)
+    {
+        Quaternion rot = Quaternion.LookRotation(dir);
+        System.Action<Vector3> move = p => MoveShip(p, rot);
+
+        _warpOut = WarpDash.SpawnGate(_warpOutPrefab, start, dir, _gateDistance);
+        yield return WarpDash.Accelerate(start, dir, _gateDistance, _dashSeconds, move);
+
+        Coroutine coast = StartCoroutine(WarpDash.Coast(start + dir * _gateDistance, dir,
+            WarpDash.FinalSpeed(_gateDistance, _dashSeconds), move));
+        yield return FlashTo(1f, 0.25f);
+        StopCoroutine(coast);
+
+        if (_warpOut != null) Destroy(_warpOut);
         _cameraController.enabled = false;
         if (_grid != null) _grid.gameObject.SetActive(false);
-        SetShipVisible(true);
         _stage.Enter(_ship.transform, _rb, _cam);
-
-        yield return FlashTo(0f, 0.7f);
+        GameAudio.StartLoop(InWarpSound, this);
     }
 
     private IEnumerator StepArrive()
@@ -324,42 +329,17 @@ public class FirstWarpDirector : MonoBehaviour
         }
     }
 
-    /// <summary>장면 6 귀환: 바라보는 방향으로 워프 아웃 → 짧은 터널 → 정거장 격납고 자리에 도착.</summary>
+    /// <summary>장면 6 귀환: 바라보는 방향으로 워프 게이트에 돌진 → 짧은 터널 → 정거장 격납고 자리에 도착.</summary>
     private IEnumerator StepReturn()
     {
         TakeControl();
 
-        Vector3 start = _ship.transform.position;
         Vector3 dir = _ship.transform.forward;
         dir.y = 0f;
         if (dir.sqrMagnitude < 0.01f)
             dir = Vector3.forward;
-        dir.Normalize();
-        Quaternion rot = Quaternion.LookRotation(dir);
 
-        _warpOut = Instantiate(_warpOutPrefab, start, rot);
-        _warpOutJump = _warpOut.GetComponent<F3DWarpJump>();
-        if (_warpOutJump != null)
-            _warpOutJump.DebugLoop = false;
-
-        float timeout = Time.time + 7f;
-        while (Time.time < timeout && Vector3.Distance(_ship.transform.position, start) < 110f)
-        {
-            if (_warpOutJump != null && _warpOutJump.ShipPos != null)
-                MoveShip(_warpOutJump.ShipPos.position, rot);
-
-            yield return null;
-        }
-
-        SetShipVisible(false);
-        yield return FlashTo(1f, 0.25f);
-
-        if (_warpOut != null) Destroy(_warpOut);
-        _cameraController.enabled = false;
-        if (_grid != null) _grid.gameObject.SetActive(false);
-        SetShipVisible(true);
-        _stage.Enter(_ship.transform, _rb, _cam);
-
+        yield return DashIntoTunnel(_ship.transform.position, dir.normalized);
         yield return FlashTo(0f, 0.6f);
 
         while (_stage.IsActive && _stage.ActiveSeconds < _returnTunnelSeconds)
@@ -433,6 +413,8 @@ public class FirstWarpDirector : MonoBehaviour
 
     private void LeaveTunnel()
     {
+        GameAudio.StopLoop(this);
+
         if (_stage.IsActive)
             _stage.Exit();
 

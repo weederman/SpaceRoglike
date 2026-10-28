@@ -16,6 +16,7 @@ public class QuestTracker : MonoBehaviour
 {
     private const string AcceptPrefix = "quest_accept:";
     private const string DonePrefix = "quest_done:";
+    private const string AcceptSound = "quest_accept"; // SoundTable 이름
 
     [SerializeField] private RectTransform _panel;
     [SerializeField] private CanvasGroup _group;
@@ -59,6 +60,8 @@ public class QuestTracker : MonoBehaviour
         if (cue.StartsWith(AcceptPrefix))
         {
             Accept(cue.Substring(AcceptPrefix.Length).Trim());
+            if (!StoryPlayer.IsSkipping)
+                GameAudio.Play(AcceptSound);
         }
         else if (cue.StartsWith(DonePrefix))
         {

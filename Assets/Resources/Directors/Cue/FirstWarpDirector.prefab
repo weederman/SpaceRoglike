@@ -770,8 +770,12 @@ MonoBehaviour:
   _departSeconds: 6.5
   _beaconDistance: 335
   _chargeSeconds: 2.2
+  _gateDistance: 170
+  _dashSeconds: 2
   _minTunnelSeconds: 5
   _arrivalXZ: {x: 2600, y: 2400}
+  _returnTunnelSeconds: 3.5
+  _returnDockOffset: {x: 0, y: -55}
 --- !u!1 &6317424722705434494
 GameObject:
   m_ObjectHideFlags: 0

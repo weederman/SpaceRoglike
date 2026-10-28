@@ -54,6 +54,9 @@ public class StationZone : MonoBehaviour
     public event Action Exited;
 
     public bool IsInside { get; private set; }
+
+    /// <summary>구역을 표시하는 Renderer (판정 범위)</summary>
+    public Renderer Area => _area;
     public bool IsHome { get; private set; } = true;
 
     /// <summary>정거장 이름 (항성계 데이터에서 받는다. 모항은 StarSystem이 채운다)</summary>

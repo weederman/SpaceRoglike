@@ -4,7 +4,7 @@
       "id": "tutorial_tavern",
       "then": "tutorial_hangar",
       "lines": [
-        { "cue": "bg:tavern", "text": "정거장 외벽 너머로 거대한 행성이 천천히 회전한다. 낡은 환풍기 소리와 술잔 부딪치는 소리, 취객들의 웃음소리가 뒤섞인다." },
+        { "cue": "bg:tavern;bgm:tavern", "text": "정거장 외벽 너머로 거대한 행성이 천천히 회전한다. 낡은 환풍기 소리와 술잔 부딪치는 소리, 취객들의 웃음소리가 뒤섞인다." },
         { "text": "플레이어가 구석 자리에 앉아 술을 마신다. 빈 잔을 내려놓는 순간, 누군가 맞은편 의자를 끌어당긴다." },
 
         { "cue": "bg:tavern_talk", "speaker": "ras",  "text": "이봐. 자네가 그 유명한 UTI의 제국 파일럿이라면서?" },
@@ -70,7 +70,7 @@
         { "speaker": "ras",  "text": "아, 그리고 한 가지 충고하지. 해적들이 먼저 총을 겨누면 영웅처럼 굴지 마. 우주는 용감한 놈보다 살아남은 놈을 더 오래 기억하거든." },
         { "cue": "bg:tavern", "text": "라스가 술집을 떠난다. 플레이어의 단말기에 임무 좌표와 출항 준비 알림이 도착한다." },
 
-        { "cue": "bg:off", "delay": 1.2 },
+        { "cue": "bg:off;bgm_stop", "delay": 1.2 },
         { "cue": "quest_accept:frontier_gold", "speaker": "system", "text": "[임무 수락: 변방의 황금]" }
       ]
     }

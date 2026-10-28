@@ -28,6 +28,10 @@ public class PrologueDirector : MonoBehaviour
 {
     public const string SequenceId = "prologue";
     public const string SkipPrefKey = "dev.skipPrologue";
+
+    // SoundTable 이름
+    private const string AlarmSound = "alarm";
+    private const string WhiteoutSound = "whiteout";
     private const string ResourcePath = "Directors/PrologueDirector";
 
     private static bool _started;
@@ -69,8 +73,6 @@ public class PrologueDirector : MonoBehaviour
     [Tooltip("접근을 시작하는 먼 자리 (함선 기준)")]
     [SerializeField] private Vector2 _patrolStartXZ = new Vector2(330f, 400f);
     [SerializeField] private float _patrolApproachSeconds = 5f;
-    [Tooltip("프롤로그 동안 입혀 둘 '원래 함선(수송선)' 머티리얼. 비워 두면 바꾸지 않는다. 보상 함선을 받으면 원래 머티리얼로 돌아온다.")]
-    [SerializeField] private Material _oldShipMaterial;
     [Tooltip("정거장 위치 기준으로 함선을 놓을 자리 (Y는 함선 높이를 맞추기 위해)")]
     [SerializeField] private Vector3 _dockOffset = new Vector3(0f, 25f, -55f);
 
@@ -161,8 +163,6 @@ public class PrologueDirector : MonoBehaviour
     private Material _beamMaterial;
     private float _approach;            // 0 → 1: 순찰함 접근 진행도
     private float _beamStrength;        // 0 → 1: 견인 광선 세기
-    private MeshRenderer _shipHull;
-    private Material _newShipMaterial;
     private string _stormWarningText;
     private bool _newShipApplied;
     private bool _dockApplied;
@@ -234,6 +234,7 @@ public class PrologueDirector : MonoBehaviour
     {
         StoryPlayer.OnCue -= HandleCue;
         StoryPlayer.OnSequenceEnded -= HandleEnded;
+        GameAudio.StopLoop(this);
 
         ClearPatrols();
 
@@ -262,13 +263,8 @@ public class PrologueDirector : MonoBehaviour
         FindHud();
         if (_hud != null) _hud.alpha = 0f;
 
-        // 프롤로그 동안은 "원래 함선(수송선)"의 모습. 보상 함선을 받으면(ApplyNewShip) 원래 머티리얼로 돌아온다.
-        _shipHull = _ship.GetComponent<MeshRenderer>();
-        if (_shipHull != null && _oldShipMaterial != null)
-        {
-            _newShipMaterial = _shipHull.sharedMaterial;
-            _shipHull.sharedMaterial = _oldShipMaterial;
-        }
+        // 프롤로그 동안은 주인공의 원래 함선(UTI 화물선)의 모습. 보상 함선을 받으면(ApplyNewShip) 소형 전투선이 된다.
+        PlayerShipAppearance.For(_ship).Set(PlayerShipAppearance.Look.Freighter);
 
         _shipRb.velocity = Vector3.zero;
         _shipRb.angularVelocity = Vector3.zero;
@@ -510,6 +506,7 @@ public class PrologueDirector : MonoBehaviour
 
     private IEnumerator StepWhiteout()
     {
+        GameAudio.Play(WhiteoutSound);
         _shakeTarget = 1f;
         _warningPulse = false;
         StartCoroutine(HidePopup(_warningPopup, 0.35f));
@@ -733,7 +730,7 @@ public class PrologueDirector : MonoBehaviour
         }
     }
 
-    /// <summary>원래 함선(수송선) 모습을 보상으로 받은 새 함선(코르벳)으로 되돌린다. 여러 번 불러도 안전하다.</summary>
+    /// <summary>원래 함선(화물선) 모습을 보상으로 받은 새 함선(소형 전투선)으로 바꾼다. 여러 번 불러도 안전하다.</summary>
     private void ApplyNewShip()
     {
         if (_newShipApplied)
@@ -741,8 +738,7 @@ public class PrologueDirector : MonoBehaviour
 
         _newShipApplied = true;
 
-        if (_shipHull != null && _newShipMaterial != null)
-            _shipHull.sharedMaterial = _newShipMaterial;
+        PlayerShipAppearance.For(_ship).Set(PlayerShipAppearance.Look.Fighter);
 
         SetHeadlights(true);
     }
@@ -1054,15 +1050,18 @@ public class PrologueDirector : MonoBehaviour
         group.gameObject.SetActive(false);
     }
 
-    /// <summary>경고창이 깜빡이며 위급함을 알린다. _warningPulse를 끄면 멈춘다(닫히는 페이드와 알파를 다투지 않도록).</summary>
+    /// <summary>경고창이 깜빡이며 경보음과 함께 위급함을 알린다. _warningPulse를 끄면 멈춘다(닫히는 페이드와 알파를 다투지 않도록).</summary>
     private IEnumerator PulsePopup(CanvasGroup group)
     {
         _warningPulse = true;
+        GameAudio.StartLoop(AlarmSound, this);
 
         while (_warningPulse && group.gameObject.activeSelf)
         {
             group.alpha = 0.78f + 0.22f * (0.5f + 0.5f * Mathf.Sin(Time.time * 9f));
             yield return null;
         }
+
+        GameAudio.StopLoop(this);
     }
 }

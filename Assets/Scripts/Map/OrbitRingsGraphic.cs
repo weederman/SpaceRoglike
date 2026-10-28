@@ -19,6 +19,18 @@ public class OrbitRingsGraphic : MaskableGraphic
     }
 
     private readonly List<Ring> _rings = new List<Ring>();
+    private Vector2 _offset;
+
+    /// <summary>고리들의 중심을 사각형 가운데에서 이만큼 옮긴다 (지도 이동)</summary>
+    public Vector2 Offset
+    {
+        get => _offset;
+        set
+        {
+            _offset = value;
+            SetVerticesDirty();
+        }
+    }
 
     public void Clear()
     {
@@ -37,7 +49,7 @@ public class OrbitRingsGraphic : MaskableGraphic
     protected override void OnPopulateMesh(VertexHelper vh)
     {
         vh.Clear();
-        Vector2 center = rectTransform.rect.center;
+        Vector2 center = rectTransform.rect.center + _offset;
 
         foreach (Ring ring in _rings)
         {

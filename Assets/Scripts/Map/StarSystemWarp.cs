@@ -5,7 +5,8 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 항성계 안의 장소(정거장/워프 비콘)로 워프한다. 궤도 사이 이동은 이것으로만 한다.
-/// 충전(함선 정지) → 하얀 섬광 → 워프 터널(WarpTunnelStage, 거리에 따라 길게) → 섬광 → 도착 지점에 함선을 놓는다.
+/// 앞쪽에 워프 게이트가 열리고 함선이 감속 없이 돌진(WarpDash) → 닿는 순간 하얀 섬광 → 워프 터널(WarpTunnelStage, 거리에 따라 길게,
+/// 워프 엔진음 반복) → 섬광 → 도착 지점에 함선을 놓는다.
 /// 워프하는 동안 조작은 잠기고(GameInputLock) 카메라·격자는 터널 무대가 대신 다룬다.
 /// 스토리 재생 중에는 워프할 수 없다. StarSystem 프리팹에 함께 붙는다. 출발은 항성계 지도(StarMapUI)에서 한다.
 /// </summary>
@@ -13,9 +14,14 @@ public class StarSystemWarp : MonoBehaviour
 {
     [SerializeField] private StarSystem _system;
     [SerializeField] private WarpTunnelStage _stage;
+    [Tooltip("워프 게이트 이펙트 (첫 워프와 같은 워프 아웃)")]
+    [SerializeField] private GameObject _gatePrefab;
+
+    [Header("돌진")]
+    [SerializeField, Min(10f)] private float _gateDistance = 170f;
+    [SerializeField, Min(0.2f)] private float _dashSeconds = 2f;
 
     [Header("시간 (초)")]
-    [SerializeField, Min(0f)] private float _chargeSeconds = 1.2f;
     [SerializeField, Min(0.05f)] private float _flashSeconds = 0.25f;
     [Tooltip("터널 안에 머무는 시간: 가장 가까운 곳 ~ 가장 먼 곳")]
     [SerializeField] private Vector2 _tunnelSeconds = new Vector2(2.5f, 5f);
@@ -25,6 +31,8 @@ public class StarSystemWarp : MonoBehaviour
     public event Action<StarSystem.Location> OnWarpArrived;
 
     public static bool IsWarping { get; private set; }
+
+    private const string InWarpSound = "inwarp"; // SoundTable 이름
 
     /// <summary>섬광에 쓸 화면 전체 이미지 (항성계 지도 프리팹이 넘겨준다)</summary>
     public Image Flash { get; set; }
@@ -67,7 +75,7 @@ public class StarSystemWarp : MonoBehaviour
             Mathf.InverseLerp(0f, _system.Data.OuterRadius * 2f, distance));
         float baseY = _system.Origin.y;
 
-        // 충전: 함선을 세운다
+        // 조종을 가져간다 (함선을 세운다)
         bool wasEnabled = _ship.enabled;
         _ship.enabled = false;
         if (!_rb.isKinematic)
@@ -77,19 +85,40 @@ public class StarSystemWarp : MonoBehaviour
         }
 
         _rb.isKinematic = true;
-        yield return new WaitForSeconds(_chargeSeconds);
 
-        // 섬광 → 터널
+        // 바라보는 방향에 게이트를 열고 감속 없이 돌진 → 닿으면 같은 속도로 나아가는 채로 섬광 → 터널
+        Vector3 start = _ship.transform.position;
+        Vector3 dir = _ship.transform.forward;
+        dir.y = 0f;
+        dir = dir.sqrMagnitude > 0.01f ? dir.normalized : Vector3.forward;
+        Quaternion rot = Quaternion.LookRotation(dir);
+        Action<Vector3> move = p =>
+        {
+            _ship.transform.SetPositionAndRotation(p, rot);
+            _rb.position = p;
+            _rb.rotation = rot;
+        };
+
+        GameObject gate = WarpDash.SpawnGate(_gatePrefab, start, dir, _gateDistance);
+        yield return WarpDash.Accelerate(start, dir, _gateDistance, _dashSeconds, move);
+
+        Coroutine coast = StartCoroutine(WarpDash.Coast(start + dir * _gateDistance, dir,
+            WarpDash.FinalSpeed(_gateDistance, _dashSeconds), move));
         yield return FadeFlash(0f, 1f);
+        StopCoroutine(coast);
+
+        if (gate != null) Destroy(gate);
         if (_cameraController != null) _cameraController.enabled = false;
         if (_grid != null) _grid.gameObject.SetActive(false);
         _stage.Enter(_ship.transform, _rb, Camera.main);
+        GameAudio.StartLoop(InWarpSound, this);
         yield return FadeFlash(1f, 0f);
 
         yield return new WaitForSeconds(tunnelSeconds);
 
         // 섬광 → 도착
         yield return FadeFlash(0f, 1f);
+        GameAudio.StopLoop(this);
         _stage.Exit();
 
         Vector3 arrival = _system.ArrivalPoint(destination);
@@ -162,5 +191,7 @@ public class StarSystemWarp : MonoBehaviour
             GameInputLock.Unlock(this);
             IsWarping = false;
         }
+
+        GameAudio.StopLoop(this);
     }
 }
