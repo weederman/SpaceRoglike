@@ -36,5 +36,55 @@
         { "title": "조작",       "text": "WASD: 이동" }
       ]
     }
+  ],
+  "sequences": [
+    {
+      "id": "tutorial_combat",
+      "then": "tutorial_combat_fight",
+      "lines": [
+        { "cue": "s4_pirates_spawn", "text": "해적선 한 척이 통신을 연결한다." },
+        { "speaker": "pirate", "text": "여기는 스크랩독 편대다. 이 구역은 우리 소유다. 무장을 해제하고 화물을 넘겨라." },
+        { "speaker": "hero",   "text": "아직 아무것도 캐지 않았는데?" },
+        { "speaker": "pirate", "text": "그럼 네 함선이라도 두고 가면 되겠군." },
+        { "speaker": "hero",   "text": "협상은 끝났네." }
+      ]
+    },
+    {
+      "id": "tutorial_combat_fight",
+      "control": true,
+      "then": "tutorial_combat_end",
+      "lines": [
+        { "cue": "s4_combat_start", "text": "해적선들이 무기를 전개한다.", "delay": 2.0 },
+
+        { "cue": "tutorial_show:combat_target", "speaker": "orbis", "text": "전투 상황으로 전환합니다. 파일럿, 목표물을 지정하십시오.", "waitFor": "target_locked" },
+
+        { "cue": "tutorial_show:combat_laser", "speaker": "orbis", "text": "첫 번째 목표물 지정 완료. 레이저 무기 사용을 권장합니다.", "waitFor": "hit:LaserImpulse" },
+        { "text": "플레이어가 레이저를 발사한다. 푸른 광선이 해적선의 방어막을 강타한다." },
+
+        { "cue": "tutorial_show:combat_vulcan", "speaker": "orbis", "text": "적 방어막 감소 확인. 발칸 포대의 유효 사거리 안으로 접근하십시오.", "waitFor": "hit:Vulcan" },
+
+        { "cue": "tutorial_show:combat_maneuver", "text": "해적선이 급선회하며 반격한다. 함선의 장갑에 충격이 전해진다.", "waitFor": "player_hit" },
+        { "speaker": "hero",  "text": "생각보다 거칠군!" },
+        { "speaker": "orbis", "text": "실전 환경은 아카데미 시뮬레이터와 다릅니다." },
+        { "speaker": "hero",  "text": "그건 나도 알아!" },
+        { "text": "플레이어가 추진기를 조작해 암석 뒤로 몸을 숨긴다. 해적선이 선회하는 순간, 레이저와 발칸을 연속으로 발사한다.", "waitFor": "pirate_down" },
+
+        { "cue": "tutorial_hide", "text": "첫 번째 해적선이 폭발한다." },
+        { "speaker": "orbis",        "text": "적 함선 격파 확인. 남은 적 두 척." },
+        { "speaker": "pirate_radio", "text": "저 자식, 제국군이었잖아! 흩어져! 엄폐물을 이용해!" },
+        { "text": "두 번째 해적선이 암석 사이로 도망치려 한다.", "waitFor": "pirate2_down" },
+        { "text": "플레이어가 추격해 격파한다. 마지막 해적선은 교전을 포기하고 워프한다.", "waitFor": "pirate_escaped" }
+      ]
+    },
+    {
+      "id": "tutorial_combat_end",
+      "lines": [
+        { "cue": "s4_combat_end;quest_done:frontier_gold:clear_pirates", "speaker": "orbis", "text": "적대 신호 감소. 해당 구역의 즉각적인 위협이 해소되었습니다." },
+        { "speaker": "hero",  "text": "아카데미에서 배운 게 헛되진 않았군." },
+        { "speaker": "orbis", "text": "현재 장갑 손상률 18%. 전투 효율은 양호합니다." },
+        { "speaker": "hero",  "text": "칭찬이 너무 인색한 거 아닌가?" },
+        { "speaker": "orbis", "text": "생존하셨다는 사실 자체가 긍정적인 평가입니다." }
+      ]
+    }
   ]
 }

@@ -3,7 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 전투 HUD: 화면 아래 무기 슬롯 표시(1/2… 키, 선택된 무기 강조)와 지정한 목표의 마커(거리·방위각·쉴드/선체 게이지).
+/// 전투 HUD: 화면 아래 무기 슬롯 표시(1/2… 키, 선택된 무기 강조)와 지정한 목표의 마커(거리·방위각·쉴드/선체 게이지),
+/// 화면 위쪽 가운데의 경고 표시(ShowAlert, 예: 튜토리얼 전투의 "비상 프로토콜 발동").
 /// 무기 선택(PlayerWeaponSelector)과 목표 지정(TargetingSystem)도 같은 프리팹에 붙어 있어 함께 생성된다.
 /// 게임 시작 시 자동 생성(씬에 배치하지 않음), 씬을 다시 불러와도 유지된다.
 /// 조작이 잠긴 스토리 재생 중에는 숨고, 조작하며 듣는 스토리(control 시퀀스) 중에는 보인다.
@@ -41,9 +42,17 @@ public class CombatHud : MonoBehaviour
     [Tooltip("마커 중심 아래로 정보 글자·게이지가 차지하는 높이. 화면 아래 가장자리에서 이만큼 더 띄운다.")]
     [SerializeField, Min(0f)] private float _markerBelowHeight = 80f;
 
+    [Header("경고 (화면 위쪽 가운데)")]
+    [SerializeField] private CanvasGroup _alert;
+    [SerializeField] private TMP_Text _alertTitle;
+    [SerializeField] private TMP_Text _alertBody;
+    [Tooltip("경고가 깜빡이는 주기(초)")]
+    [SerializeField, Min(0.1f)] private float _alertPulseSeconds = 1.2f;
+
     private static CombatHud _instance;
     private RectTransform _canvasRect;
     private SpaceshipController _player;
+    private float _alertShownAt;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -71,6 +80,25 @@ public class CombatHud : MonoBehaviour
 
         _weapons.OnChanged += RefreshSlots;
         _marker.gameObject.SetActive(false);
+        _alert.gameObject.SetActive(false);
+    }
+
+    /// <summary>화면 위쪽 가운데에 경고를 띄운다. HideAlert를 부를 때까지 깜빡이며 남아 있다.</summary>
+    public static void ShowAlert(string title, string body)
+    {
+        if (_instance == null)
+            return;
+
+        _instance._alertTitle.text = title;
+        _instance._alertBody.text = body;
+        _instance._alertShownAt = Time.unscaledTime;
+        _instance._alert.gameObject.SetActive(true);
+    }
+
+    public static void HideAlert()
+    {
+        if (_instance != null)
+            _instance._alert.gameObject.SetActive(false);
     }
 
     private void OnDestroy()
@@ -90,6 +118,19 @@ public class CombatHud : MonoBehaviour
         _root.alpha = _player != null && !storyLocked ? 1f : 0f;
 
         UpdateMarker();
+        UpdateAlert();
+    }
+
+    private void UpdateAlert()
+    {
+        if (!_alert.gameObject.activeSelf)
+            return;
+
+        // 처음 0.6초는 크게 튀어나오고, 이후로는 천천히 깜빡인다
+        float t = Time.unscaledTime - _alertShownAt;
+        float pop = Mathf.Clamp01(t / 0.6f);
+        _alert.transform.localScale = Vector3.one * Mathf.Lerp(1.25f, 1f, 1f - (1f - pop) * (1f - pop));
+        _alert.alpha = pop < 1f ? pop : Mathf.Lerp(0.55f, 1f, 0.5f + 0.5f * Mathf.Cos(t * Mathf.PI * 2f / _alertPulseSeconds));
     }
 
     private void RefreshSlots()

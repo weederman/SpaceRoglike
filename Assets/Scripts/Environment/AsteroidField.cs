@@ -7,10 +7,22 @@ using UnityEngine;
 /// 함선 앞쪽 가장자리로 옮겨져 서서히 나타난다. 그래서 어디로 가도 주변 밀도가 같고, 화면이 암석으로 가득 차지 않는다.
 /// 2D Space Kit의 소행성/잔해 스프라이트를 쓰되, 바닥에 눕히지 않고 항상 카메라를 바라보게 세워서(빌보드) 입체감을 살린다.
 /// 암석은 카메라 방향 축을 중심으로 천천히 돈다. 장식용이라 충돌체는 없다.
+/// 큰 암석끼리는 가장자리 사이가 최소 _minRockGap만큼 떨어지게 놓는다 (잔해 조각은 작아서 간격을 따지지 않는다).
 /// 난수는 시드가 고정이라 같은 움직임이면 같은 배치가 나온다.
+/// 해적선 등이 암석 사이에 숨을 자리를 찾을 수 있도록 지금 놓인 암석 목록을 GetRocks로 알려 준다.
 /// </summary>
 public class AsteroidField : MonoBehaviour
 {
+    /// <summary>지금 놓인 큰 암석 하나 (수평 위치와 대략의 반지름)</summary>
+    public struct Rock
+    {
+        public Vector3 position;
+        public float radius;
+    }
+
+    /// <summary>지금 활성화된 소행성 지대 (없으면 null)</summary>
+    public static AsteroidField Active { get; private set; }
+
     [SerializeField] private Sprite[] _rocks;
     [SerializeField] private Sprite[] _wrecks;
 
@@ -28,6 +40,11 @@ public class AsteroidField : MonoBehaviour
     [SerializeField] private Vector2 _rockSize = new Vector2(32f, 105f);
     [SerializeField] private Vector2 _wreckSize = new Vector2(18f, 42f);
 
+    [Tooltip("큰 암석끼리 가장자리 사이의 최소 간격 (월드 단위)")]
+    [SerializeField, Min(0f)] private float _minRockGap = 30f;
+    [Tooltip("간격을 지키는 자리를 찾을 때 시도하는 횟수. 끝내 못 찾으면 크기를 줄이고, 그래도 안 되면 가장 넓은 자리에 둔다.")]
+    [SerializeField, Min(1)] private int _placeAttempts = 24;
+
     [Tooltip("함선이 다니는 높이 기준으로 암석 중심의 높이 범위 (카메라를 향해 서 있으므로 위아래로 퍼진다)")]
     [SerializeField] private Vector2 _height = new Vector2(-8f, 6f);
     [SerializeField, Min(0.05f)] private float _fadeInSeconds = 1.2f;
@@ -41,12 +58,36 @@ public class AsteroidField : MonoBehaviour
         public float roll;          // 카메라 방향 축 기준 시작 각도
         public float spinPerSecond; // 천천히 도는 속도(도/초)
         public float fade;          // 0 → 1: 새로 놓인 뒤 서서히 나타나는 정도
+        public float radius;        // 긴 변 기준 대략의 반지름 (간격 계산용)
+        public bool placed;
     }
 
     private readonly List<Piece> _pieces = new List<Piece>();
     private System.Random _rng;
     private Transform _target;
     private Camera _camera;
+
+    private void OnEnable()
+    {
+        Active = this;
+    }
+
+    private void OnDisable()
+    {
+        if (Active == this)
+            Active = null;
+    }
+
+    /// <summary>지금 놓인 큰 암석들을 result에 채운다 (잔해 조각은 빼고).</summary>
+    public void GetRocks(List<Rock> result)
+    {
+        result.Clear();
+        foreach (Piece p in _pieces)
+        {
+            if (!p.isWreck && p.placed)
+                result.Add(new Rock { position = p.transform.position, radius = p.radius });
+        }
+    }
 
     private void Start()
     {
@@ -89,7 +130,64 @@ public class AsteroidField : MonoBehaviour
     {
         Vector3 center = _target != null ? _target.position : transform.position;
 
-        // 반지름: 처음엔 주위 전체에, 옮길 때는 가장자리 근처에 (화면 밖에서 나타나도록)
+        Sprite[] sprites = p.isWreck ? _wrecks : _rocks;
+        Sprite sprite = sprites[_rng.Next(sprites.Length)];
+        p.renderer.sprite = sprite;
+
+        Vector2 sizeRange = p.isWreck ? _wreckSize : _rockSize;
+        float size = Mathf.Lerp(sizeRange.x, sizeRange.y, (float)_rng.NextDouble());
+
+        // 큰 암석은 다른 암석과 간격을 지키는 자리를 찾는다. 못 찾으면 크기를 줄여 가며 다시 찾고,
+        // 끝내 없으면 이웃과 가장 덜 겹치는 자리에 둔다.
+        Vector3 position = RandomOffset(center, initial);
+        if (!p.isWreck)
+        {
+            float bestGap = float.NegativeInfinity;
+            Vector3 best = position;
+
+            for (int attempt = 0; attempt < _placeAttempts; attempt++)
+            {
+                Vector3 candidate = attempt == 0 ? position : RandomOffset(center, initial);
+                float gap = SmallestGap(p, candidate, size * 0.5f);
+
+                if (gap >= _minRockGap)
+                {
+                    bestGap = gap;
+                    best = candidate;
+                    break;
+                }
+
+                if (gap > bestGap)
+                {
+                    bestGap = gap;
+                    best = candidate;
+                }
+
+                // 시도의 절반이 지나도 자리가 없으면 조금씩 작게
+                if (attempt >= _placeAttempts / 2)
+                    size = Mathf.Max(sizeRange.x, size * 0.92f);
+            }
+
+            position = best;
+        }
+
+        p.transform.position = position;
+
+        // 스프라이트 크기가 제각각이라, 긴 변이 원하는 월드 크기가 되도록 배율을 맞춘다
+        float longSide = Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y);
+        p.transform.localScale = Vector3.one * (size / longSide);
+        p.radius = size * 0.5f;
+        p.placed = true;
+
+        p.roll = (float)_rng.NextDouble() * 360f;
+        p.spinPerSecond = Mathf.Lerp(-4f, 4f, (float)_rng.NextDouble());
+        p.fade = 0f;
+        SetAlpha(p, 0f);
+    }
+
+    /// <summary>함선 주위의 무작위 자리. 처음엔 주위 전체에, 옮길 때는 가장자리 근처에(화면 밖에서 나타나도록).</summary>
+    private Vector3 RandomOffset(Vector3 center, bool initial)
+    {
         float minR = initial ? _clearRadius : _aroundRadius * 0.8f;
         float r = Mathf.Sqrt(Mathf.Lerp(minR * minR, _aroundRadius * _aroundRadius, (float)_rng.NextDouble()));
 
@@ -97,23 +195,24 @@ public class AsteroidField : MonoBehaviour
         float spread = initial && _rng.NextDouble() < 0.7 ? 70f : 110f;
         float angle = Mathf.Lerp(-spread, spread, (float)_rng.NextDouble()) * Mathf.Deg2Rad;
 
-        Vector3 offset = new Vector3(Mathf.Sin(angle) * r, Mathf.Lerp(_height.x, _height.y, (float)_rng.NextDouble()), Mathf.Cos(angle) * r);
-        p.transform.position = center + offset;
+        return center + new Vector3(Mathf.Sin(angle) * r, Mathf.Lerp(_height.x, _height.y, (float)_rng.NextDouble()), Mathf.Cos(angle) * r);
+    }
 
-        Sprite[] sprites = p.isWreck ? _wrecks : _rocks;
-        Sprite sprite = sprites[_rng.Next(sprites.Length)];
-        p.renderer.sprite = sprite;
+    /// <summary>이 자리에 반지름 radius인 암석을 두면, 이미 놓인 다른 큰 암석과 가장자리 사이가 가장 가까운 거리 (수평 기준).</summary>
+    private float SmallestGap(Piece self, Vector3 position, float radius)
+    {
+        float smallest = float.PositiveInfinity;
+        foreach (Piece other in _pieces)
+        {
+            if (other == self || other.isWreck || !other.placed)
+                continue;
 
-        // 스프라이트 크기가 제각각이라, 긴 변이 원하는 월드 크기가 되도록 배율을 맞춘다
-        Vector2 sizeRange = p.isWreck ? _wreckSize : _rockSize;
-        float longSide = Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y);
-        float size = Mathf.Lerp(sizeRange.x, sizeRange.y, (float)_rng.NextDouble());
-        p.transform.localScale = Vector3.one * (size / longSide);
+            Vector3 d = other.transform.position - position;
+            d.y = 0f;
+            smallest = Mathf.Min(smallest, d.magnitude - radius - other.radius);
+        }
 
-        p.roll = (float)_rng.NextDouble() * 360f;
-        p.spinPerSecond = Mathf.Lerp(-4f, 4f, (float)_rng.NextDouble());
-        p.fade = 0f;
-        SetAlpha(p, 0f);
+        return smallest;
     }
 
     private void LateUpdate()

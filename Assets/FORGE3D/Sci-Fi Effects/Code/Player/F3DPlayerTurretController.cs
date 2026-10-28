@@ -13,7 +13,9 @@ namespace FORGE3D
 
         void Update()
         {
-            CheckForTurn();
+            // [추가] 조작이 잠긴 동안(스토리 재생 등)에는 터렛이 마우스를 따라 돌지도 않는다
+            if (!GameInputLock.IsLocked)
+                CheckForTurn();
             CheckForFire();
         }
 

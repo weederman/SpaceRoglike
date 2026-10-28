@@ -2,6 +2,7 @@
   "sequences": [
     {
       "id": "tutorial_warp",
+      "then": "tutorial_combat",
       "lines": [
         { "cue": "s3_depart", "text": "함선이 격납고를 빠져나온다. 정거장의 거대한 구조물이 뒤로 멀어진다." },
 

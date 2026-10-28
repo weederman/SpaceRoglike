@@ -6,6 +6,8 @@
     { "id": "orbis",     "name": "오르비스",       "color": "#7FD6FF", "side": "left" },
     { "id": "ship_ai",   "name": "함선 AI",       "color": "#7FD6FF", "side": "left" },
     { "id": "patrol",    "name": "자치령 통신",    "color": "#FF8A7A", "side": "left" },
+    { "id": "pirate",    "name": "해적 선장",      "color": "#FF6B5A", "side": "left" },
+    { "id": "pirate_radio", "name": "해적 선장 (무전)", "color": "#FF6B5A", "side": "left" },
     { "id": "system",    "name": "시스템",        "color": "#FFD166", "side": "left" }
   ]
 }

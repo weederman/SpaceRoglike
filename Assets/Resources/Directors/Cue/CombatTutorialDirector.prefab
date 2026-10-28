@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &539170632543377813
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2206920489697394325}
+  - component: {fileID: 4645405919315999544}
+  m_Layer: 0
+  m_Name: CombatTutorialDirector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2206920489697394325
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539170632543377813}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4645405919315999544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539170632543377813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e9766d9e3d53d843aea787de2291109, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _piratePrefab: {fileID: 8257971698562278379, guid: 8dc19833dd7e04f45b045ab95b09bc54, type: 3}
+  _warpOutPrefab: {fileID: 184734, guid: f84d57d8fee5f714e86b7e77e277838f, type: 3}
+  _approachAngles:
+  - 20
+  - 75
+  - -40
+  _spawnDistance: 900
+  _holdDistance: 160
+  _pirateTuning:
+    approachSmoothTime: 2.5
+    approachMaxSpeed: 220
+    fightMaxSpeed: 32
+    fightAcceleration: 24
+    orbitDistance: 120
+    fireRange: 240
+    fireInterval: 4.5
+    fleeMaxSpeed: 40
+    fleeAcceleration: 30
+    fleeGiveUpDistance: 650
+    warpTurnSeconds: 1
+    warpMaxSeconds: 5
+    warpVanishDistance: 160
+  _playerHullFloor: 0.3

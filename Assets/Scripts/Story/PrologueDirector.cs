@@ -101,7 +101,6 @@ public class PrologueDirector : MonoBehaviour
     // ── 상태 ──
     private SpaceshipController _ship;
     private Rigidbody _shipRb;
-    private F3DPlayerTurretController _turret;
     private CameraController _cameraController;
     private Camera _cam;
     private EnemySpawner _spawner;
@@ -209,7 +208,6 @@ public class PrologueDirector : MonoBehaviour
     {
         _ship = FindObjectOfType<SpaceshipController>();
         _shipRb = _ship.GetComponent<Rigidbody>();
-        _turret = FindObjectOfType<F3DPlayerTurretController>();
         _cameraController = FindObjectOfType<CameraController>();
         _cam = Camera.main;
         _spawner = FindObjectOfType<EnemySpawner>();
@@ -257,7 +255,6 @@ public class PrologueDirector : MonoBehaviour
         // 프롤로그 동안 쓰지 않을 것들을 잠가 둔다. Start가 아직 안 돈 컴포넌트는 다시 켤 때 Start가 돈다
         // (CameraController는 Start에서 함선 뒤로 바로 자리를 잡고, EnemySpawner는 그때 적을 스폰한다).
         _ship.enabled = false;
-        if (_turret != null) _turret.enabled = false;
         _cameraController.enabled = false;
         if (_spawner != null) _spawner.enabled = false;
         if (_grid != null) _grid.gameObject.SetActive(false);
@@ -397,10 +394,11 @@ public class PrologueDirector : MonoBehaviour
     /// <summary>
     /// 프롤로그 뒤에 이어지는 시퀀스(then, 예: 튜토리얼 장면 1)가 모두 끝나면 플레이어에게 조작을 돌려준다.
     /// 이어지는 장면 동안 적이 스폰되거나 함선이 움직이면 안 되기 때문이다.
+    /// 단, 조작하며 듣는 시퀀스(control, 예: 장면 4 전투)가 시작되면 그때 돌려준다 (그 뒤로도 재생 중이 유지되므로).
     /// </summary>
     private IEnumerator FinishWhenStoryIdle()
     {
-        while (StoryPlayer.IsPlaying)
+        while (StoryPlayer.IsPlaying && !StoryPlayer.IsControlMode)
             yield return null;
 
         Finish();
@@ -826,7 +824,6 @@ public class PrologueDirector : MonoBehaviour
         _shipRb.velocity = Vector3.zero;
         _shipRb.angularVelocity = Vector3.zero;
         _ship.enabled = true;
-        if (_turret != null) _turret.enabled = true;
 
         // 적 스포너는 다시 켜지 않는다. 이어지는 튜토리얼(장면 4~)은 장면 Director가 적을 직접 만들고,
         // 튜토리얼이 끝나면 스토리 cue "enemies_on"으로 켠다.

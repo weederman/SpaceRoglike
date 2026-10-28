@@ -105,6 +105,7 @@ MonoBehaviour:
   _image: {fileID: 4197290792368919069}
   _imageHeight: 280
   _imageSpacing: 16
+  _bottomPadding: 44
   _tipTitleColor: '#FFD166'
 --- !u!1 &3678727964671425402
 GameObject:
@@ -305,6 +306,18 @@ PrefabInstance:
       value: 540
       objectReference: {fileID: 0}
     - target: {fileID: 6291282943025446251, guid: 445ccb0ce477bca4ab81e09fa82fa013, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.82
+      objectReference: {fileID: 0}
+    - target: {fileID: 6291282943025446251, guid: 445ccb0ce477bca4ab81e09fa82fa013, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.82
+      objectReference: {fileID: 0}
+    - target: {fileID: 6291282943025446251, guid: 445ccb0ce477bca4ab81e09fa82fa013, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.82
+      objectReference: {fileID: 0}
+    - target: {fileID: 6291282943025446251, guid: 445ccb0ce477bca4ab81e09fa82fa013, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -334,11 +347,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6291282943025446251, guid: 445ccb0ce477bca4ab81e09fa82fa013, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -60
+      value: -24
       objectReference: {fileID: 0}
     - target: {fileID: 6291282943025446251, guid: 445ccb0ce477bca4ab81e09fa82fa013, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -60
+      value: -84
       objectReference: {fileID: 0}
     - target: {fileID: 6291282943025446251, guid: 445ccb0ce477bca4ab81e09fa82fa013, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

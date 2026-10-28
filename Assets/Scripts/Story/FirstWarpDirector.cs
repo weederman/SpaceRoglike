@@ -54,14 +54,12 @@ public class FirstWarpDirector : MonoBehaviour
     // ── 장면 참조 ──
     private SpaceshipController _ship;
     private Rigidbody _rb;
-    private F3DPlayerTurretController _turret;
     private CameraController _cameraController;
     private InfiniteSpaceGrid _grid;
     private Camera _cam;
 
     // 제어권을 가져가기 전 상태 (프롤로그 연출이 이미 잠가 두었을 수도 있으니 "원래대로"가 아니라 "가져가기 전대로" 돌려준다)
     private bool _shipWasEnabled;
-    private bool _turretWasEnabled;
     private bool _rbWasKinematic;
     private bool _controlTaken;
 
@@ -371,7 +369,6 @@ public class FirstWarpDirector : MonoBehaviour
         _ship = FindObjectOfType<SpaceshipController>();
         _baseY = _ship.transform.position.y; // 함선이 다니는 높이. 터널 안에서 흔들려도 도착은 이 높이로.
         _rb = _ship.GetComponent<Rigidbody>();
-        _turret = FindObjectOfType<F3DPlayerTurretController>();
         _cameraController = FindObjectOfType<CameraController>();
         _grid = FindObjectOfType<InfiniteSpaceGrid>();
         _cam = Camera.main;
@@ -397,11 +394,9 @@ public class FirstWarpDirector : MonoBehaviour
 
         _controlTaken = true;
         _shipWasEnabled = _ship.enabled;
-        _turretWasEnabled = _turret != null && _turret.enabled;
         _rbWasKinematic = _rb.isKinematic;
 
         _ship.enabled = false;
-        if (_turret != null) _turret.enabled = false;
 
         // 이미 키네마틱이면(프롤로그 연출이 잠가 둔 경우) 속도를 건드릴 수 없다
         if (!_rb.isKinematic)
@@ -424,7 +419,6 @@ public class FirstWarpDirector : MonoBehaviour
         if (!_ship.enabled && _rb.isKinematic)
         {
             _ship.enabled = _shipWasEnabled;
-            if (_turret != null) _turret.enabled = _turretWasEnabled;
             _rb.isKinematic = _rbWasKinematic;
         }
     }
