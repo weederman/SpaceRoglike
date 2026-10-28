@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8697989888576721346
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4025812565665212386}
+  - component: {fileID: 3971264978344526677}
+  m_Layer: 0
+  m_Name: AsteroidField
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4025812565665212386
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8697989888576721346}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3971264978344526677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8697989888576721346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d85a54b234178442b552a4abad95d35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _rocks:
+  - {fileID: 21300000, guid: ee8261317c1ff734daa9da91d24312b3, type: 3}
+  - {fileID: 21300000, guid: 0f3a720ed8c07f14ea6b92d6fefc8c0c, type: 3}
+  - {fileID: 21300000, guid: a44af304548cb7b4aadb97582f60d728, type: 3}
+  - {fileID: 21300000, guid: f254e398beb012142a24633fa2b82def, type: 3}
+  - {fileID: 21300000, guid: 06ebc3b6f7d199745ac6895e9d0f2e09, type: 3}
+  - {fileID: 21300000, guid: 9a04f6cfae75c064997fb1ddf1827c86, type: 3}
+  _wrecks:
+  - {fileID: 21300000, guid: 8d6eaaefbef73894d96ae55f7da066ec, type: 3}
+  - {fileID: 21300000, guid: dd427b106c4115f4ea1d1c10a4c91f55, type: 3}
+  - {fileID: 21300000, guid: 57d4fd0b0aa675a4b867404cf0888d22, type: 3}
+  - {fileID: 21300000, guid: 1ac351cd14b08e04db823ec9346d42f8, type: 3}
+  - {fileID: 21300000, guid: f0e169203ece9a743b398a34d45a0269, type: 3}
+  - {fileID: 21300000, guid: e1352270d3e737942b035266f61965d4, type: 3}
+  _maxRocks: 10
+  _maxWrecks: 5
+  _clearRadius: 80
+  _aroundRadius: 280
+  _rockSize: {x: 32, y: 105}
+  _wreckSize: {x: 18, y: 42}
+  _height: {x: -8, y: 6}
+  _fadeInSeconds: 1.2
+  _seed: 4172

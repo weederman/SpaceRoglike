@@ -32,9 +32,24 @@ public class StoryPlayer : MonoBehaviour
     /// <summary>건너뛰기로 줄을 빨리 감는 중인지</summary>
     public static bool IsSkipping { get; private set; }
 
+    /// <summary>지금 대사가 기다리고 있는 신호 이름 (waitFor). 기다리는 중이 아니면 null.</summary>
+    public static string WaitingFor { get; private set; }
+
+    private readonly HashSet<string> _signals = new HashSet<string>();
+
+    /// <summary>waitFor로 기다리는 줄에 "됐다"고 알린다. 아직 그 줄에 도달하기 전이어도 기억해 두었다가 도달하면 바로 넘어간다.</summary>
+    public static void Signal(string name)
+    {
+        if (_instance != null && !string.IsNullOrEmpty(name))
+            _instance._signals.Add(name);
+    }
+
     private const string BarPrefabPath = "UI/NarrationBar";
     private const string BackdropPrefabPath = "UI/StoryBackdrop";
     private const string QuestPrefabPath = "UI/QuestTracker";
+    private const string TipsPrefabPath = "UI/TutorialTips";
+    private const string RadarPrefabPath = "UI/RadarPing";
+    private const string CueDirectorFolder = "Directors/Cue";
 
     private static StoryPlayer _instance;
 
@@ -87,6 +102,7 @@ public class StoryPlayer : MonoBehaviour
         OnSequenceEnded = null;
         IsPlaying = false;
         IsSkipping = false;
+        WaitingFor = null;
         _instance = null;
     }
 
@@ -118,6 +134,12 @@ public class StoryPlayer : MonoBehaviour
         // cue("bg:...", "quest_accept:...")를 알아듣는 배경/퀘스트 UI. 없어도 대사 재생은 된다.
         InstantiateOptional<StoryBackdrop>(BackdropPrefabPath);
         InstantiateOptional<QuestTracker>(QuestPrefabPath);
+        InstantiateOptional<TutorialTips>(TipsPrefabPath);
+        InstantiateOptional<RadarPing>(RadarPrefabPath);
+
+        // 장면별 연출 담당(cue를 받아 화면 연출을 하는 프리팹)은 Resources/Directors/Cue 폴더에 두면 자동으로 생긴다
+        foreach (GameObject director in Resources.LoadAll<GameObject>(CueDirectorFolder))
+            Instantiate(director, transform);
     }
 
     private void InstantiateOptional<T>(string resourcePath) where T : Component
@@ -145,6 +167,8 @@ public class StoryPlayer : MonoBehaviour
     {
         IsPlaying = true;
         IsSkipping = false;
+        WaitingFor = null;
+        _signals.Clear();
         _advanceRequested = false;
         _skipRequested = false;
         _startFrame = Time.frameCount; // 재생을 시작시킨 바로 그 클릭/키가 첫 줄을 넘기지 않도록
@@ -274,6 +298,10 @@ public class StoryPlayer : MonoBehaviour
                 // 연출 전용 줄: 바를 숨기고 delay만큼 기다린다
                 _bar.Hide();
                 yield return WaitSeconds(line.delay, false);
+
+                if (!string.IsNullOrEmpty(line.waitFor))
+                    yield return WaitForSignal(line.waitFor);
+
                 i = next;
                 continue;
             }
@@ -314,7 +342,12 @@ public class StoryPlayer : MonoBehaviour
             {
                 _advanceRequested = false;
 
-                if (line.delay > 0f)
+                if (!string.IsNullOrEmpty(line.waitFor))
+                {
+                    // 플레이어가 실제로 뭔가를 해서 신호가 올 때까지 (클릭으로는 넘어가지 않는다)
+                    yield return WaitForSignal(line.waitFor);
+                }
+                else if (line.delay > 0f)
                 {
                     // 자동 진행: delay 뒤에 넘어가고, 그 전에 입력해도 넘어간다
                     yield return WaitSeconds(line.delay, true);
@@ -373,6 +406,19 @@ public class StoryPlayer : MonoBehaviour
 
         _bar.HideChoices();
         _choiceCount = 0;
+    }
+
+    /// <summary>신호(Signal)가 올 때까지, 또는 건너뛰기가 눌릴 때까지 기다린다.</summary>
+    private IEnumerator WaitForSignal(string signal)
+    {
+        WaitingFor = signal;
+        _bar.SetContinueVisible(false);
+
+        // Remove는 신호가 있었으면 지우면서 true를 돌려준다
+        while (!_signals.Remove(signal) && !_skipRequested)
+            yield return null;
+
+        WaitingFor = null;
     }
 
     private IEnumerator WaitSeconds(float seconds, bool endOnAdvance)

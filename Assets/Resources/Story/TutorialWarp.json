@@ -1,0 +1,35 @@
+{
+  "sequences": [
+    {
+      "id": "tutorial_warp",
+      "lines": [
+        { "cue": "s3_depart", "text": "함선이 격납고를 빠져나온다. 정거장의 거대한 구조물이 뒤로 멀어진다." },
+
+        {
+          "cue": "s3_beacon_show",
+          "speaker": "orbis",
+          "text": "목적지 비콘이 항법 장치에 등록되었습니다. 워프 항법을 시작하려면 비콘을 선택하십시오.",
+          "waitFor": "beacon_selected"
+        },
+        { "text": "플레이어가 비콘을 지정한다.", "delay": 1.6 },
+
+        { "cue": "s3_warp_charge", "speaker": "orbis", "text": "목적지 확인. 워프 드라이브 충전 중.", "delay": 1.6 },
+        { "text": "엔진이 굉음을 내며 푸른빛으로 빛난다.", "delay": 1.8 },
+        { "cue": "s3_warp_go", "speaker": "orbis", "text": "워프 개시.", "delay": 1.5 },
+
+        { "text": "별빛이 길게 늘어나고, 함선이 공간을 가로지른다.", "delay": 9 },
+
+        { "cue": "s3_warp_arrive", "text": "잠시 후 워프가 종료된다. 눈앞에는 거대한 암석들과 부서진 선박 잔해가 흩어져 있다." },
+        { "speaker": "orbis", "text": "목적지 도착. 주변 스캔을 시작합니다." },
+
+        { "cue": "radar_show", "text": "레이더에 붉은 신호 세 개가 점멸한다." },
+        { "speaker": "orbis", "text": "경고. 미등록 함선 세 척이 접근 중입니다. 무장 신호 확인. 해적일 가능성이 높습니다." },
+        { "speaker": "hero",  "text": "도착하자마자 환영 인사인가." },
+        { "speaker": "orbis", "text": "회피 기동을 권장합니다." },
+        { "speaker": "hero",  "text": "아니. 먼저 인사부터 하지." },
+
+        { "cue": "radar_hide", "delay": 0.8 }
+      ]
+    }
+  ]
+}

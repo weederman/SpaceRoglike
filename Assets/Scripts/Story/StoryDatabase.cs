@@ -14,6 +14,7 @@ public static class StoryDatabase
     private static readonly Dictionary<string, StorySequence> _sequences = new Dictionary<string, StorySequence>();
     private static readonly Dictionary<string, StorySpeaker> _speakers = new Dictionary<string, StorySpeaker>();
     private static readonly Dictionary<string, StoryQuest> _quests = new Dictionary<string, StoryQuest>();
+    private static readonly Dictionary<string, StoryTutorial> _tutorials = new Dictionary<string, StoryTutorial>();
     private static bool _loaded;
 
     public static IEnumerable<string> SequenceIds
@@ -43,6 +44,12 @@ public static class StoryDatabase
         return _quests.TryGetValue(id ?? "", out quest);
     }
 
+    public static bool TryGetTutorial(string id, out StoryTutorial tutorial)
+    {
+        EnsureLoaded();
+        return _tutorials.TryGetValue(id ?? "", out tutorial);
+    }
+
     /// <summary>JSON을 처음부터 다시 읽는다.</summary>
     public static void Reload()
     {
@@ -59,6 +66,7 @@ public static class StoryDatabase
         _sequences.Clear();
         _speakers.Clear();
         _quests.Clear();
+        _tutorials.Clear();
 
         var files = Resources.LoadAll<TextAsset>(ResourceFolder);
         if (files.Length == 0)
@@ -114,6 +122,17 @@ public static class StoryDatabase
             }
 
             _quests[quest.id] = quest;
+        }
+
+        foreach (var tutorial in data.tutorials)
+        {
+            if (string.IsNullOrEmpty(tutorial.id))
+            {
+                Debug.LogWarning($"[Story] {file.name}.json: id가 없는 튜토리얼 안내가 있어 무시합니다.");
+                continue;
+            }
+
+            _tutorials[tutorial.id] = tutorial;
         }
 
         foreach (var sequence in data.sequences)

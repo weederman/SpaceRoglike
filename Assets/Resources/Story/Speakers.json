@@ -1,9 +1,11 @@
 {
   "speakers": [
-    { "id": "hero",    "name": "주인공",     "color": "#FFFFFF", "side": "right" },
-    { "id": "ras",     "name": "라스",       "color": "#FFD166", "side": "left" },
-    { "id": "ship_ai", "name": "함선 AI",    "color": "#7FD6FF", "side": "left" },
-    { "id": "patrol",  "name": "자치령 통신", "color": "#FF8A7A", "side": "left" },
-    { "id": "system",  "name": "시스템",     "color": "#FFD166", "side": "left" }
+    { "id": "hero",      "name": "주인공",        "color": "#FFFFFF", "side": "right" },
+    { "id": "ras",       "name": "라스",          "color": "#FFD166", "side": "left" },
+    { "id": "ras_radio", "name": "라스 (무전)",    "color": "#FFD166", "side": "left" },
+    { "id": "orbis",     "name": "오르비스",       "color": "#7FD6FF", "side": "left" },
+    { "id": "ship_ai",   "name": "함선 AI",       "color": "#7FD6FF", "side": "left" },
+    { "id": "patrol",    "name": "자치령 통신",    "color": "#FF8A7A", "side": "left" },
+    { "id": "system",    "name": "시스템",        "color": "#FFD166", "side": "left" }
   ]
 }

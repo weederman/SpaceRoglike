@@ -10,6 +10,27 @@ public class StoryFile
     public StorySpeaker[] speakers = new StorySpeaker[0];
     public StorySequence[] sequences = new StorySequence[0];
     public StoryQuest[] quests = new StoryQuest[0];
+    public StoryTutorial[] tutorials = new StoryTutorial[0];
+}
+
+/// <summary>
+/// 튜토리얼 안내 창 하나. cue "tutorial_show:id"로 화면에 띄우고 "tutorial_hide"로 닫는다.
+/// 조작법처럼 "이름: 설명" 꼴의 안내를 여러 개 한 번에 보여줄 때 쓴다.
+/// </summary>
+[Serializable]
+public class StoryTutorial
+{
+    public string id;
+    public string title;
+    public StoryTip[] tips = new StoryTip[0];
+}
+
+/// <summary>튜토리얼 안내의 한 항목 (예: "기본 이동" / "추진기를 이용해 …").</summary>
+[Serializable]
+public class StoryTip
+{
+    public string title;
+    public string text;
 }
 
 /// <summary>퀘스트 정의. 줄의 cue "quest_accept:퀘스트id"로 수락되고 HUD 목표 창에 표시된다.</summary>
@@ -113,6 +134,7 @@ public class StoryLine
     ///   bg:이미지이름   배경 이미지로 크로스페이드 (Resources/Story/Backgrounds/이미지이름). bg:off는 배경을 걷는다.
     ///   quest_accept:퀘스트id   임무 수락 연출 + HUD 목표 창
     ///   quest_done:퀘스트id:목표id   목표 완료 표시
+    ///   tutorial_show:안내id / tutorial_hide   튜토리얼 안내 창 열기/닫기
     /// </summary>
     public string cue;
 
@@ -127,6 +149,13 @@ public class StoryLine
     /// 시퀀스를 여기서 끝내려면 "$end". 선택지가 있는 줄에서는 선택지의 next가 우선한다.
     /// </summary>
     public string next;
+
+    /// <summary>
+    /// 이 이름의 신호(StoryPlayer.Signal)가 올 때까지 다음 줄로 넘어가지 않는다(선택).
+    /// "비콘을 클릭하세요"처럼 플레이어가 실제로 뭔가를 해야 넘어가는 튜토리얼 줄에 쓴다.
+    /// 신호를 보내는 쪽(예: 비콘)은 코드에서 StoryPlayer.Signal("이름")을 부른다. 건너뛰기(Esc)를 누르면 신호 없이 넘어간다.
+    /// </summary>
+    public string waitFor;
 
     /// <summary>플레이어가 고르는 선택지. 비어 있으면 일반 줄.</summary>
     public StoryChoice[] choices;

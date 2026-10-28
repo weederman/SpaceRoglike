@@ -3111,11 +3111,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 360002027209558716, guid: ffbdbd577dbc7164ba626e63d93c4398, type: 3}
       propertyPath: maxSpeed
-      value: 30
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 360002027209558716, guid: ffbdbd577dbc7164ba626e63d93c4398, type: 3}
       propertyPath: acceleration
-      value: 15
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 360002027209558716, guid: ffbdbd577dbc7164ba626e63d93c4398, type: 3}
       propertyPath: brakingPower
