@@ -36,9 +36,14 @@ public class MiningTutorialDirector : MonoBehaviour
     private const string OreFullSignal = "ore_full";
 
     [Header("광맥 소행성")]
-    [SerializeField] private Sprite _oreSprite;
-    [Tooltip("긴 변 기준 월드 크기")]
+    [Tooltip("광맥 소행성 모양 (FreeSciFi 소행성 메시)")]
+    [SerializeField] private Mesh _oreMesh;
+    [Tooltip("발광 균열이 있는 재질. 광맥이 드러나면 균열이 보랏빛으로 빛난다.")]
+    [SerializeField] private Material _oreMaterial;
+    [Tooltip("긴 쪽 기준 월드 크기")]
     [SerializeField, Min(1f)] private float _oreSize = 120f;
+    [Tooltip("함선이 다니는 높이 기준 광맥 소행성 중심의 높이 (아래로 두어 함선이 부딪혀 보이지 않게)")]
+    [SerializeField] private float _oreHeight = -30f;
     [Tooltip("매장량. 화물칸 적재 한도보다 넉넉하게 두어 가득 채울 수 있게 한다.")]
     [SerializeField, Min(1f)] private float _oreAmount = 140f;
     [Tooltip("광맥 소행성이 놓이는 방향 (위쪽=북쪽=0도, 시계 방향)과 플레이어로부터의 거리")]
@@ -150,11 +155,12 @@ public class MiningTutorialDirector : MonoBehaviour
 
         float rad = _oreAngle * Mathf.Deg2Rad;
         Vector3 pos = _player.transform.position + new Vector3(Mathf.Sin(rad), 0f, Mathf.Cos(rad)) * _oreDistance;
+        pos.y += _oreHeight;
 
         var go = new GameObject("OreAsteroid");
         go.transform.position = pos;
         _ore = go.AddComponent<MineableAsteroid>();
-        _ore.Init(_oreSprite, _oreSize, _oreAmount);
+        _ore.Init(_oreMesh, _oreMaterial, _oreSize, _oreAmount);
 
         CombatHud.ShowWaypoint(_ore.transform, _waypointLabel);
     }

@@ -8,13 +8,13 @@ using UnityEngine.UI;
 /// 정거장 구역에 들어가면 무기 상점 UI를 열고, 무기를 고르면 터렛 장착 위치(홀로그램)를 보여준 뒤
 /// 플레이어가 클릭한 위치에 무기를 장착하고 크레딧을 차감한다.
 /// 조작이 잠긴 스토리(대사)가 재생되는 동안에는 열지 않고, 끝난 뒤 구역 안에 있으면 연다.
+/// 정거장이 여러 개여도(항성계) 어느 정거장 구역에 들어가든 같은 상점을 연다.
 /// </summary>
 public class StationShop : MonoBehaviour
 {
     /// <summary>터렛 위치를 고르는 중. 이 동안 마우스 클릭이 발사로 이어지지 않게 한다.</summary>
     public static bool IsPlacingWeapon { get; private set; }
 
-    [SerializeField] private StationZone _zone;
     [SerializeField] private GameObject _panel;
     [SerializeField] private Transform _gridRoot;
     [SerializeField] private ShopSlotView _slotTemplate;
@@ -45,8 +45,8 @@ public class StationShop : MonoBehaviour
         _panel.SetActive(false);
         _hint.SetActive(false);
 
-        _zone.Entered += Open;
-        _zone.Exited += Close;
+        StationZone.AnyEntered += HandleZoneEntered;
+        StationZone.AnyExited += HandleZoneExited;
 
         if (CreditWallet.Instance != null)
             CreditWallet.Instance.OnChanged += RefreshAffordability;
@@ -56,11 +56,8 @@ public class StationShop : MonoBehaviour
     {
         IsPlacingWeapon = false;
 
-        if (_zone != null)
-        {
-            _zone.Entered -= Open;
-            _zone.Exited -= Close;
-        }
+        StationZone.AnyEntered -= HandleZoneEntered;
+        StationZone.AnyExited -= HandleZoneExited;
 
         if (CreditWallet.Instance != null)
             CreditWallet.Instance.OnChanged -= RefreshAffordability;
@@ -72,7 +69,7 @@ public class StationShop : MonoBehaviour
         bool storyLocked = StoryPlayer.IsPlaying && !StoryPlayer.IsControlMode;
         if (_panel.activeSelf && storyLocked)
             Close();
-        else if (!_panel.activeSelf && !storyLocked && _zone.IsInside)
+        else if (!_panel.activeSelf && !storyLocked && StationZone.Current != null)
             Open();
 
         if (_pending == null)
@@ -90,6 +87,18 @@ public class StationShop : MonoBehaviour
         {
             PlaceAtScreenPoint(Input.mousePosition);
         }
+    }
+
+    private void HandleZoneEntered(StationZone zone)
+    {
+        Open();
+    }
+
+    private void HandleZoneExited(StationZone zone)
+    {
+        // 겹친 다른 정거장 구역 안에 아직 있으면 닫지 않는다
+        if (StationZone.Current == null)
+            Close();
     }
 
     private void Open()

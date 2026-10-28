@@ -54,7 +54,7 @@ public class FirstWarpDirector : MonoBehaviour
     [SerializeField] private float _chargeSeconds = 2.2f;
     [Tooltip("워프 터널 안에 최소한 머무는 시간(초). 대사를 빨리 넘겨도 이 시간은 터널을 보여준다.")]
     [SerializeField] private float _minTunnelSeconds = 5f;
-    [Tooltip("소행성 지대 도착 위치 (XZ). 정거장에서 충분히 먼 곳.")]
+    [Tooltip("소행성 지대 도착 위치 (XZ). 항성계(StarSystem)가 있으면 그 튜토리얼 비콘(레벨 1)에 도착하고, 없을 때만 이 값을 쓴다.")]
     [SerializeField] private Vector2 _arrivalXZ = new Vector2(2600f, 2400f);
 
     [Header("귀환 (장면 6)")]
@@ -391,7 +391,7 @@ public class FirstWarpDirector : MonoBehaviour
     {
         EnsureRefs();
 
-        var zone = FindObjectOfType<StationZone>();
+        StationZone zone = StationZone.Home;
         Vector3 center = zone != null ? zone.transform.position : Vector3.zero;
         Vector3 pos = new Vector3(center.x + _returnDockOffset.x, _baseY, center.z + _returnDockOffset.y);
         MoveShip(pos, Quaternion.identity);
@@ -448,6 +448,9 @@ public class FirstWarpDirector : MonoBehaviour
         EnsureRefs();
 
         Vector3 pos = new Vector3(_arrivalXZ.x, _baseY, _arrivalXZ.y);
+        if (StarSystem.Instance != null && StarSystem.Instance.TryGetTutorialArrival(out Vector3 beaconArrival))
+            pos = new Vector3(beaconArrival.x, _baseY, beaconArrival.z);
+
         _ship.transform.SetPositionAndRotation(pos, Quaternion.identity);
         _rb.position = pos;
         _rb.rotation = Quaternion.identity;

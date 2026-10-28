@@ -39,6 +39,14 @@ public class WarpBeacon : MonoBehaviour
 
     public bool IsSelected => _selected;
 
+    /// <summary>링과 빛의 색을 바꾼다 (항성계 비콘의 레벨 표시 등)</summary>
+    public void SetColor(Color color)
+    {
+        _color = color;
+        if (_light != null)
+            _light.color = color;
+    }
+
     /// <summary>화면 표시용 UI를 연결한다. Show()로 나타나기 시작한다.</summary>
     public void Init(RectTransform marker, TMP_Text hint, RectTransform canvasRect)
     {

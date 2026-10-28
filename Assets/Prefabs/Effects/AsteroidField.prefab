@@ -44,13 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d85a54b234178442b552a4abad95d35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rocks:
-  - {fileID: 21300000, guid: ee8261317c1ff734daa9da91d24312b3, type: 3}
-  - {fileID: 21300000, guid: 0f3a720ed8c07f14ea6b92d6fefc8c0c, type: 3}
-  - {fileID: 21300000, guid: a44af304548cb7b4aadb97582f60d728, type: 3}
-  - {fileID: 21300000, guid: f254e398beb012142a24633fa2b82def, type: 3}
-  - {fileID: 21300000, guid: 06ebc3b6f7d199745ac6895e9d0f2e09, type: 3}
-  - {fileID: 21300000, guid: 9a04f6cfae75c064997fb1ddf1827c86, type: 3}
+  _rockMeshes:
+  - {fileID: 4300000, guid: 4514a249f7ca7d44b8eb4cbd48174504, type: 3}
+  - {fileID: 4300002, guid: 4514a249f7ca7d44b8eb4cbd48174504, type: 3}
+  _rockMaterials:
+  - {fileID: 2100000, guid: cc6cc5a767bdeee478992ffc5ac19000, type: 2}
+  _rockHeight: {x: -45, y: -12}
+  _rockTumble: 6
   _wrecks:
   - {fileID: 21300000, guid: 8d6eaaefbef73894d96ae55f7da066ec, type: 3}
   - {fileID: 21300000, guid: dd427b106c4115f4ea1d1c10a4c91f55, type: 3}
@@ -64,6 +64,8 @@ MonoBehaviour:
   _aroundRadius: 280
   _rockSize: {x: 32, y: 105}
   _wreckSize: {x: 18, y: 42}
+  _minRockGap: 30
+  _placeAttempts: 24
   _height: {x: -8, y: 6}
   _fadeInSeconds: 1.2
   _seed: 4172

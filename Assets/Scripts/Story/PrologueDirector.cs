@@ -755,7 +755,7 @@ public class PrologueDirector : MonoBehaviour
 
         _dockApplied = true;
 
-        var zone = FindObjectOfType<StationZone>();
+        StationZone zone = StationZone.Home;
         Vector3 pos = zone != null ? zone.transform.position + _dockOffset : _homePos;
 
         _ship.transform.SetPositionAndRotation(pos, Quaternion.identity);
