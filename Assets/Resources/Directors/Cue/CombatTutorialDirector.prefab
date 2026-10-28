@@ -55,15 +55,29 @@ MonoBehaviour:
   _pirateTuning:
     approachSmoothTime: 2.5
     approachMaxSpeed: 220
-    fightMaxSpeed: 32
     fightAcceleration: 24
-    orbitDistance: 120
     fireRange: 240
     fireInterval: 4.5
+    separation: 45
+    lurkDistance: {x: 170, y: 300}
+    lurkMaxSpeed: 26
+    lurkWander: 18
+    lurkDefendRange: 150
+    attackDistance: 110
+    attackMaxSpeed: 48
     fleeMaxSpeed: 40
     fleeAcceleration: 30
     fleeGiveUpDistance: 650
     warpTurnSeconds: 1
     warpMaxSeconds: 5
     warpVanishDistance: 160
+  _pirateShieldHp: 200
+  _pirateHullHp: 120
+  _firstAttackDelay: 9
+  _lurkSeconds: {x: 8, y: 12}
+  _attackSeconds: {x: 6, y: 8}
+  _attackSpread: 28
   _playerHullFloor: 0.3
+  _emergencyTitle: "\uBE44\uC0C1 \uD504\uB85C\uD1A0\uCF5C \uBC1C\uB3D9"
+  _emergencyBody: "\uC120\uCCB4 \uC190\uC0C1 \uD55C\uACC4 \uB3C4\uB2EC \xB7 \uBE44\uC0C1
+    \uBC29\uC5B4\uB9C9 \uC804\uAC1C"

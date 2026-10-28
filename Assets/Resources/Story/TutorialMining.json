@@ -46,6 +46,12 @@
         { "cue": "tutorial_hide;s5_pirates_retreat", "text": "화물칸이 가득 차자, 해적선들이 교전을 피해 물러난다." },
         { "speaker": "orbis", "text": "적대 신호 이탈 확인. 화물 적재 완료. 정거장으로 귀환합니다." }
       ]
+    },
+    {
+      "id": "tutorial_mining_pirate_hit",
+      "lines": [
+        { "speaker": "orbis", "text": "해적선의 방어막 출력이 높아 유효한 피해를 줄 수 없습니다. 교전 대신 광물 회수를 우선하십시오." }
+      ]
     }
   ]
 }

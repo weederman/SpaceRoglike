@@ -8,6 +8,7 @@ using UnityEngine;
 /// 어디서든 StoryPlayer.Play("prologue", 끝났을때할일) 한 줄로 시작하고, 씬에 따로 배치할 필요는 없다(자동 생성).
 ///
 /// 조작: 클릭 / Space / Enter = 타자 효과 건너뛰기 → 다음 줄,  Esc = 건너뛰기(다음 선택지 또는 끝까지 빨리 감기).
+/// 조작하며 듣는 시퀀스(control)에서는 대사창 위를 클릭했을 때만 넘어간다 (다른 곳 클릭은 발사).
 /// 선택지: ↑↓ 또는 W/S로 고르고 Enter/Space, 숫자키 1~9, 마우스 호버+클릭.
 /// 재생 중에는 GameInputLock으로 플레이어 조작(이동/발사/줌)과 뒤의 UI 클릭이 막힌다.
 ///
@@ -37,7 +38,7 @@ public class StoryPlayer : MonoBehaviour
 
     /// <summary>
     /// "조작하며 듣는" 시퀀스(control: true)를 재생 중인지. 이때는 조작이 잠기지 않고,
-    /// 대사는 시간이나 신호로만 넘어간다 (클릭은 발사 등 게임 입력이라 대사를 넘기지 않는다).
+    /// 대사는 시간, 신호, 대사창 위 클릭으로 넘어간다 (다른 곳 클릭은 발사 등 게임 입력이라 대사를 넘기지 않는다).
     /// </summary>
     public static bool IsControlMode { get; private set; }
 
@@ -67,6 +68,7 @@ public class StoryPlayer : MonoBehaviour
     private bool _advanceRequested;
     private bool _skipRequested;
     private int _startFrame;
+    private StorySequence _pendingAside;
 
     // 선택지 진행 상태
     private int _choiceCount;
@@ -93,6 +95,26 @@ public class StoryPlayer : MonoBehaviour
             return false;
 
         player.Begin(sequence, onComplete);
+        return true;
+    }
+
+    /// <summary>
+    /// 조작하며 듣는(control) 시퀀스 도중에 짧은 대사(예: 오르비스의 안내)를 끼워 넣는다.
+    /// 본 대사가 흐르는 중이면 끊지 않고, 플레이어의 행동(waitFor)을 기다리는 순간에 보여준 뒤 기다리던 줄로 돌아간다.
+    /// control 시퀀스가 아니거나 이미 예약된 것이 있으면 false.
+    /// </summary>
+    public static bool PlayAside(string sequenceId)
+    {
+        if (_instance == null || !IsPlaying || !IsControlMode || _instance._pendingAside != null)
+            return false;
+
+        if (!StoryDatabase.TryGetSequence(sequenceId, out StorySequence aside))
+        {
+            Debug.LogWarning($"[Story] '{sequenceId}' 시퀀스를 찾지 못했습니다. (Assets/Resources/Story/*.json)");
+            return false;
+        }
+
+        _instance._pendingAside = aside;
         return true;
     }
 
@@ -180,6 +202,7 @@ public class StoryPlayer : MonoBehaviour
     {
         IsControlMode = control;
         _bar.SetBlocking(!control);
+        _pendingAside = null; // 끼워 넣을 대사는 그 control 시퀀스 안에서만 의미가 있다
 
         if (control)
         {
@@ -199,6 +222,7 @@ public class StoryPlayer : MonoBehaviour
         IsSkipping = false;
         WaitingFor = null;
         _signals.Clear();
+        _pendingAside = null;
         _advanceRequested = false;
         _skipRequested = false;
         _startFrame = Time.frameCount; // 재생을 시작시킨 바로 그 클릭/키가 첫 줄을 넘기지 않도록
@@ -213,9 +237,14 @@ public class StoryPlayer : MonoBehaviour
 
     private void Update()
     {
-        // control 시퀀스는 대사를 입력으로 넘기지 않는다 (클릭/Space/Esc는 게임 조작으로 쓰인다)
-        if (!IsPlaying || IsControlMode)
+        if (!IsPlaying)
             return;
+
+        if (IsControlMode)
+        {
+            HandleControlModeInput();
+            return;
+        }
 
         // 개발자 모드 창이 열려 있으면 입력을 받지 않는다
         if (GameInputLock.IsLockedExcept(this))
@@ -244,6 +273,24 @@ public class StoryPlayer : MonoBehaviour
             return;
 
         // 문장이 나오는 중이면 먼저 전부 보여주고, 다 나온 뒤에 누르면 다음 줄로
+        if (_bar.IsTyping)
+            _bar.CompleteTyping();
+        else
+            _advanceRequested = true;
+    }
+
+    /// <summary>
+    /// control 시퀀스: 클릭/Space/Esc는 게임 조작으로 쓰이므로 대사창 위를 클릭했을 때만 넘긴다.
+    /// waitFor로 플레이어의 행동을 기다리는 줄은 클릭으로 넘어가지 않는다(문장만 전부 보여준다).
+    /// </summary>
+    private void HandleControlModeInput()
+    {
+        if (GameInputLock.IsLockedExcept(this) || Time.frameCount == _startFrame)
+            return;
+
+        if (!Input.GetMouseButtonDown(0) || !_bar.IsPointerOverPanel(Input.mousePosition))
+            return;
+
         if (_bar.IsTyping)
             _bar.CompleteTyping();
         else
@@ -339,7 +386,7 @@ public class StoryPlayer : MonoBehaviour
                 yield return WaitSeconds(line.delay, false);
 
                 if (!string.IsNullOrEmpty(line.waitFor))
-                    yield return WaitForSignal(line.waitFor);
+                    yield return WaitForSignal(line);
 
                 i = next;
                 continue;
@@ -384,7 +431,7 @@ public class StoryPlayer : MonoBehaviour
                 if (!string.IsNullOrEmpty(line.waitFor))
                 {
                     // 플레이어가 실제로 뭔가를 해서 신호가 올 때까지 (클릭으로는 넘어가지 않는다)
-                    yield return WaitForSignal(line.waitFor);
+                    yield return WaitForSignal(line);
                 }
                 else if (line.delay > 0f)
                 {
@@ -393,9 +440,10 @@ public class StoryPlayer : MonoBehaviour
                 }
                 else if (sequence.control)
                 {
-                    // 조작 중에는 클릭으로 넘길 수 없으니 읽을 시간만큼 보여주고 넘어간다
+                    // 조작 중에는 읽을 시간만큼 보여주고 넘어간다. 그 전에 대사창을 클릭하면 바로 넘어간다.
                     float seconds = ControlLineBaseSeconds + line.text.Length * ControlLineSecondsPerChar;
-                    yield return WaitSeconds(seconds, false);
+                    _bar.SetContinueVisible(true);
+                    yield return WaitSeconds(seconds, true);
                 }
                 else
                 {
@@ -454,17 +502,60 @@ public class StoryPlayer : MonoBehaviour
         _choiceCount = 0;
     }
 
-    /// <summary>신호(Signal)가 올 때까지, 또는 건너뛰기가 눌릴 때까지 기다린다.</summary>
-    private IEnumerator WaitForSignal(string signal)
+    /// <summary>줄의 waitFor 신호(Signal)가 올 때까지, 또는 건너뛰기가 눌릴 때까지 기다린다. 그동안 예약된 끼워 넣을 대사가 있으면 보여준다.</summary>
+    private IEnumerator WaitForSignal(StoryLine line)
     {
+        string signal = line.waitFor;
         WaitingFor = signal;
         _bar.SetContinueVisible(false);
 
         // Remove는 신호가 있었으면 지우면서 true를 돌려준다
         while (!_signals.Remove(signal) && !_skipRequested)
-            yield return null;
+        {
+            if (_pendingAside != null)
+                yield return RunAside(line);
+            else
+                yield return null;
+        }
 
         WaitingFor = null;
+    }
+
+    /// <summary>예약된 끼워 넣을 대사를 보여주고, 끝나면 기다리던 줄(없으면 숨김)로 돌아간다.</summary>
+    private IEnumerator RunAside(StoryLine waitingLine)
+    {
+        StorySequence aside = _pendingAside;
+        _pendingAside = null;
+
+        foreach (StoryLine line in aside.lines ?? new StoryLine[0])
+        {
+            if (_skipRequested)
+                break;
+
+            FireCue(line.cue);
+            if (string.IsNullOrEmpty(line.text))
+                continue;
+
+            ShowLine(line);
+            while (_bar.IsTyping && !_skipRequested)
+                yield return null;
+
+            float seconds = line.delay > 0f ? line.delay : ControlLineBaseSeconds + line.text.Length * ControlLineSecondsPerChar;
+            _bar.SetContinueVisible(true);
+            yield return WaitSeconds(seconds, true);
+        }
+
+        if (string.IsNullOrEmpty(waitingLine.text))
+        {
+            _bar.Hide();
+        }
+        else
+        {
+            ShowLine(waitingLine);
+            _bar.CompleteTyping();
+        }
+
+        _bar.SetContinueVisible(false);
     }
 
     private IEnumerator WaitSeconds(float seconds, bool endOnAdvance)
