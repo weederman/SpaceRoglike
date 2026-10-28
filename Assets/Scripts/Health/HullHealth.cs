@@ -26,6 +26,12 @@ public class HullHealth : MonoBehaviour, IDamageable
     /// <summary>true면 데미지를 전혀 받지 않는다(개발자 모드 무적 등).</summary>
     public bool Invincible { get; set; }
 
+    /// <summary>
+    /// 체력 하한 비율(0~1). 0보다 크면 데미지를 받아도 최대 체력의 이 비율 아래로 내려가지 않고 파괴되지 않는다
+    /// (튜토리얼 전투 등에서 런타임에만 건다). 0이면 하한 없음.
+    /// </summary>
+    public float MinHpRatio { get; set; }
+
     private void Awake()
     {
         _hp = _maxHp;
@@ -36,7 +42,8 @@ public class HullHealth : MonoBehaviour, IDamageable
         if (_isBroken || Invincible || damage <= 0f)
             return;
 
-        _hp = Mathf.Max(0f, _hp - damage);
+        float floor = _maxHp * Mathf.Clamp01(MinHpRatio);
+        _hp = Mathf.Max(Mathf.Min(floor, _hp), _hp - damage);
         OnHpChanged?.Invoke(_hp, _maxHp);
 
         if (_hp <= 0f)

@@ -828,7 +828,8 @@ public class PrologueDirector : MonoBehaviour
         _ship.enabled = true;
         if (_turret != null) _turret.enabled = true;
 
-        if (_spawner != null) _spawner.enabled = true;
+        // 적 스포너는 다시 켜지 않는다. 이어지는 튜토리얼(장면 4~)은 장면 Director가 적을 직접 만들고,
+        // 튜토리얼이 끝나면 스토리 cue "enemies_on"으로 켠다.
 
         if (_hud != null)
         {

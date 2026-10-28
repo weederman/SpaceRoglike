@@ -181,7 +181,9 @@ namespace FORGE3D
                         hitPoint,
                         appliedDamage,
                         WeaponStatsTable.GetShieldMultiplier(fxType),
-                        WeaponStatsTable.GetArmorMultiplier(fxType));
+                        WeaponStatsTable.GetArmorMultiplier(fxType),
+                        fxType,
+                        owner);
 
                     // =========================================
                     // 탄환 파티클 처리

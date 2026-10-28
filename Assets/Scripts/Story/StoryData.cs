@@ -22,6 +22,10 @@ public class StoryTutorial
 {
     public string id;
     public string title;
+
+    /// <summary>안내창에 함께 띄울 그림(선택). Assets/Resources/Story/Tutorials/ 안의 Sprite 파일 이름.</summary>
+    public string image;
+
     public StoryTip[] tips = new StoryTip[0];
 }
 
@@ -83,6 +87,12 @@ public class StorySequence
     /// 예: 프롤로그 → 튜토리얼 장면 1.
     /// </summary>
     public string then;
+
+    /// <summary>
+    /// true면 "조작하며 듣는" 시퀀스(전투 중 무전 등). 재생 중에도 조작을 잠그지 않고, 대사는 클릭/키가 아니라
+    /// 시간(delay, 없으면 글자 수로 자동 계산)이나 waitFor 신호로만 넘어간다. Esc 건너뛰기와 선택지는 쓰지 않는다.
+    /// </summary>
+    public bool control;
 
     [NonSerialized] private Dictionary<string, int> _indexById;
 

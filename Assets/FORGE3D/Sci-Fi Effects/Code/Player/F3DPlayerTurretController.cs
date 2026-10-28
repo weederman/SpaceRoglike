@@ -30,6 +30,17 @@ namespace FORGE3D
                 return;
             }
 
+            // [추가] 무기 슬롯 선택(1~9키)에서 고르지 않은 터렛은 쏘지 않고, 쏘던 중이면 멈춘다
+            if (!PlayerWeaponSelector.CanFire(this))
+            {
+                if (isFiring)
+                {
+                    isFiring = false;
+                    fxController.Stop();
+                }
+                return;
+            }
+
             // UI(상점 등) 위를 클릭했을 때는 무기가 같이 발사되지 않도록 함
             if (!isFiring &&
                 EventSystem.current != null &&

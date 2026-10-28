@@ -35,6 +35,16 @@ public class StoryPlayer : MonoBehaviour
     /// <summary>지금 대사가 기다리고 있는 신호 이름 (waitFor). 기다리는 중이 아니면 null.</summary>
     public static string WaitingFor { get; private set; }
 
+    /// <summary>
+    /// "조작하며 듣는" 시퀀스(control: true)를 재생 중인지. 이때는 조작이 잠기지 않고,
+    /// 대사는 시간이나 신호로만 넘어간다 (클릭은 발사 등 게임 입력이라 대사를 넘기지 않는다).
+    /// </summary>
+    public static bool IsControlMode { get; private set; }
+
+    // control 시퀀스에서 delay가 없는 대사가 화면에 머무는 시간 = 기본 + 글자당 (읽을 시간)
+    private const float ControlLineBaseSeconds = 1.6f;
+    private const float ControlLineSecondsPerChar = 0.06f;
+
     private readonly HashSet<string> _signals = new HashSet<string>();
 
     /// <summary>waitFor로 기다리는 줄에 "됐다"고 알린다. 아직 그 줄에 도달하기 전이어도 기억해 두었다가 도달하면 바로 넘어간다.</summary>
@@ -102,6 +112,7 @@ public class StoryPlayer : MonoBehaviour
         OnSequenceEnded = null;
         IsPlaying = false;
         IsSkipping = false;
+        IsControlMode = false;
         WaitingFor = null;
         _instance = null;
     }
@@ -160,6 +171,25 @@ public class StoryPlayer : MonoBehaviour
             _instance = null;
             IsPlaying = false;
             IsSkipping = false;
+            IsControlMode = false;
+        }
+    }
+
+    /// <summary>control 시퀀스면 조작 잠금과 화면 클릭 차단을 풀고, 아니면 다시 건다.</summary>
+    private void SetControlMode(bool control)
+    {
+        IsControlMode = control;
+        _bar.SetBlocking(!control);
+
+        if (control)
+        {
+            GameInputLock.Unlock(this);
+            _skipRequested = false;
+            _advanceRequested = false;
+        }
+        else
+        {
+            GameInputLock.Lock(this);
         }
     }
 
@@ -183,7 +213,8 @@ public class StoryPlayer : MonoBehaviour
 
     private void Update()
     {
-        if (!IsPlaying)
+        // control 시퀀스는 대사를 입력으로 넘기지 않는다 (클릭/Space/Esc는 게임 조작으로 쓰인다)
+        if (!IsPlaying || IsControlMode)
             return;
 
         // 개발자 모드 창이 열려 있으면 입력을 받지 않는다
@@ -270,11 +301,19 @@ public class StoryPlayer : MonoBehaviour
         bool skippedAny = false;
         int i = 0;
 
+        SetControlMode(sequence.control);
+
         while (i >= 0 && i < lines.Length)
         {
             StoryLine line = lines[i];
             bool hasChoices = line.choices != null && line.choices.Length > 0;
             bool hasText = !string.IsNullOrEmpty(line.text);
+
+            if (hasChoices && sequence.control)
+            {
+                Debug.LogWarning($"[Story] control 시퀀스 '{sequence.id}'에는 선택지를 쓸 수 없어 무시합니다.");
+                hasChoices = false;
+            }
 
             // 빨리 감기는 선택지 앞에서 멈춘다. 선택은 대신 해 줄 수 없으니까.
             if (_skipRequested && hasChoices)
@@ -352,6 +391,12 @@ public class StoryPlayer : MonoBehaviour
                     // 자동 진행: delay 뒤에 넘어가고, 그 전에 입력해도 넘어간다
                     yield return WaitSeconds(line.delay, true);
                 }
+                else if (sequence.control)
+                {
+                    // 조작 중에는 클릭으로 넘길 수 없으니 읽을 시간만큼 보여주고 넘어간다
+                    float seconds = ControlLineBaseSeconds + line.text.Length * ControlLineSecondsPerChar;
+                    yield return WaitSeconds(seconds, false);
+                }
                 else
                 {
                     _bar.SetContinueVisible(true);
@@ -385,6 +430,7 @@ public class StoryPlayer : MonoBehaviour
         _bar.SetBlocking(false);
         GameInputLock.Unlock(this);
 
+        IsControlMode = false;
         IsPlaying = false;
         onComplete?.Invoke();
     }

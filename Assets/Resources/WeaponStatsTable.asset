@@ -15,6 +15,7 @@ MonoBehaviour:
   _entries:
   - name: Vulcan
     weaponType: 0
+    displayName: "\uBC1C\uCE78"
     damage: 10
     enemyDamage: 50
     fireInterval: 1
@@ -23,6 +24,7 @@ MonoBehaviour:
     damagePerSecond: 10
   - name: PlasmaGun
     weaponType: 6
+    displayName: 
     damage: 10
     enemyDamage: 0
     fireInterval: 0.2
@@ -31,6 +33,7 @@ MonoBehaviour:
     damagePerSecond: 50
   - name: PlasmaBeam
     weaponType: 7
+    displayName: 
     damage: 30
     enemyDamage: 0
     fireInterval: 0
@@ -39,6 +42,7 @@ MonoBehaviour:
     damagePerSecond: 30
   - name: LaserImpulse
     weaponType: 11
+    displayName: "\uB808\uC774\uC800"
     damage: 10
     enemyDamage: 0
     fireInterval: 0.15
@@ -47,6 +51,7 @@ MonoBehaviour:
     damagePerSecond: 66.666664
   - name: RailGun
     weaponType: 5
+    displayName: 
     damage: 30
     enemyDamage: 0
     fireInterval: 0.2
@@ -55,6 +60,7 @@ MonoBehaviour:
     damagePerSecond: 150
   - name: FlameRed
     weaponType: 10
+    displayName: 
     damage: 30
     enemyDamage: 0
     fireInterval: 0.75

@@ -1,3 +1,5 @@
+using System;
+using FORGE3D;
 using UnityEngine;
 
 /// <summary>
@@ -37,12 +39,27 @@ public static class HitResolver
         return closest < float.PositiveInfinity;
     }
 
+    /// <summary>
+    /// 무기가 피해 대상(쉴드/선체)을 맞혔을 때 (맞은 대상, 무기 종류, 쏜 쪽).
+    /// 튜토리얼처럼 "레이저로 맞혔는지"를 알아야 하는 쪽에서 구독한다. 지속형 빔은 프레임마다 온다.
+    /// </summary>
+    public static event Action<IDamageable, F3DFXType, WeaponOwner> OnHit;
+
     /// <param name="shieldMultiplier">대상이 쉴드일 때 데미지에 곱할 배율</param>
     /// <param name="armorMultiplier">대상이 선체(아머)일 때 데미지에 곱할 배율</param>
-    public static void Resolve(in RaycastHit hit, float damage, float shieldMultiplier = 1f, float armorMultiplier = 1f)
+    public static void Resolve(in RaycastHit hit, float damage, float shieldMultiplier, float armorMultiplier,
+        F3DFXType weapon, WeaponOwner owner)
+    {
+        IDamageable target = Resolve(hit, damage, shieldMultiplier, armorMultiplier);
+        if (target != null)
+            OnHit?.Invoke(target, weapon, owner);
+    }
+
+    /// <returns>데미지를 받은 대상 (없으면 null)</returns>
+    public static IDamageable Resolve(in RaycastHit hit, float damage, float shieldMultiplier = 1f, float armorMultiplier = 1f)
     {
         if (hit.collider == null || damage <= 0f)
-            return;
+            return null;
 
         // 콜라이더 자신 → 부모 방향으로 가장 가까운 IDamageable을 찾는다.
         // ShieldHitbox(자식)에 맞으면 → 부모의 ShieldHealth
@@ -50,7 +67,7 @@ public static class HitResolver
         IDamageable target = hit.collider.GetComponentInParent<IDamageable>();
 
         if (target == null)
-            return;
+            return null;
 
         float multiplier = 1f;
         if (target is ShieldHealth)
@@ -59,5 +76,6 @@ public static class HitResolver
             multiplier = armorMultiplier;
 
         target.TakeDamage(damage * multiplier, hit.point);
+        return target;
     }
 }

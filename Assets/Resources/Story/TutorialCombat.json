@@ -1,0 +1,40 @@
+{
+  "tutorials": [
+    {
+      "id": "combat_target",
+      "title": "전투 튜토리얼 1 — 적 함선 지정",
+      "image": "combat_target",
+      "tips": [
+        { "title": "적 함선 지정", "text": "가장 가까운 해적선을 목표물로 지정합니다. 목표물의 거리와 방위각을 확인합니다." },
+        { "title": "조작",       "text": "Tab: 가장 가까운 적 지정 / 적을 클릭: 그 적을 지정" }
+      ]
+    },
+    {
+      "id": "combat_laser",
+      "title": "전투 튜토리얼 2 — 레이저 발사",
+      "image": "combat_laser",
+      "tips": [
+        { "title": "레이저 발사", "text": "레이저를 발사해 적의 방어막을 깎습니다. 조준을 유지하며 사격 타이밍을 익힙니다." },
+        { "title": "조작",       "text": "1: 레이저 선택 / 마우스로 조준, 좌클릭: 발사" }
+      ]
+    },
+    {
+      "id": "combat_vulcan",
+      "title": "전투 튜토리얼 3 — 발칸 포대 운용",
+      "image": "combat_vulcan",
+      "tips": [
+        { "title": "발칸 포대 운용", "text": "근거리에서 발칸을 사용해 추가 피해를 줍니다. 무기별 사거리와 발사 특성을 익힙니다." },
+        { "title": "조작",          "text": "2: 발칸 선택 / 좌클릭: 발사" }
+      ]
+    },
+    {
+      "id": "combat_maneuver",
+      "title": "전투 튜토리얼 4 — 기동과 생존",
+      "image": "combat_maneuver",
+      "tips": [
+        { "title": "기동과 생존", "text": "추진기를 조작해 적의 사격을 피하고, 장갑 상태를 확인하며 교전을 이어갑니다." },
+        { "title": "조작",       "text": "WASD: 이동" }
+      ]
+    }
+  ]
+}

@@ -27,6 +27,9 @@ public class WeaponStatsTable : ScriptableObject
         public string name;
         public F3DFXType weaponType;
 
+        [Tooltip("화면(무기 선택 표시 등)에 보이는 이름. 비우면 무기 종류 이름을 쓴다.")]
+        public string displayName;
+
         [Tooltip("1회 공격력. 지속형 빔(발사 간격 0)은 초당 공격력(DPS).")]
         [Min(0f)] public float damage = 10f;
 
@@ -106,6 +109,13 @@ public class WeaponStatsTable : ScriptableObject
     public static float GetFireInterval(F3DFXType type)
     {
         return Mathf.Max(MinInterval, Find(type).fireInterval);
+    }
+
+    /// <summary>화면에 보이는 무기 이름. 표에 이름이 없으면 무기 종류 이름.</summary>
+    public static string GetDisplayName(F3DFXType type)
+    {
+        var e = Find(type);
+        return string.IsNullOrEmpty(e.displayName) ? type.ToString() : e.displayName;
     }
 
     public static float GetShieldMultiplier(F3DFXType type)
