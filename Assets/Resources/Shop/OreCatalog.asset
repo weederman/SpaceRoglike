@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7e19344cebcf8a499ecc95e8c94f60c, type: 3}
+  m_Name: OreCatalog
+  m_EditorClassIdentifier: 
+  ores:
+  - id: iron
+    displayName: "\uCCA0\uAD11\uC11D"
+    icon: {fileID: 21300000, guid: c0f9b7ed2e8cc9346ba7b9a80b141ae7, type: 3}
+    price: 10
+    description: "\uAC00\uC7A5 \uD754\uD55C \uAD11\uC11D. \uC5B4\uB290 \uC18C\uD589\uC131\uB300\uC5D0\uC11C\uB098
+      \uB098\uC624\uACE0, \uC81C\uB828\uC18C\uC640 \uC815\uAC70\uC7A5\uC5D0\uC11C
+      \uAFB8\uC900\uD788 \uC0AC\uB4E4\uC778\uB2E4."
+    looks:
+    - model: {fileID: 1822345149752838, guid: 45b62242ff99b0a48a47f713cd6d1687, type: 3}
+      glow: {r: 1, g: 0.5, b: 0.15, a: 1}
+    - model: {fileID: 1846397802687310, guid: 8c22678d7aa562145804b6f0af7e603a, type: 3}
+      glow: {r: 1, g: 0.4, b: 0.35, a: 1}
+    depositsPerLevel: 0400000004000000050000000500000006000000
+    amount: {x: 60, y: 100}
+    size: 110
+  - id: rare
+    displayName: "\uD76C\uADC0 \uAD11\uC11D"
+    icon: {fileID: 21300000, guid: 6448b82046e9dd542ab37ce629da1cf1, type: 3}
+    price: 60
+    description: "\uACE0\uC131\uB2A5 \uD568\uC120 \uBAA8\uB4C8\uC5D0 \uC4F0\uC774\uB294
+      \uADC0\uD55C \uAD11\uC11D. \uB808\uBCA8 3 \uC774\uC0C1\uC758 \uC18C\uD589\uC131\uB300\uC5D0\uC11C\uB9CC
+      \uC870\uAE08\uC529 \uB098\uC628\uB2E4."
+    looks:
+    - model: {fileID: 1056666096333670, guid: f603e71ddc270d54192200e95673e2a6, type: 3}
+      glow: {r: 0.35, g: 0.8, b: 1, a: 1}
+    depositsPerLevel: 0000000000000000020000000200000003000000
+    amount: {x: 25, y: 35}
+    size: 90
+  depositDistance: {x: 300, y: 800}
+  depositSpacing: 220
+  depositHeight: -30

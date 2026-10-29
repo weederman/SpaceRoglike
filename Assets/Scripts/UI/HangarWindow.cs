@@ -7,7 +7,8 @@ using UnityEngine.UI;
 /// <summary>
 /// 정거장의 격납고 창. 탭 두 개:
 ///  - 격납고: 지금 함선(수리), 장착 중인 무기(슬롯), 보관 중인 무기. 보관 무기를 골라 슬롯에 장착하면 원래 무기는 보관함으로 돌아온다.
-///  - 상점: 파는 무기(WeaponCatalog의 forSale)와 함선(아직 준비 중). 산 무기는 격납고 보관함에 들어간다.
+///  - 상점: 파는 무기(WeaponCatalog의 forSale), 광물 시장(화물칸의 광석을 시장가로 판매, OreCatalog), 함선(아직 준비 중).
+///    산 무기는 격납고 보관함에 들어간다.
 /// 왼쪽 목록(StationListView)에서 고르면 오른쪽 상세(ItemDetailView)에 설명·세부정보(데미지·발사속도·DPS·사정거리·탄속·가격)와 버튼이 나온다.
 /// 계산과 지불은 StationShop, 보관함은 PlayerHangar, 슬롯은 PlayerWeaponSelector.
 /// </summary>
@@ -50,6 +51,8 @@ public class HangarWindow : StationWindow
         PlayerHangar.OnChanged += Rebuild;
         if (CreditWallet.Instance != null)
             CreditWallet.Instance.OnChanged += HandleCredits;
+        if (CargoHold.Instance != null)
+            CargoHold.Instance.OnChanged += Rebuild;
 
         SwitchTab(Tab.Hangar);
     }
@@ -59,6 +62,8 @@ public class HangarWindow : StationWindow
         PlayerHangar.OnChanged -= Rebuild;
         if (CreditWallet.Instance != null)
             CreditWallet.Instance.OnChanged -= HandleCredits;
+        if (CargoHold.Instance != null)
+            CargoHold.Instance.OnChanged -= Rebuild;
     }
 
     private void OnDestroy()
@@ -251,6 +256,22 @@ public class HangarWindow : StationWindow
             }
         }
 
+        // 광물 시장: 화물칸의 광석을 시장가로 판다
+        OreCatalog ores = OreCatalog.Load();
+        CargoHold cargo = CargoHold.Instance;
+        if (ores != null && cargo != null)
+        {
+            _list.AddHeader($"광물 · 화물칸 {Mathf.FloorToInt(cargo.Ore)} / {Mathf.FloorToInt(cargo.Capacity)}");
+            foreach (OreCatalog.Ore ore in ores.ores)
+            {
+                OreCatalog.Ore o = ore;
+                int amount = Mathf.FloorToInt(cargo.Amount(o.id));
+                StationListRow row = _list.AddRow();
+                row.Bind(o.icon, o.displayName, $"화물칸 {amount:N0}", $"{o.price:N0} CR / 개", () => Select("ore" + o.id));
+                entries.Add(("ore" + o.id, row, () => ShowOre(o, cargo)));
+            }
+        }
+
         _list.AddHeader("함선");
         StationListRow shipRow = _list.AddRow();
         shipRow.Bind(_shipIcon, "함선 업그레이드 · 교체", "준비 중", "", () => Select("ships"));
@@ -280,6 +301,31 @@ public class HangarWindow : StationWindow
             Rebuild();
         });
         _detail.SetMessage(_message);
+    }
+
+    private void ShowOre(OreCatalog.Ore ore, CargoHold cargo)
+    {
+        int amount = Mathf.FloorToInt(cargo.Amount(ore.id));
+        int total = amount * ore.price;
+        _detail.Show(ore.icon, ore.displayName, $"{ore.price:N0} CR / 개", $"화물칸 {amount:N0}개");
+        _detail.SetDescription(ore.description);
+        _detail.AddStat("시장가", $"{ore.price:N0} CR");
+        _detail.AddStat("화물칸", $"{amount:N0}개");
+        _detail.AddStat("합계", $"{total:N0} CR");
+
+        _detail.SetPrimary(amount > 0 ? $"전부 판매 · {total:N0} CR" : "판매할 광석 없음", amount > 0, () =>
+        {
+            int credits = cargo.Sell(ore.id);
+            _message = $"{ore.displayName}을 팔아 {credits:N0} CR을 받았습니다.";
+            Rebuild();
+        });
+
+        // 채굴 임무에 쓸 광석이면 알려 준다 (시장에 팔면 임무 납품에 쓸 수 없다)
+        if (_message == null && amount > 0 && MissionDirector.Current is MiningMissionDirector mining
+            && (string.IsNullOrEmpty(mining.Data.oreId) || mining.Data.oreId == ore.id))
+            _detail.SetMessage($"진행 중인 임무에 납품할 수 있는 광석입니다. 팔면 납품할 수 없습니다.");
+        else
+            _detail.SetMessage(_message);
     }
 
     // ── 무기 상세 ──────────────────────────────────────

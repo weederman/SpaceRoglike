@@ -54,15 +54,19 @@ public class MineableAsteroid : MonoBehaviour
     private bool _revealing;
     private float _miningGlow; // 채굴 빔이 닿는 동안 광맥이 더 밝아진다
 
+    /// <summary>이 광맥에서 나오는 광석 (OreCatalog의 id)</summary>
+    public string OreId { get; private set; } = CargoHold.DefaultOre;
+
     public float Radius => _size * 0.5f;
     public float Remaining => _ore;
     public float RemainingRatio => _oreMax > 0f ? _ore / _oreMax : 0f;
     public bool HasOre => _ore > 0f;
     public bool IsRevealed => _reveal >= 1f;
 
-    /// <summary>모양(모델과 광맥 빛깔, 긴 쪽 기준 월드 크기)과 광물 매장량을 정한다.</summary>
-    public void Init(Look look, float size, float ore)
+    /// <summary>모양(모델과 광맥 빛깔, 긴 쪽 기준 월드 크기)과 광물 매장량, 광석 종류를 정한다.</summary>
+    public void Init(Look look, float size, float ore, string oreId = CargoHold.DefaultOre)
     {
+        OreId = oreId;
         _size = size;
         _ore = _oreMax = ore;
         _glow = look != null ? look.glow : Color.white;
@@ -154,6 +158,12 @@ public class MineableAsteroid : MonoBehaviour
         _revealing = true;
         if (instant)
             _reveal = 1f;
+    }
+
+    /// <summary>남은 매장량을 정한다 (전에 캐다 만 광맥을 다시 깔 때)</summary>
+    public void SetRemaining(float remaining)
+    {
+        _ore = Mathf.Clamp(remaining, 0f, _oreMax);
     }
 
     /// <summary>광물을 최대 amount만큼 꺼내고 실제로 꺼낸 양을 돌려준다.</summary>

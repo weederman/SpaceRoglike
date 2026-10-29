@@ -179,7 +179,7 @@ public class SweepMissionDirector : MissionDirector
     private StarSystem.Location PickBeacon(StarSystem system)
     {
         StarSystemData data = system.Data;
-        Vector2 here = Player != null ? system.ToSystem(Player.position) : Vector2.zero;
+        Vector2 here = system.ToSystem(PlayerWorldPosition());
         StarSystem.Location best = StarSystem.Location.None;
         float bestDistance = float.PositiveInfinity;
 

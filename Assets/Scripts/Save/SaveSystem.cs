@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 ///    (예: 튜토리얼 귀환 도킹 → 정산 대사가 끝난 뒤 저장).
 ///  - 임무를 수락했을 때. 스토리 도중이면 지금 장면 다음 장면(then)부터 이어 가도록 표시해 둔다
 ///    (예: 술집에서 임무 수락 → 다시 시작하면 격납고 장면부터).
-/// 저장 내용: 도킹한 정거장, 크레딧, 진행 중인 임무와 완료한 목표, 장착 무기, 격납고 보관 무기, 이어 갈 스토리 장면.
+/// 저장 내용: 도킹한 정거장, 크레딧, 진행 중인 임무와 완료한 목표, 장착 무기, 격납고 보관 무기, 화물칸 광석, 이어 갈 스토리 장면.
 /// 게임을 켜거나 씬을 다시 불러올 때(패배 후 재시작) 저장이 있으면 프롤로그 없이 저장한 정거장 안에 도킹한 채(StationDocking) 시작하고,
 /// 이어 갈 장면이 있으면 그 장면부터 재생한다.
 /// 저장 파일: Application.persistentDataPath/save.json (개발자 모드: save / save clear)
@@ -35,6 +35,8 @@ public class SaveSystem : MonoBehaviour
         public string[] loadout = new string[0];
         [Tooltip("격납고에 보관 중인 무기 (장착하지 않은 것)")]
         public string[] hangar = new string[0];
+        [Tooltip("화물칸의 광석 (id:양)")]
+        public string[] cargo = new string[0];
         [Tooltip("다시 시작하면 재생할 스토리 시퀀스 (없으면 자유 플레이)")]
         public string resumeSequence;
     }
@@ -192,6 +194,8 @@ public class SaveSystem : MonoBehaviour
         if (PlayerWeaponSelector.Instance != null)
             data.loadout = PlayerWeaponSelector.Instance.CurrentLoadout();
         data.hangar = PlayerHangar.ToNames();
+        if (CargoHold.Instance != null)
+            data.cargo = CargoHold.Instance.ToSave();
 
         try
         {
@@ -281,6 +285,8 @@ public class SaveSystem : MonoBehaviour
         if (PlayerWeaponSelector.Instance != null && data.loadout != null && data.loadout.Length > 0)
             PlayerWeaponSelector.Instance.ApplyLoadout(data.loadout);
         PlayerHangar.Restore(data.hangar);
+        if (CargoHold.Instance != null)
+            CargoHold.Instance.Restore(data.cargo);
 
         StoryPlayer.EnsureCreated();
         yield return null; // 퀘스트 창이 생기도록

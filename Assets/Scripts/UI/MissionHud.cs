@@ -43,11 +43,11 @@ public class MissionHud : MonoBehaviour
 
     private void LateUpdate()
     {
-        // 항성계 지도를 열어 둔 동안은 지도 창에 겹쳐 보이지 않게 숨긴다
+        // 항성계 지도를 열어 둔 동안과 정거장 안(도킹 중)에서는 창에 겹쳐 보이지 않게 숨긴다
         if (_map == null)
             _map = FindObjectOfType<StarMapUI>();
 
-        bool show = _map == null || !_map.IsOpen;
+        bool show = (_map == null || !_map.IsOpen) && !StationDocking.IsDocked;
         if (_canvas != null && _canvas.enabled != show)
             _canvas.enabled = show;
     }

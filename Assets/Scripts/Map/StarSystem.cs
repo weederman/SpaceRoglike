@@ -359,7 +359,7 @@ public class StarSystem : MonoBehaviour
         OnAreaChanged?.Invoke(area);
     }
 
-    /// <summary>비콘 지역: 레벨 색의 워프 비콘을 띄우고, 소행성 지대가 없으면 깐다</summary>
+    /// <summary>비콘 지역: 레벨 색의 워프 비콘을 띄우고, 소행성 지대가 없으면 깔고, 광맥(OreDeposits)을 깐다</summary>
     private void DressBeaconArea(int index)
     {
         if (_beaconPrefab != null)
@@ -373,10 +373,26 @@ public class StarSystem : MonoBehaviour
         // 튜토리얼(장면 3)이 이미 소행성 지대를 깔았으면 그대로 쓴다
         if (_asteroidFieldPrefab != null && AsteroidField.Active == null)
             _areaField = Instantiate(_asteroidFieldPrefab, _player.position, Quaternion.identity);
+
+        // 광맥: 튜토리얼 진행 중에는 튜토리얼 비콘에 깔지 않는다 (튜토리얼은 자기 광맥을 쓴다)
+        if (!(index == _data.tutorialBeacon && TutorialInProgress()))
+        {
+            Vector3 center = BeaconWorld(index);
+            center.y = _player.position.y;
+            OreDeposits.Spawn(index, _data.beacons[index].level, center, transform);
+        }
+    }
+
+    private static bool TutorialInProgress()
+    {
+        QuestTracker quest = FindObjectOfType<QuestTracker>(true);
+        return quest != null && !string.IsNullOrEmpty(quest.CurrentQuestId);
     }
 
     private void ClearAreaDressing()
     {
+        OreDeposits.Clear();
+
         if (_areaBeacon != null)
             Destroy(_areaBeacon.gameObject);
         _areaBeacon = null;

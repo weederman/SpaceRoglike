@@ -177,6 +177,14 @@ public abstract class MissionDirector : MonoBehaviour
         return enemy;
     }
 
+    /// <summary>플레이어의 항성계 위치. 도킹 중이면(함선은 먼 내부 공간에 있다) 그 정거장 위치.</summary>
+    protected Vector3 PlayerWorldPosition()
+    {
+        if (StationDocking.IsDocked && StationZone.Current != null)
+            return StationZone.Current.transform.position;
+        return Player != null ? Player.position : Vector3.zero;
+    }
+
     protected static bool IsAlive(PirateShip enemy)
     {
         return enemy != null && enemy.Hull != null && enemy.Hull.IsActive && enemy.Current != PirateShip.Mode.Warp;

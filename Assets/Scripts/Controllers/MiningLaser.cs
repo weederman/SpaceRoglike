@@ -144,7 +144,7 @@ public class MiningLaser : MonoBehaviour
         if (IsMining)
         {
             float taken = ore.Extract(_orePerSecond * Time.deltaTime);
-            CargoHold.Instance.Add(taken);
+            CargoHold.Instance.Add(ore.OreId, taken);
         }
 
         UpdateBeam(ore);

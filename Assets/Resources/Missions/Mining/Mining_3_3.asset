@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5597de969051254282b1b04a4c49275, type: 3}
+  m_Name: Mining_3_3
+  m_EditorClassIdentifier: 
+  id: 3-3
+  title: "\uC704\uD5D8 \uAD6C\uC5ED \uB300\uB7C9 \uCC44\uAD74"
+  tier: "\uC0C1\uAE09"
+  client: "\uB300\uD615 \uAD11\uC5C5 \uAE30\uC5C5"
+  objective: "\uAD11\uC11D 500\uAC1C\uB97C \uCC44\uAD74\uD574 \uC774 \uC815\uAC70\uC7A5\uC5D0
+    \uB0A9\uD488\uD558\uB77C (\uC885\uB958 \uBB34\uAD00) \xB7 \uC2DC\uAC04\uC774
+    \uAC08\uC218\uB85D \uD574\uC801 \uCD9C\uD604 \uC99D\uAC00"
+  reward: 40000
+  extraRewards: []
+  acceptSequence: 
+  successSequence: 
+  oreId: 
+  amount: 500
+  payMarketValue: 0
+  stages:
+  - delivered: 100
+    bonus: 2000
+  - delivered: 250
+    bonus: 3000
+  - delivered: 400
+    bonus: 5000
+  beaconLevels: {x: 4, y: 5}
+  patrolCheckSeconds: 25
+  patrolChance: 0.1
+  patrolChancePerMinute: 0.1
+  patrol:
+  - shipClass: light_fighter
+    count: 2
+  - shipClass: interceptor
+    count: 1
