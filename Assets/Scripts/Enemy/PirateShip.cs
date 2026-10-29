@@ -10,7 +10,8 @@ using UnityEngine;
 ///  Fight : 평소에는 플레이어에게서 떨어진 암석 뒤에 숨어 천천히 떠다닌다(Lurk). 플레이어가 가까이 오면 맞서 쏜다.
 ///          Director가 공격 신호를 주면 숨어 있던 배들이 한 방향으로 모여 들어와 쏘고(Attack), 신호가 끝나면 다시 흩어진다.
 ///  Flee  : 쏘지 않고 플레이어 반대쪽으로 도망친다. 너무 멀어지면 궁지에 몰려 다시 싸운다
-///  Warp  : 교전을 포기하고 워프 이펙트와 함께 사라진다 (격파가 아니므로 폭발/보상 없음)
+///  Warp  : 교전을 포기하고 워프한다. 플레이어 워프와 같이 게이트가 충전되는 동안 멈췄다가 점점 세게 가속하며 사라진다
+///          (WarpDash, 격파가 아니므로 폭발/보상 없음)
 /// 이동은 이 컴포넌트가 직접 한다(기존 공전 AI EnemyOrbitController는 꺼 둔다). 사격은 기존 EnemyTurretController를 켜고 끈다.
 /// 수치는 Director 프리팹의 Tuning에서 받는다.
 /// </summary>
@@ -56,8 +57,10 @@ public class PirateShip : MonoBehaviour
         [Header("워프 이탈")]
         [Min(0f)] public float warpTurnSeconds = 1.0f;
         [Min(0.5f)] public float warpMaxSeconds = 5f;
-        [Tooltip("워프 이펙트를 따라 이만큼 이동하면 사라진다")]
+        [Tooltip("게이트가 충전된 뒤 이만큼 돌진하고 사라진다")]
         [Min(1f)] public float warpVanishDistance = 160f;
+        [Tooltip("돌진하는 시간(초). 짧을수록 세게 가속한다.")]
+        [Min(0.1f)] public float warpDashSeconds = 1.2f;
     }
 
     /// <summary>워프로 사라졌을 때 (격파가 아님)</summary>
@@ -452,29 +455,18 @@ public class PirateShip : MonoBehaviour
             yield return null;
         }
 
+        // 함선 자리에 게이트가 열리고, 충전되는 동안 멈췄다가 점점 세게 가속하며 사라진다
         Vector3 start = transform.position;
-        GameObject fx = null;
-        F3DWarpJump jump = null;
-        if (_warpPrefab != null)
+        Vector3 dir = away.normalized;
+        GameObject fx = WarpDash.SpawnGate(_warpPrefab, start, dir);
+        System.Action<Vector3> move = p =>
         {
-            fx = Instantiate(_warpPrefab, start, to);
-            jump = fx.GetComponent<F3DWarpJump>();
-            if (jump != null)
-                jump.DebugLoop = false; // 프리팹은 반복 재생하도록 되어 있다 (Start 전에 끈다)
-        }
+            transform.position = p;
+            _rb.position = p;
+        };
 
-        // 이펙트가 충전하다가 함선을 쏘아 보낸다. 충분히 멀어지면 사라진다.
-        float timeout = Time.time + _tuning.warpMaxSeconds;
-        while (Time.time < timeout && Vector3.Distance(transform.position, start) < _tuning.warpVanishDistance)
-        {
-            if (jump != null && jump.ShipPos != null)
-            {
-                transform.position = jump.ShipPos.position;
-                _rb.position = jump.ShipPos.position;
-            }
-
-            yield return null;
-        }
+        yield return WarpDash.Launch(start, Vector3.zero, WarpDash.GateChargeSeconds, dir,
+            _tuning.warpVanishDistance, _tuning.warpDashSeconds, move);
 
         if (fx != null)
             Destroy(fx, 3f);

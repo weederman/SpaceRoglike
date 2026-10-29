@@ -112,12 +112,25 @@ public class PlayerWeaponSelector : MonoBehaviour
 
     private void HandleCue(string cue)
     {
-        if (!cue.StartsWith(LoadoutPrefix))
-            return;
+        if (cue.StartsWith(LoadoutPrefix))
+            ApplyLoadout(cue.Substring(LoadoutPrefix.Length).Split(','));
+    }
 
+    /// <summary>슬롯 순서대로 지금 무기 종류 이름 (저장에 쓴다)</summary>
+    public string[] CurrentLoadout()
+    {
+        RefreshSlots();
+        var names = new string[_slots.Count];
+        for (int i = 0; i < _slots.Count; i++)
+            names[i] = _slots[i].fxController.DefaultFXType.ToString();
+        return names;
+    }
+
+    /// <summary>슬롯 순서대로 무기 종류를 바꾼다 (F3DFXType 이름)</summary>
+    public void ApplyLoadout(string[] names)
+    {
         RefreshSlots();
 
-        string[] names = cue.Substring(LoadoutPrefix.Length).Split(',');
         for (int i = 0; i < names.Length && i < _slots.Count; i++)
         {
             string name = names[i].Trim();

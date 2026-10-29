@@ -3,8 +3,9 @@ using UnityEngine;
 
 /// <summary>
 /// 소행성 지대: 플레이어(함선) 주위에 거대한 암석과 부서진 선박 잔해를 흩뿌린다.
-/// 암석은 항상 "최대 maxRocks개"만 존재한다. 함선이 움직여 aroundRadius 밖으로 멀어진 조각은 지워지는 대신
-/// 함선 앞쪽 가장자리로 옮겨져 서서히 나타난다(암석은 작게 시작해 커진다). 그래서 어디로 가도 주변 밀도가 같고, 화면이 암석으로 가득 차지 않는다.
+/// 암석은 항상 "최대 maxRocks개"만 존재하고, 놓이는 범위는 카메라 화면에 담기는 범위 + 여유(spawnMargin, 플레이어가 움직일 만큼)다.
+/// 함선이 움직여 그 범위를 벗어난 조각은 지워지는 대신 화면 바로 밖 여유 띠(주로 함선이 나아가는 쪽)로 옮겨져 서서히 나타난다
+/// (암석은 작게 시작해 커진다). 그래서 어디로 가도 화면 안의 밀도가 같고, 화면 안에서 갑자기 생기지 않는다.
 /// 암석은 3D 소행성 모델(FreeSciFi 소행성 메시 + 회색 암석 재질)이며, 함선이 다니는 높이보다 조금 아래에 놓여 함선이 그 위를 지나간다.
 /// 저마다 다른 축으로 천천히 구른다. 잔해 조각은 2D Space Kit 스프라이트를 카메라를 향해 세운다(빌보드). 장식용이라 충돌체는 없다.
 /// 함선 주위에는 소행성 벨트의 먼지(Asteroid Field Creator의 Blob Dust 파티클을 이 크기에 맞게 줄인 것)가 떠돈다.
@@ -52,10 +53,12 @@ public class AsteroidField : MonoBehaviour
     [SerializeField, Min(0)] private int _maxRocks = 10;
     [SerializeField, Min(0)] private int _maxWrecks = 5;
 
-    [Header("범위 (함선 기준 반지름)")]
-    [Tooltip("이 반지름 안에는 두지 않는다 (함선과 겹치지 않게)")]
+    [Header("범위")]
+    [Tooltip("함선에서 이 반지름 안에는 두지 않는다 (함선과 겹치지 않게)")]
     [SerializeField, Min(0f)] private float _clearRadius = 80f;
-    [Tooltip("이 반지름 안이 '플레이어 주위'. 이보다 멀어진 조각은 앞쪽 가장자리로 옮겨진다.")]
+    [Tooltip("카메라 화면에 담기는 범위 바깥으로 이만큼(플레이어가 움직일 만큼) 더 넓은 곳까지 놓는다")]
+    [SerializeField, Min(0f)] private float _spawnMargin = 100f;
+    [Tooltip("카메라를 쓸 수 없을 때(워프 연출 중 등) 함선 주위로 보는 반지름")]
     [SerializeField, Min(1f)] private float _aroundRadius = 280f;
 
     [Header("크기 (월드 단위, 긴 쪽 기준)")]
@@ -94,6 +97,10 @@ public class AsteroidField : MonoBehaviour
     private System.Random _rng;
     private Transform _target;
     private Camera _camera;
+    private Rect _view;     // 카메라 화면에 담기는 범위 (월드 XZ)
+    private Rect _region;   // _view + 여유: 조각이 놓이는 범위
+    private Vector3 _lastCenter;
+    private Vector3 _moveDir = Vector3.forward;
 
     private void OnEnable()
     {
@@ -126,7 +133,9 @@ public class AsteroidField : MonoBehaviour
         CreateWrecks(_maxWrecks);
         CreateDust();
 
-        // 처음에는 카메라가 보는 앞쪽에 몰아서 놓아, 도착하자마자 암석들이 눈에 들어오게 한다
+        // 처음에는 화면 안 전체에 놓아, 도착하자마자 암석들이 눈에 들어오게 한다
+        _camera = Camera.main;
+        UpdateRegion(_target != null ? _target.position : transform.position);
         foreach (Piece p in _pieces)
             Place(p, true);
     }
@@ -294,18 +303,76 @@ public class AsteroidField : MonoBehaviour
         ApplyFade(p);
     }
 
-    /// <summary>함선 주위의 무작위 자리. 처음엔 주위 전체에, 옮길 때는 가장자리 근처에(화면 밖에서 나타나도록).</summary>
+    /// <summary>
+    /// 무작위 자리. 처음엔 놓이는 범위(화면 + 여유) 전체에(함선 바로 곁 제외),
+    /// 옮길 때는 화면 바로 밖 여유 띠 안에 놓는다(화면 안에서 갑자기 생기지 않게). 띠에서는 함선이 나아가는 쪽을 고른다.
+    /// </summary>
     private Vector3 RandomOffset(Vector3 center, bool initial, bool wreck)
     {
-        float minR = initial ? _clearRadius : _aroundRadius * 0.8f;
-        float r = Mathf.Sqrt(Mathf.Lerp(minR * minR, _aroundRadius * _aroundRadius, (float)_rng.NextDouble()));
-
-        // 각도: 카메라가 보는 앞쪽(+Z)에 치우쳐서. 처음엔 70%를 앞쪽 가까이에 몰아 놓는다.
-        float spread = initial && _rng.NextDouble() < 0.7 ? 70f : 110f;
-        float angle = Mathf.Lerp(-spread, spread, (float)_rng.NextDouble()) * Mathf.Deg2Rad;
-
         Vector2 height = wreck ? _height : _rockHeight;
-        return center + new Vector3(Mathf.Sin(angle) * r, Mathf.Lerp(height.x, height.y, (float)_rng.NextDouble()), Mathf.Cos(angle) * r);
+        float y = center.y + Mathf.Lerp(height.x, height.y, (float)_rng.NextDouble());
+
+        Vector2 best = new Vector2(center.x, center.z) + Vector2.up * _aroundRadius;
+        float bestScore = float.NegativeInfinity;
+        for (int i = 0; i < 12; i++)
+        {
+            var c = new Vector2(Mathf.Lerp(_region.xMin, _region.xMax, (float)_rng.NextDouble()),
+                                Mathf.Lerp(_region.yMin, _region.yMax, (float)_rng.NextDouble()));
+            Vector2 fromShip = c - new Vector2(center.x, center.z);
+            if (fromShip.magnitude < _clearRadius)
+                continue;
+
+            if (initial)
+                return new Vector3(c.x, y, c.y);
+
+            if (_view.Contains(c))
+                continue; // 화면 안에는 새로 놓지 않는다
+
+            float score = Vector2.Dot(fromShip.normalized, new Vector2(_moveDir.x, _moveDir.z)) + (float)_rng.NextDouble() * 0.6f;
+            if (score > bestScore)
+            {
+                bestScore = score;
+                best = c;
+            }
+        }
+
+        return new Vector3(best.x, y, best.y);
+    }
+
+    /// <summary>
+    /// 카메라 화면에 담기는 범위와, 여유를 더한 놓이는 범위를 다시 잰다.
+    /// 암석은 함선보다 아래에 놓이므로 암석 높이의 평면에서 잰다 (아래에 있는 것은 화면에서 더 위쪽에 보인다).
+    /// </summary>
+    private void UpdateRegion(Vector3 center)
+    {
+        bool ok = false;
+        if (_camera != null)
+        {
+            float rockY = center.y + (_rockHeight.x + _rockHeight.y) * 0.5f;
+            var plane = new Plane(Vector3.up, new Vector3(0f, rockY, 0f));
+            float minX = float.PositiveInfinity, maxX = float.NegativeInfinity;
+            float minZ = float.PositiveInfinity, maxZ = float.NegativeInfinity;
+            ok = true;
+
+            for (int i = 0; i < 4; i++)
+            {
+                Ray ray = _camera.ViewportPointToRay(new Vector3(i % 2, i / 2, 0f));
+                // 지평선 위를 향하는 모서리(먼 곳)는 적당한 거리에서 끊는다
+                Vector3 hit = plane.Raycast(ray, out float enter) && enter < 2000f ? ray.GetPoint(enter) : ray.GetPoint(2000f);
+                minX = Mathf.Min(minX, hit.x); maxX = Mathf.Max(maxX, hit.x);
+                minZ = Mathf.Min(minZ, hit.z); maxZ = Mathf.Max(maxZ, hit.z);
+            }
+
+            _view = Rect.MinMaxRect(minX, minZ, maxX, maxZ);
+
+            // 카메라가 함선을 비추지 않으면(워프 연출 중 등) 쓰지 않는다
+            ok = _view.Contains(new Vector2(center.x, center.z));
+        }
+
+        if (!ok)
+            _view = new Rect(center.x - _aroundRadius * 0.6f, center.z - _aroundRadius * 0.6f, _aroundRadius * 1.2f, _aroundRadius * 1.2f);
+
+        _region = Rect.MinMaxRect(_view.xMin - _spawnMargin, _view.yMin - _spawnMargin, _view.xMax + _spawnMargin, _view.yMax + _spawnMargin);
     }
 
     /// <summary>이 자리에 반지름 radius인 암석을 두면, 이미 놓인 다른 큰 암석(과 채굴용 광맥 소행성)과
@@ -350,14 +417,21 @@ public class AsteroidField : MonoBehaviour
 
         Quaternion facing = _camera != null ? _camera.transform.rotation : Quaternion.identity;
         float time = Time.time;
-        float aroundSqr = _aroundRadius * _aroundRadius;
+
+        // 함선이 나아가는 방향 (새 조각을 그쪽 화면 밖에 놓는다)
+        Vector3 moved = center - _lastCenter;
+        moved.y = 0f;
+        if (moved.sqrMagnitude > 0.01f)
+            _moveDir = Vector3.Slerp(_moveDir, moved.normalized, 0.1f);
+        _lastCenter = center;
+
+        UpdateRegion(center);
 
         foreach (Piece p in _pieces)
         {
-            // 주위(수평 거리)를 벗어났으면 다시 놓는다
-            Vector3 d = p.transform.position - center;
-            d.y = 0f;
-            if (_target != null && d.sqrMagnitude > aroundSqr)
+            // 놓이는 범위(화면 + 여유)를 벗어났으면 화면 바로 밖으로 옮긴다
+            Vector3 pos = p.transform.position;
+            if (_target != null && !_region.Contains(new Vector2(pos.x, pos.z)))
                 Place(p, false);
 
             // 잔해 조각은 카메라와 같은 방향으로 서서 화면을 정면으로 바라보고(카메라가 움직여도 따라간다),

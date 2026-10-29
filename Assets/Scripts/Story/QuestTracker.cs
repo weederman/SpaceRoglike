@@ -7,7 +7,7 @@ using UnityEngine;
 /// <summary>
 /// 임무 수락 연출 + HUD 목표 창. 스토리 줄의 cue로 움직인다.
 ///   quest_accept:퀘스트id          화면 가운데에 "임무 수락" 창이 뜬 뒤, 왼쪽 위 HUD 구석으로 날아가 목표 창이 된다
-///   quest_done:퀘스트id:목표id     그 목표를 완료 표시(취소선)한다
+///   quest_done:퀘스트id:목표id     그 목표를 완료 표시(취소선)한다. 모든 목표를 마치면 "임무 완료"로 바뀐 뒤 잠시 후 사라진다.
 /// 퀘스트의 제목과 목표 문장은 Assets/Resources/Story/*.json의 "quests"에 둔다.
 /// 건너뛰기(Esc)로 지나가는 cue는 연출 없이 바로 구석의 목표 창이 된다.
 /// 모양은 Assets/Resources/UI/QuestTracker.prefab (SCI-FI UI Pack Popup 기반).
@@ -31,6 +31,17 @@ public class QuestTracker : MonoBehaviour
     [SerializeField, Min(0f)] private float _fadeInSeconds = 0.5f;
     [SerializeField, Min(0f)] private float _holdSeconds = 3.2f;
     [SerializeField, Min(0f)] private float _moveSeconds = 0.8f;
+
+    [Header("임무 완료")]
+    [Tooltip("모든 목표를 마친 뒤 \"임무 완료\"를 보여주는 시간(초)")]
+    [SerializeField, Min(0f)] private float _completeHoldSeconds = 3f;
+    [SerializeField, Min(0f)] private float _fadeOutSeconds = 0.6f;
+
+    /// <summary>진행 중인 퀘스트 id (없으면 null). 저장에 쓴다.</summary>
+    public string CurrentQuestId => _quest != null ? _quest.id : null;
+
+    /// <summary>완료한 목표 id들. 저장에 쓴다.</summary>
+    public IEnumerable<string> DoneObjectives => _done;
 
     private StoryQuest _quest;
     private readonly HashSet<string> _done = new HashSet<string>();
@@ -108,6 +119,63 @@ public class QuestTracker : MonoBehaviour
 
         _done.Add(objectiveId);
         RefreshBody();
+
+        if (_done.Count >= _quest.objectives.Length)
+        {
+            if (_routine != null)
+                StopCoroutine(_routine);
+
+            if (StoryPlayer.IsSkipping)
+                Clear();
+            else
+                _routine = StartCoroutine(CompleteRoutine());
+        }
+    }
+
+    /// <summary>저장한 진행 상태로 되돌린다 (연출 없이 바로 구석의 목표 창)</summary>
+    public void Restore(string questId, IEnumerable<string> doneObjectives)
+    {
+        if (string.IsNullOrEmpty(questId) || !StoryDatabase.TryGetQuest(questId, out StoryQuest quest))
+            return;
+
+        _quest = quest;
+        _done.Clear();
+        foreach (string id in doneObjectives)
+            _done.Add(id);
+
+        if (_routine != null)
+            StopCoroutine(_routine);
+        _routine = null;
+
+        _title.text = quest.title;
+        RefreshBody();
+        ApplyLayout(1f);
+        _group.gameObject.SetActive(true);
+        _group.alpha = 1f;
+    }
+
+    /// <summary>임무 완료: 제목이 바뀌고 잠시 보여준 뒤 서서히 사라진다</summary>
+    private IEnumerator CompleteRoutine()
+    {
+        _title.text = $"임무 완료: {_quest.title}";
+        yield return new WaitForSecondsRealtime(_completeHoldSeconds);
+
+        for (float t = 0f; t < _fadeOutSeconds; t += Time.unscaledDeltaTime)
+        {
+            _group.alpha = 1f - t / _fadeOutSeconds;
+            yield return null;
+        }
+
+        Clear();
+    }
+
+    private void Clear()
+    {
+        _quest = null;
+        _done.Clear();
+        _routine = null;
+        _group.alpha = 0f;
+        _group.gameObject.SetActive(false);
     }
 
     private IEnumerator AcceptRoutine()

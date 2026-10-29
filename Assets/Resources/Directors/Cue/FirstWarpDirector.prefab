@@ -770,8 +770,8 @@ MonoBehaviour:
   _departSeconds: 6.5
   _beaconDistance: 335
   _chargeSeconds: 2.2
-  _gateDistance: 170
-  _dashSeconds: 2
+  _gateDistance: 260
+  _dashSeconds: 1.2
   _minTunnelSeconds: 5
   _arrivalXZ: {x: 2600, y: 2400}
   _returnTunnelSeconds: 3.5

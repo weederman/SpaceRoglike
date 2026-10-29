@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 항성계 안의 장소(정거장/워프 비콘)로 워프한다. 궤도 사이 이동은 이것으로만 한다.
-/// 앞쪽에 워프 게이트가 열리고 함선이 감속 없이 돌진(WarpDash) → 닿는 순간 하얀 섬광 → 워프 터널(WarpTunnelStage, 거리에 따라 길게,
-/// 워프 엔진음 반복) → 섬광 → 도착 지점에 함선을 놓는다.
+/// 함선 자리에 워프 게이트가 열리고 충전되는 동안 함선이 감속해 멈췄다가, 가속도가 점점 커지며 돌진(WarpDash) →
+/// 멈추지 않고 하얀 섬광 → 워프 터널(WarpTunnelStage, 거리에 따라 길게, 워프 엔진음 반복) → 섬광 → 도착 지점에 함선을 놓는다.
 /// 워프하는 동안 조작은 잠기고(GameInputLock) 카메라·격자는 터널 무대가 대신 다룬다.
 /// 스토리 재생 중에는 워프할 수 없다. StarSystem 프리팹에 함께 붙는다. 출발은 항성계 지도(StarMapUI)에서 한다.
 /// </summary>
@@ -18,8 +18,10 @@ public class StarSystemWarp : MonoBehaviour
     [SerializeField] private GameObject _gatePrefab;
 
     [Header("돌진")]
-    [SerializeField, Min(10f)] private float _gateDistance = 170f;
-    [SerializeField, Min(0.2f)] private float _dashSeconds = 2f;
+    [Tooltip("게이트가 충전된 뒤 돌진하는 거리")]
+    [SerializeField, Min(10f)] private float _gateDistance = 260f;
+    [Tooltip("돌진하는 시간(초). 짧을수록 세게 가속한다.")]
+    [SerializeField, Min(0.2f)] private float _dashSeconds = 1.2f;
 
     [Header("시간 (초)")]
     [SerializeField, Min(0.05f)] private float _flashSeconds = 0.25f;
@@ -32,7 +34,10 @@ public class StarSystemWarp : MonoBehaviour
 
     public static bool IsWarping { get; private set; }
 
-    private const string InWarpSound = "inwarp"; // SoundTable 이름
+    // SoundTable 이름
+    private const string InWarpSound = "inwarp";
+    private const string WarpStartSound = "warp_start";
+    private const string WarpEndSound = "warp_end";
 
     /// <summary>섬광에 쓸 화면 전체 이미지 (항성계 지도 프리팹이 넘겨준다)</summary>
     public Image Flash { get; set; }
@@ -51,7 +56,7 @@ public class StarSystemWarp : MonoBehaviour
     /// <summary>지금 워프를 시작할 수 있는지 (스토리 재생 중, 이미 워프 중, 다른 창이 조작을 잠근 중이면 불가)</summary>
     public bool CanWarp(object requester)
     {
-        return !IsWarping && !StoryPlayer.IsPlaying && !GameInputLock.IsLockedExcept(requester);
+        return !IsWarping && !StoryPlayer.IsPlaying && !StationDocking.IsDocked && !GameInputLock.IsLockedExcept(requester);
     }
 
     public bool WarpTo(StarSystem.Location destination)
@@ -75,18 +80,20 @@ public class StarSystemWarp : MonoBehaviour
             Mathf.InverseLerp(0f, _system.Data.OuterRadius * 2f, distance));
         float baseY = _system.Origin.y;
 
-        // 조종을 가져간다 (함선을 세운다)
+        // 조종을 가져간다. 날던 속도는 기억해 두었다가 게이트가 충전되는 동안 서서히 줄인다.
         bool wasEnabled = _ship.enabled;
         _ship.enabled = false;
+        Vector3 velocity = Vector3.zero;
         if (!_rb.isKinematic)
         {
+            velocity = _rb.velocity;
             _rb.velocity = Vector3.zero;
             _rb.angularVelocity = Vector3.zero;
         }
 
         _rb.isKinematic = true;
 
-        // 바라보는 방향에 게이트를 열고 감속 없이 돌진 → 닿으면 같은 속도로 나아가는 채로 섬광 → 터널
+        // 함선 자리에 게이트를 열고 감속해 멈춤 → 점점 세게 가속하며 돌진 → 멈추지 않고 섬광 → 터널
         Vector3 start = _ship.transform.position;
         Vector3 dir = _ship.transform.forward;
         dir.y = 0f;
@@ -99,11 +106,12 @@ public class StarSystemWarp : MonoBehaviour
             _rb.rotation = rot;
         };
 
-        GameObject gate = WarpDash.SpawnGate(_gatePrefab, start, dir, _gateDistance);
-        yield return WarpDash.Accelerate(start, dir, _gateDistance, _dashSeconds, move);
+        GameObject gate = WarpDash.SpawnGate(_gatePrefab, start, dir);
+        GameAudio.Play(WarpStartSound);
+        yield return WarpDash.Launch(start, velocity, WarpDash.GateChargeSeconds, dir, _gateDistance, _dashSeconds, move);
 
-        Coroutine coast = StartCoroutine(WarpDash.Coast(start + dir * _gateDistance, dir,
-            WarpDash.FinalSpeed(_gateDistance, _dashSeconds), move));
+        Coroutine coast = StartCoroutine(WarpDash.Coast(WarpDash.LaunchEnd(start, velocity, WarpDash.GateChargeSeconds, dir, _gateDistance),
+            dir, WarpDash.FinalSpeed(_gateDistance, _dashSeconds), move));
         yield return FadeFlash(0f, 1f);
         StopCoroutine(coast);
 
@@ -119,6 +127,7 @@ public class StarSystemWarp : MonoBehaviour
         // 섬광 → 도착
         yield return FadeFlash(0f, 1f);
         GameAudio.StopLoop(this);
+        GameAudio.Play(WarpEndSound);
         _stage.Exit();
 
         Vector3 arrival = _system.ArrivalPoint(destination);

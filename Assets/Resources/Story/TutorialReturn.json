@@ -3,7 +3,7 @@
     {
       "id": "tutorial_return",
       "lines": [
-        { "cue": "s6_return", "text": "화물칸이 광물로 채워진 함선이 정거장으로 귀환한다." },
+        { "cue": "s6_return", "text": "화물칸이 광물로 채워진 함선이 정거장으로 귀환한다.", "waitFor": "return_arrived" },
         { "cue": "bg:hangar", "text": "격납고에 착륙하자 라스가 기다리고 있다." },
 
         { "speaker": "ras",  "text": "오오! 정말 돌아왔군!" },

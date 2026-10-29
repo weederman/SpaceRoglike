@@ -18,7 +18,8 @@ public class StoryBackdrop : MonoBehaviour
 
     [Tooltip("교대로 쓰는 이미지 2장 (크로스페이드용)")]
     [SerializeField] private Image[] _layers;
-    [SerializeField, Min(0.05f)] private float _fadeSeconds = 0.9f;
+    [Tooltip("배경이 나타나거나 사라지는 시간(초). 배경끼리 바꿀 때는 이전 배경을 그대로 깔아 둔 채 새 배경만 나타나 뒤가 비치지 않는다.")]
+    [SerializeField, Min(0.05f)] private float _fadeSeconds = 0.35f;
 
     private readonly Dictionary<string, Sprite> _cache = new Dictionary<string, Sprite>();
     private int _front = -1; // 지금 보이는 층 (-1 = 배경 없음)
@@ -110,11 +111,13 @@ public class StoryBackdrop : MonoBehaviour
         float fromAlpha = from != null ? from.color.a : 0f;
         float seconds = instant ? 0.0001f : _fadeSeconds;
 
+        // 배경 → 배경: 이전 배경은 그대로 둔 채 새 배경이 위에 나타난다 (둘 다 반투명해져 뒤의 게임 화면이 비치지 않게)
+        // 배경 → 없음: 이전 배경만 사라진다
         for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
         {
             float k = Mathf.SmoothStep(0f, 1f, t / seconds);
             if (to != null) SetAlpha(to, k);
-            if (from != null) SetAlpha(from, fromAlpha * (1f - k));
+            else if (from != null) SetAlpha(from, fromAlpha * (1f - k));
             yield return null;
         }
 

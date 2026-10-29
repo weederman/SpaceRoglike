@@ -30,6 +30,9 @@ public class StoryPlayer : MonoBehaviour
 
     public static bool IsPlaying { get; private set; }
 
+    /// <summary>지금 재생 중인 시퀀스 id (재생 중이 아니면 null). 저장할 때 이어 갈 장면을 정하는 데 쓴다.</summary>
+    public static string CurrentSequenceId { get; private set; }
+
     /// <summary>건너뛰기로 줄을 빨리 감는 중인지</summary>
     public static bool IsSkipping { get; private set; }
 
@@ -139,7 +142,14 @@ public class StoryPlayer : MonoBehaviour
         IsSkipping = false;
         IsControlMode = false;
         WaitingFor = null;
+        CurrentSequenceId = null;
         _instance = null;
+    }
+
+    /// <summary>스토리 UI(나레이션바, 퀘스트 창 등)를 미리 만들어 둔다 (저장 불러오기 등에서 재생 전에 쓸 때)</summary>
+    public static void EnsureCreated()
+    {
+        GetInstance();
     }
 
     private static StoryPlayer GetInstance()
@@ -350,6 +360,7 @@ public class StoryPlayer : MonoBehaviour
         StoryLine[] lines = sequence.lines ?? new StoryLine[0];
         bool skippedAny = false;
         int i = 0;
+        CurrentSequenceId = sequence.id;
 
         SetControlMode(sequence.control);
 
@@ -483,6 +494,7 @@ public class StoryPlayer : MonoBehaviour
 
         IsControlMode = false;
         IsPlaying = false;
+        CurrentSequenceId = null;
         onComplete?.Invoke();
     }
 

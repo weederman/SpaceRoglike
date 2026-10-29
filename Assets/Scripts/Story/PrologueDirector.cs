@@ -32,6 +32,10 @@ public class PrologueDirector : MonoBehaviour
     // SoundTable 이름
     private const string AlarmSound = "alarm";
     private const string WhiteoutSound = "whiteout";
+    private const string InWarpSound = "inwarp";
+
+    // 워프 엔진음은 경보음과 동시에 반복되므로 반복음 주인(키)을 따로 둔다
+    private readonly object _inWarpLoop = new object();
     private const string ResourcePath = "Directors/PrologueDirector";
 
     private static bool _started;
@@ -183,6 +187,10 @@ public class PrologueDirector : MonoBehaviour
             return;
 #endif
 
+        // 저장을 불러와 이어 하면 프롤로그 없이 저장한 곳에서 시작한다 (SaveSystem)
+        if (SaveSystem.WillContinue)
+            return;
+
         // 플레이어 함선과 추적 카메라가 있는 게임 씬에서만
         if (FindObjectOfType<SpaceshipController>() == null || FindObjectOfType<CameraController>() == null)
             return;
@@ -235,6 +243,7 @@ public class PrologueDirector : MonoBehaviour
         StoryPlayer.OnCue -= HandleCue;
         StoryPlayer.OnSequenceEnded -= HandleEnded;
         GameAudio.StopLoop(this);
+        GameAudio.StopLoop(_inWarpLoop);
 
         ClearPatrols();
 
@@ -292,6 +301,7 @@ public class PrologueDirector : MonoBehaviour
 
         _warpStart = Time.time;
         _stageActive = true;
+        GameAudio.StartLoop(InWarpSound, _inWarpLoop); // 터널을 달리는 동안 워프 엔진음
 
         _overlay.color = Color.black;
         _overlay.gameObject.SetActive(true);
@@ -773,6 +783,7 @@ public class PrologueDirector : MonoBehaviour
             return;
 
         _stageActive = false;
+        GameAudio.StopLoop(_inWarpLoop);
 
         if (_tunnel != null) Destroy(_tunnel);
         if (_warpOut != null) Destroy(_warpOut);

@@ -6,12 +6,18 @@ using UnityEngine;
 /// 채굴 빔이 광맥에 고정되어 광물을 꺼내 화물칸(CargoHold)에 싣는다. 광석 파편이 함선 쪽으로 빨려 들어오는 연출이 함께 나온다.
 /// 지정한 목표가 광맥이 아니면, 키를 누를 때 사거리 안에서 가장 가까운 광맥을 자동으로 지정한다.
 /// 빔이 처음 고정될 때마다 스토리에 신호 "mining_locked"를 보낸다.
+/// 소리: 빔이 켜질 때 / 채굴하는 동안 반복 / 꺼질 때 (SoundTable의 mining_start / mining_loop / mining_stop)
 /// 조작이 잠겨 있거나 화물칸이 가득 차거나 광맥이 바닥나면 멈춘다.
 /// CombatHud 프리팹(Assets/Resources/UI/CombatHud.prefab)에 붙어 함께 생성된다.
 /// </summary>
 public class MiningLaser : MonoBehaviour
 {
     public const string LockedSignal = "mining_locked";
+
+    // SoundTable 이름
+    private const string StartSound = "mining_start";
+    private const string LoopSound = "mining_loop";
+    private const string StopSound = "mining_stop";
 
     public static MiningLaser Instance { get; private set; }
 
@@ -91,6 +97,8 @@ public class MiningLaser : MonoBehaviour
         if (Instance == this)
             Instance = null;
 
+        GameAudio.StopLoop(this);
+
         if (_material != null)
             Destroy(_material);
 
@@ -120,7 +128,16 @@ public class MiningLaser : MonoBehaviour
         }
 
         if (wantMining && !IsMining)
+        {
             StoryPlayer.Signal(LockedSignal);
+            GameAudio.Play(StartSound);
+            GameAudio.StartLoop(LoopSound, this);
+        }
+        else if (!wantMining && IsMining)
+        {
+            GameAudio.StopLoop(this);
+            GameAudio.Play(StopSound);
+        }
 
         IsMining = wantMining;
 

@@ -373,10 +373,11 @@ public class StarMapUI : MonoBehaviour
             _infoDetail.text += $"\n거리 {distance:N0}";
         }
 
-        bool here = _system.CurrentArea == location;
+        bool here = _system.CurrentArea == location && !StationDocking.IsDocked;
         bool storyBusy = StoryPlayer.IsPlaying;
-        _warpButton.interactable = !here && !storyBusy && !StarSystemWarp.IsWarping;
-        _warpButtonLabel.text = here ? "현재 위치" : storyBusy ? "임무 진행 중" : "워프";
+        bool docked = StationDocking.IsDocked;
+        _warpButton.interactable = !here && !storyBusy && !docked && !StarSystemWarp.IsWarping;
+        _warpButtonLabel.text = here ? "현재 위치" : storyBusy ? "임무 진행 중" : docked ? "출항 후 워프" : "워프";
     }
 
     private void WarpToSelected()

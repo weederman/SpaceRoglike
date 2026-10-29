@@ -36,6 +36,7 @@ public static class DevCommands
         "story play <id>           스토리 재생 (예: story play prologue, 창은 자동으로 닫힘)\n" +
         "story list / reload       시퀀스 목록 / 플레이 중 고친 JSON 다시 읽기\n" +
         "prologue on|off           다음 플레이부터 게임 시작 프롤로그 재생/건너뛰기\n" +
+        "save / save clear         지금 상태 저장 / 저장 지우기(다음 플레이는 처음부터)\n" +
         "pause [on|off]            창이 열려 있는 동안 게임 정지 여부\n" +
         "reset                     바꾼 값을 모두 되돌리고 씬 다시 시작\n" +
         "clear                     채팅 지우기";

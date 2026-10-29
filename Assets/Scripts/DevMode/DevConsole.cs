@@ -187,6 +187,9 @@ public class DevConsole : MonoBehaviour
             case "prologue":
                 reply = HandlePrologue(words);
                 break;
+            case "save":
+                reply = HandleSave(words);
+                break;
             case "clear":
                 _log.Clear();
                 reply = null;
@@ -211,6 +214,22 @@ public class DevConsole : MonoBehaviour
         return DevCommands.Ok(_pauseWhileOpen
             ? "창이 열려 있는 동안 게임을 멈춥니다."
             : "게임을 멈추지 않습니다. (입력은 계속 막힘)");
+    }
+
+    /// <summary>자동 저장 파일: save = 지금 상태 저장, save clear = 지우기(다음 플레이는 처음부터)</summary>
+    private string HandleSave(string[] words)
+    {
+        if (words.Length > 1 && words[1] == "clear")
+        {
+            SaveSystem.Clear();
+            return DevCommands.Ok("저장을 지웠습니다. 다음 플레이는 프롤로그부터 시작합니다.");
+        }
+
+        if (words.Length > 1)
+            return DevCommands.Err("사용법: save / save clear");
+
+        SaveSystem.Save(null);
+        return DevCommands.Ok($"지금 상태를 저장했습니다. ({SaveSystem.FilePath})");
     }
 
     /// <summary>다음 플레이부터 게임 시작 프롤로그를 재생할지 정한다 (PlayerPrefs에 저장되어 에디터를 껐다 켜도 유지).</summary>

@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fighter:
     model: {fileID: 1152354105411914, guid: cdbec52167efb6a48b63cebb3284c246, type: 3}
-    length: 55
+    hullRatio: 1
     offset: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0}
   freighter:
     model: {fileID: 1626488730406606, guid: ff4e0e4e62247f3459cd53ba2f747149, type: 3}
-    length: 75
+    hullRatio: 1.35
     offset: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0}

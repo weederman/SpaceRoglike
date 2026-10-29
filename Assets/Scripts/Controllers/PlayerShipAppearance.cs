@@ -20,8 +20,8 @@ public class PlayerShipAppearance : MonoBehaviour
     public class LookSettings
     {
         public GameObject model;
-        [Tooltip("모델의 앞뒤 길이(월드 단위). 원래 코르벳은 약 56 (함선 오브젝트 배율 0.5 포함).")]
-        [Min(1f)] public float length = 55f;
+        [Tooltip("모델의 앞뒤 길이: 함선 선체 판정(HullHitbox) 길이의 몇 배인지. 함선 프리팹 배율을 바꾸면 모습도 함께 커진다.")]
+        [Min(0.05f)] public float hullRatio = 1f;
         [Tooltip("함선 기준 위치 보정")]
         public Vector3 offset;
         [Tooltip("모델의 앞이 함선의 앞(+Z)을 향하도록 돌리는 각도")]
@@ -45,7 +45,19 @@ public class PlayerShipAppearance : MonoBehaviour
     }
 
     // 게임 씬이 시작되면 기본 모습으로 (프롤로그가 먼저 다른 모습을 정했으면 그대로 둔다)
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    // 게임을 켤 때뿐 아니라 씬을 다시 불러올 때(패배 후 재시작 등)도 다시 만든다
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void RegisterSceneHook()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= HandleSceneLoaded;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    private static void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        Bootstrap();
+    }
+
     private static void Bootstrap()
     {
         var ship = FindObjectOfType<SpaceshipController>();
@@ -93,11 +105,23 @@ public class PlayerShipAppearance : MonoBehaviour
         foreach (Collider c in _model.GetComponentsInChildren<Collider>(true))
             Destroy(c);
 
-        // 배율 1일 때의 월드 크기(함선 오브젝트 배율 포함)를 재서 가장 긴 변이 원하는 길이가 되게 한다
+        // 배율 1일 때의 월드 크기(함선 오브젝트 배율 포함)를 재서, 가장 긴 변이 선체 판정 길이 × hullRatio가 되게 한다
         Bounds bounds = LocalBounds(_model);
         float longest = Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z));
         if (longest > 0.001f)
-            _model.transform.localScale = Vector3.one * (settings.length / longest);
+            _model.transform.localScale = Vector3.one * (HullLength() * settings.hullRatio / longest);
+    }
+
+    /// <summary>선체 판정(HullHealth의 충돌체)의 가장 긴 변 (월드). 판정이 없으면 원래 코르벳 크기 기준.</summary>
+    private float HullLength()
+    {
+        HullHealth hull = GetComponentInChildren<HullHealth>();
+        Collider col = hull != null ? hull.GetComponent<Collider>() : null;
+        if (col == null)
+            return 112f * transform.lossyScale.z;
+
+        Vector3 size = col.bounds.size;
+        return Mathf.Max(size.x, Mathf.Max(size.y, size.z));
     }
 
     private void SetTurretsVisible(bool visible)

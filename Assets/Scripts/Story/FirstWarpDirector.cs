@@ -17,6 +17,11 @@ using UnityEngine.UI;
 ///
 /// 장면 6("귀환", 시퀀스 "tutorial_return")의 귀환 워프도 같은 터널 무대를 쓰므로 여기서 한다:
 ///  s6_return        워프 아웃 → 짧은 터널 → 정거장 격납고 자리에 도착. 소행성 지대는 치운다.
+///
+/// 연출이 끝났음을 스토리에 신호로 알린다 (JSON의 waitFor로 대사가 연출보다 앞서 가지 않게):
+///  warp_tunnel      워프 게이트로 돌진해 터널에 들어갔다 (장면 3, 6)
+///  warp_arrived     장면 3 도착 연출이 끝났다
+///  return_arrived   장면 6 귀환 연출이 끝났다
 ///                   정거장 구역 안에 서므로 대사가 끝나면 상점(정비 메뉴)이 열린다. 조작은 시퀀스가 끝날 때 돌려준다.
 ///
 /// cue는 큐에 쌓아 한 번에 하나씩 순서대로 실행한다. 레이더 연출(radar_show/hide)은 RadarPing이 따로 받는다.
@@ -28,7 +33,15 @@ public class FirstWarpDirector : MonoBehaviour
     private const string CuePrefix = "s3_";
     private const string ReturnSequenceId = "tutorial_return";
     private const string ReturnCue = "s6_return";
-    private const string InWarpSound = "inwarp"; // SoundTable 이름
+    // SoundTable 이름
+    private const string InWarpSound = "inwarp";
+    private const string WarpStartSound = "warp_start";
+    private const string WarpEndSound = "warp_end";
+
+    // 연출이 끝났음을 알리는 스토리 신호
+    private const string TunnelSignal = "warp_tunnel";
+    private const string ArrivedSignal = "warp_arrived";
+    private const string ReturnedSignal = "return_arrived";
 
     [Header("에셋 (프리팹에서 연결)")]
     [SerializeField] private WarpTunnelStage _stage;
@@ -54,10 +67,10 @@ public class FirstWarpDirector : MonoBehaviour
 
     [Header("충전 / 도착")]
     [SerializeField] private float _chargeSeconds = 2.2f;
-    [Tooltip("함선 앞쪽에 워프 게이트를 여는 거리. 함선은 멈춘 상태에서 점점 빨라지며 이 거리를 돌진한다.")]
-    [SerializeField, Min(10f)] private float _gateDistance = 170f;
-    [Tooltip("게이트까지 돌진하는 시간(초). 감속하지 않고 닿는 순간 터널로 들어간다.")]
-    [SerializeField, Min(0.2f)] private float _dashSeconds = 2f;
+    [Tooltip("워프 게이트가 충전된 뒤 함선이 돌진하는 거리. 가속도가 점점 커지며 감속하지 않고 그대로 터널로 들어간다.")]
+    [SerializeField, Min(10f)] private float _gateDistance = 260f;
+    [Tooltip("돌진하는 시간(초). 짧을수록 세게 가속한다.")]
+    [SerializeField, Min(0.2f)] private float _dashSeconds = 1.2f;
     [Tooltip("워프 터널 안에 최소한 머무는 시간(초). 대사를 빨리 넘겨도 이 시간은 터널을 보여준다.")]
     [SerializeField] private float _minTunnelSeconds = 5f;
     [Tooltip("소행성 지대 도착 위치 (XZ). 항성계(StarSystem)가 있으면 그 튜토리얼 비콘(레벨 1)에 도착하고, 없을 때만 이 값을 쓴다.")]
@@ -276,19 +289,21 @@ public class FirstWarpDirector : MonoBehaviour
     }
 
     /// <summary>
-    /// 앞쪽에 워프 게이트를 열고, 함선이 감속 없이 점점 빨라지며 돌진한다. 게이트에 닿으면 같은 속도로 계속 나아가는 채로
-    /// 하얗게 번쩍이고 곧바로 워프 터널로 들어간다. 섬광이 덮인 상태로 끝나니, 부르는 쪽이 섬광을 걷는다.
+    /// 함선 자리에 워프 게이트가 열리고, 충전되는 동안 함선이 멈춰 선 뒤(기존 연출) 가속도가 점점 커지며 돌진한다.
+    /// 감속하지 않고 같은 속도로 계속 나아가는 채로 하얗게 번쩍이고 곧바로 워프 터널로 들어간다.
+    /// 섬광이 덮인 상태로 끝나니, 부르는 쪽이 섬광을 걷는다.
     /// </summary>
     private IEnumerator DashIntoTunnel(Vector3 start, Vector3 dir)
     {
         Quaternion rot = Quaternion.LookRotation(dir);
         System.Action<Vector3> move = p => MoveShip(p, rot);
 
-        _warpOut = WarpDash.SpawnGate(_warpOutPrefab, start, dir, _gateDistance);
-        yield return WarpDash.Accelerate(start, dir, _gateDistance, _dashSeconds, move);
+        _warpOut = WarpDash.SpawnGate(_warpOutPrefab, start, dir);
+        GameAudio.Play(WarpStartSound);
+        yield return WarpDash.Launch(start, Vector3.zero, WarpDash.GateChargeSeconds, dir, _gateDistance, _dashSeconds, move);
 
-        Coroutine coast = StartCoroutine(WarpDash.Coast(start + dir * _gateDistance, dir,
-            WarpDash.FinalSpeed(_gateDistance, _dashSeconds), move));
+        Coroutine coast = StartCoroutine(WarpDash.Coast(WarpDash.LaunchEnd(start, Vector3.zero, WarpDash.GateChargeSeconds, dir, _gateDistance),
+            dir, WarpDash.FinalSpeed(_gateDistance, _dashSeconds), move));
         yield return FlashTo(1f, 0.25f);
         StopCoroutine(coast);
 
@@ -297,6 +312,7 @@ public class FirstWarpDirector : MonoBehaviour
         if (_grid != null) _grid.gameObject.SetActive(false);
         _stage.Enter(_ship.transform, _rb, _cam);
         GameAudio.StartLoop(InWarpSound, this);
+        StoryPlayer.Signal(TunnelSignal);
     }
 
     private IEnumerator StepArrive()
@@ -310,9 +326,11 @@ public class FirstWarpDirector : MonoBehaviour
         yield return FlashTo(1f, 0.4f);
 
         LeaveTunnel();
+        GameAudio.Play(WarpEndSound);
         PlaceAtArrival();
 
         yield return FlashTo(0f, 1.0f);
+        StoryPlayer.Signal(ArrivedSignal);
         StartCoroutine(DriftIn());
     }
 
@@ -347,8 +365,10 @@ public class FirstWarpDirector : MonoBehaviour
 
         yield return FlashTo(1f, 0.4f);
         LeaveTunnel();
+        GameAudio.Play(WarpEndSound);
         PlaceAtStation();
         yield return FlashTo(0f, 1.0f);
+        StoryPlayer.Signal(ReturnedSignal);
     }
 
     /// <summary>귀환을 끝까지 봤을 때와 같은 최종 상태: 정거장 격납고 자리에 있고, 소행성 지대와 연출 오브젝트는 없다.</summary>

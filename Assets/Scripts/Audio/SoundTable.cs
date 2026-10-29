@@ -15,10 +15,13 @@ public class SoundTable : ScriptableObject
     {
         public string name;
         public AudioClip clip;
-        [Range(0f, 1f)] public float volume = 1f;
+        [Tooltip("음량 배율. 1보다 크면 소리를 키운 복사본을 만들어 쓴다 (원래 아주 작게 녹음된 소리용, 압축 없이 불러오는 소리만).")]
+        [Range(0f, 8f)] public float volume = 1f;
     }
 
     [SerializeField] private Entry[] _entries = new Entry[0];
+
+    public Entry[] Entries => _entries;
 
     public Entry Find(string soundName)
     {

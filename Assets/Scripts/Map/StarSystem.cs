@@ -4,9 +4,10 @@ using UnityEngine;
 /// <summary>
 /// 게임 월드에 항성계 맵(StarSystemData)을 펼친다.
 ///  - 씬에 놓인 정거장(StationZone.Home)이 데이터의 모항 정거장 자리에 오도록 항성(원점)의 월드 위치를 정한다.
-///    그래서 씬은 그대로 두고, 나머지 정거장 9곳은 런타임에 만든다(구역 → 어느 정거장이든 상점이 열린다).
-///  - 정거장 10곳 모두 Trading Outpost 3D 모델로 보인다(함선이 다니는 높이보다 아래에 놓여 함선이 위로 지나간다).
-///    모항의 흰 평면과 런타임 정거장의 구역 판정면은 보이지 않게 하고 판정에만 쓴다.
+///    그래서 씬은 그대로 두고, 나머지 정거장 9곳은 런타임에 만든다.
+///  - 정거장 10곳 모두 Trading Outpost 3D 모델(프리팹에 정한 크기 × stationModelScale)로, 함선이 다니는 높이에 놓인다.
+///    함선이 다가가 일정 거리 안에 들어오면 정거장 안으로 도킹한다(StationDocking).
+///    모항의 예전 흰 평면은 보이지 않게 하고 충돌도 끈다(커진 함선 판정이 평면에 끼어 밀려나지 않게).
 ///  - 플레이어가 어떤 장소(정거장/워프 비콘) 가까이에 있는지 판정해 "지역"으로 알린다(OnAreaChanged).
 ///    소행성 벨트의 비콘 지역에 들어오면 비콘(레벨 색)과 소행성 지대를 깔고, 벗어나면 치운다.
 ///  - 궤도 사이 이동은 워프로만 한다(StarSystemWarp). 지역 안에서만 직접 비행한다.
@@ -60,19 +61,16 @@ public class StarSystem : MonoBehaviour
     [SerializeField, Min(100f)] private float _areaExitRadius = 1800f;
 
     [Header("도착 위치 (장소 기준 XZ)")]
-    [SerializeField] private Vector2 _stationArrivalOffset = new Vector2(0f, -260f);
+    [Tooltip("정거장으로 워프하면 정거장 중심에서 이만큼 떨어진 곳에 도착한다 (도킹 거리 밖)")]
+    [SerializeField] private Vector2 _stationArrivalOffset = new Vector2(0f, -400f);
     [Tooltip("비콘이 화면 오른쪽 위에 보이도록 비콘의 왼쪽 아래에 도착한다")]
     [SerializeField] private Vector2 _beaconArrivalOffset = new Vector2(-150f, -90f);
 
     [Header("정거장")]
-    [Tooltip("정거장 모델 (Trading Outpost)")]
+    [Tooltip("정거장 모델 (Trading Outpost). 프리팹에 정한 크기에 아래 배율을 곱해 쓴다.")]
     [SerializeField] private GameObject _stationModel;
-    [Tooltip("정거장 모델의 긴 쪽 월드 크기")]
-    [SerializeField, Min(10f)] private float _stationModelLength = 480f;
-    [Tooltip("정거장 모델 중심을 함선이 다니는 높이보다 이만큼 아래에 둔다 (함선이 위로 지나가게)")]
-    [SerializeField] private float _stationModelDepth = 110f;
-    [Tooltip("모항 외 정거장의 구역(상점이 열리는 곳) 한 변의 월드 크기")]
-    [SerializeField, Min(10f)] private float _stationSize = 300f;
+    [Tooltip("정거장 모델 배율 (프리팹 크기 × 이 값)")]
+    [SerializeField, Min(0.01f)] private float _stationModelScale = 20f;
 
     [Header("비콘 지역")]
     [SerializeField] private WarpBeacon _beaconPrefab;
@@ -101,7 +99,19 @@ public class StarSystem : MonoBehaviour
 
     // ── 시작 ──────────────────────────────────────────
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    // 게임을 켤 때뿐 아니라 씬을 다시 불러올 때(패배 후 재시작 등)도 다시 만든다
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void RegisterSceneHook()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= HandleSceneLoaded;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    private static void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        Bootstrap();
+    }
+
     private static void Bootstrap()
     {
         // 플레이어 함선과 모항 정거장이 있는 게임 씬에서만
@@ -150,6 +160,7 @@ public class StarSystem : MonoBehaviour
         Origin = new Vector3(homeWorld.x - homeLocal.x, _player.position.y, homeWorld.z - homeLocal.y);
 
         home.DisplayName = _data.stations[_data.homeStation].name;
+        home.StationIndex = _data.homeStation;
         CreateStations();
 
         if (_mapPrefab != null && _warp != null)
@@ -172,56 +183,51 @@ public class StarSystem : MonoBehaviour
             var go = new GameObject($"Station_{s.name}");
             go.transform.SetParent(transform, false);
             go.transform.position = pos;
-            CreateStationModel(go.transform, s.angle);
+            Transform model = CreateStationModel(go.transform, s.angle);
 
+            StationZone zone;
             if (i == _data.homeStation)
-                continue; // 모항은 씬의 정거장 구역을 쓴다
+            {
+                zone = StationZone.Home; // 모항은 씬의 정거장을 쓴다
+            }
+            else
+            {
+                zone = go.AddComponent<StationZone>();
+                zone.Init(s.name);
+                zone.StationIndex = i;
+            }
 
-            // 구역 판정면: 보이지 않는 평면 (상점이 열리는 범위)
-            GameObject area = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            area.name = "ZoneArea";
-            Destroy(area.GetComponent<Collider>());
-            area.transform.SetParent(go.transform, false);
-            area.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            area.transform.localScale = new Vector3(_stationSize, _stationSize, 1f);
-            var renderer = area.GetComponent<MeshRenderer>();
-            renderer.forceRenderingOff = true;
-
-            var zone = go.AddComponent<StationZone>();
-            zone.Init(renderer, s.name);
+            if (zone != null)
+                zone.Model = model;
         }
 
-        // 모항의 흰 평면은 판정에만 쓰고 보이지 않게 한다 (모델이 대신 보인다)
+        // 모항의 예전 흰 평면은 보이지 않게 하고 충돌도 끈다 (모델이 대신 보이고, 커진 함선 판정이 끼지 않게)
         StationZone home = StationZone.Home;
-        if (home != null && home.Area != null && _stationModel != null)
+        if (home != null && home.Area != null)
+        {
             home.Area.forceRenderingOff = true;
+            foreach (Collider c in home.Area.GetComponentsInChildren<Collider>(true))
+                c.enabled = false;
+        }
     }
 
-    private void CreateStationModel(Transform station, float yaw)
+    /// <summary>정거장 모델을 함선이 다니는 높이에 놓는다 (프리팹 크기 × 배율, 판정 없음). 모델이 없으면 null.</summary>
+    private Transform CreateStationModel(Transform station, float yaw)
     {
         if (_stationModel == null)
-            return;
+            return null;
 
         GameObject model = Instantiate(_stationModel, station);
         model.name = "Model";
         model.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
-        model.transform.position = new Vector3(station.position.x, Origin.y - _stationModelDepth, station.position.z);
+        model.transform.localScale = _stationModel.transform.localScale * _stationModelScale;
+        model.transform.position = new Vector3(station.position.x, Origin.y, station.position.z);
 
-        // 장식용이라 판정은 없다 (상점 구역은 StationZone이 따로 판정한다)
+        // 장식용이라 충돌 판정은 없다 (도킹은 StationDocking이 거리로 판정한다)
         foreach (Collider c in model.GetComponentsInChildren<Collider>(true))
             Destroy(c);
 
-        var bounds = new Bounds();
-        bool any = false;
-        foreach (Renderer r in model.GetComponentsInChildren<Renderer>(true))
-        {
-            if (!any) { bounds = r.bounds; any = true; }
-            else bounds.Encapsulate(r.bounds);
-        }
-
-        float longest = any ? Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z)) : 0f;
-        if (longest > 0.001f)
-            model.transform.localScale = Vector3.one * (_stationModelLength / longest);
+        return model.transform;
     }
 
     // ── 좌표 ──────────────────────────────────────────

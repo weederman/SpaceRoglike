@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 정거장 구역 감지. 기준 평면(_area)의 XZ 범위 안이면서 평면보다 위(y)에 플레이어가 있으면 "진입" 상태.
-/// 플레이어 쉴드 콜라이더가 커서 물리 트리거 대신 플레이어 위치로 직접 판정한다.
+/// 우주정거장 하나. 플레이어가 이 정거장에 도킹해 있는 동안 "안에 있음"(IsInside) 상태가 되고,
+/// 그동안 상점·수리(StationShop)가 열리고 자동 저장(SaveSystem)이 된다. 도킹/출항은 StationDocking이 정한다.
 /// 정거장은 여러 개일 수 있다(항성계의 행성 궤도마다 하나). 씬에 놓인 정거장이 모항(Home, 튜토리얼 정거장)이고,
-/// 항성계(StarSystem)가 런타임에 만드는 나머지 정거장은 Init으로 구역을 정한다.
+/// 항성계(StarSystem)가 런타임에 만드는 나머지 정거장은 Init으로 이름을 정한다.
+/// 위치는 이 오브젝트의 위치다. (씬 모항의 흰 평면 _area는 예전 구역 표시로, 지금은 보이지 않게 하고 판정에 쓰지 않는다)
 /// </summary>
 public class StationZone : MonoBehaviour
 {
-    [Tooltip("정거장 영역을 표시하는 평면 오브젝트의 Renderer")]
+    [Tooltip("예전 정거장 구역 표시(흰 평면). 지금은 쓰지 않고 숨긴다.")]
     [SerializeField] private Renderer _area;
 
-    /// <summary>지금 있는 정거장 구역 전부</summary>
+    /// <summary>지금 있는 정거장 전부</summary>
     public static readonly List<StationZone> All = new List<StationZone>();
 
-    /// <summary>어느 정거장 구역이든 플레이어가 들어왔을 때 / 나갔을 때</summary>
+    /// <summary>어느 정거장이든 도킹했을 때 / 출항했을 때</summary>
     public static event Action<StationZone> AnyEntered;
     public static event Action<StationZone> AnyExited;
 
@@ -35,7 +36,7 @@ public class StationZone : MonoBehaviour
         }
     }
 
-    /// <summary>플레이어가 들어와 있는 정거장 구역 (없으면 null)</summary>
+    /// <summary>플레이어가 도킹해 있는 정거장 (없으면 null)</summary>
     public static StationZone Current
     {
         get
@@ -53,17 +54,21 @@ public class StationZone : MonoBehaviour
     public event Action Entered;
     public event Action Exited;
 
+    /// <summary>플레이어가 이 정거장에 도킹해 있는지</summary>
     public bool IsInside { get; private set; }
 
-    /// <summary>구역을 표시하는 Renderer (판정 범위)</summary>
+    /// <summary>예전 구역 표시 Renderer (모항의 흰 평면). 없으면 null.</summary>
     public Renderer Area => _area;
     public bool IsHome { get; private set; } = true;
 
     /// <summary>정거장 이름 (항성계 데이터에서 받는다. 모항은 StarSystem이 채운다)</summary>
     public string DisplayName { get; set; }
 
-    private Transform _player;
-    private Bounds _bounds;
+    /// <summary>항성계 데이터의 정거장 번호 (StarSystem이 채운다, 없으면 -1). 저장에 쓴다.</summary>
+    public int StationIndex { get; set; } = -1;
+
+    /// <summary>정거장 모델 (도킹 거리를 재는 데 쓴다. StarSystem이 채운다)</summary>
+    public Transform Model { get; set; }
 
     // 에디터에서 도메인 리로드를 꺼 둬도 플레이마다 깨끗이 시작하도록
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -74,12 +79,30 @@ public class StationZone : MonoBehaviour
         AnyExited = null;
     }
 
-    /// <summary>런타임에 만든 정거장: 구역을 표시하는 Renderer를 정한다(모항이 아님).</summary>
-    public void Init(Renderer area, string displayName)
+    /// <summary>런타임에 만든 정거장의 이름을 정한다(모항이 아님).</summary>
+    public void Init(string displayName)
     {
-        _area = area;
         IsHome = false;
         DisplayName = displayName;
+    }
+
+    /// <summary>도킹(true) / 출항(false). StationDocking이 부른다.</summary>
+    public void SetDocked(bool docked)
+    {
+        if (docked == IsInside)
+            return;
+
+        IsInside = docked;
+        if (docked)
+        {
+            Entered?.Invoke();
+            AnyEntered?.Invoke(this);
+        }
+        else
+        {
+            Exited?.Invoke();
+            AnyExited?.Invoke(this);
+        }
     }
 
     private void OnEnable()
@@ -90,48 +113,6 @@ public class StationZone : MonoBehaviour
     private void OnDisable()
     {
         All.Remove(this);
-
-        if (IsInside)
-        {
-            IsInside = false;
-            Exited?.Invoke();
-            AnyExited?.Invoke(this);
-        }
-    }
-
-    private void Start()
-    {
-        _bounds = _area.bounds;
-
-        var player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-            _player = player.transform;
-    }
-
-    private void Update()
-    {
-        if (_player == null)
-            return;
-
-        Vector3 p = _player.position;
-        bool inside =
-            p.x >= _bounds.min.x && p.x <= _bounds.max.x &&
-            p.z >= _bounds.min.z && p.z <= _bounds.max.z &&
-            p.y > _bounds.center.y;
-
-        if (inside == IsInside)
-            return;
-
-        IsInside = inside;
-        if (inside)
-        {
-            Entered?.Invoke();
-            AnyEntered?.Invoke(this);
-        }
-        else
-        {
-            Exited?.Invoke();
-            AnyExited?.Invoke(this);
-        }
+        SetDocked(false);
     }
 }

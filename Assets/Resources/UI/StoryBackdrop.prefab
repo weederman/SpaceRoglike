@@ -191,7 +191,7 @@ MonoBehaviour:
   _layers:
   - {fileID: 5076171400749441957}
   - {fileID: 6145237866945980775}
-  _fadeSeconds: 0.9
+  _fadeSeconds: 0.35
 --- !u!1 &8026216160862304830
 GameObject:
   m_ObjectHideFlags: 0

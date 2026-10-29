@@ -21,18 +21,22 @@ public class GameAudio : MonoBehaviour
     private AudioSource _sfx;
     private AudioSource _music;
     private readonly Dictionary<object, AudioSource> _loops = new Dictionary<object, AudioSource>();
+    private readonly Dictionary<SoundTable.Entry, AudioClip> _boosted = new Dictionary<SoundTable.Entry, AudioClip>();
     private Coroutine _musicFade;
     private string _musicName;
     private float _musicVolume = 1f;
 
     // ── 공개 API ──────────────────────────────────────
 
+    /// <summary>스토리 배경음악(bgm: cue, 예: 술집)이 나오는 중인지. 이때는 상황 음악(MusicDirector)이 물러난다.</summary>
+    public static bool IsStoryMusicPlaying => _instance != null && _instance._musicName != null;
+
     public static void Play(string soundName)
     {
         GameAudio a = Instance;
         SoundTable.Entry e = a != null ? a.Find(soundName) : null;
         if (e != null)
-            a._sfx.PlayOneShot(e.clip, e.volume);
+            a._sfx.PlayOneShot(a.ClipFor(e), Mathf.Min(1f, e.volume));
     }
 
     public static void StartLoop(string soundName, object owner)
@@ -48,11 +52,12 @@ public class GameAudio : MonoBehaviour
             a._loops[owner] = source;
         }
 
-        if (source.isPlaying && source.clip == e.clip)
+        AudioClip clip = a.ClipFor(e);
+        if (source.isPlaying && source.clip == clip)
             return;
 
-        source.clip = e.clip;
-        source.volume = e.volume;
+        source.clip = clip;
+        source.volume = Mathf.Min(1f, e.volume);
         source.Play();
     }
 
@@ -77,7 +82,7 @@ public class GameAudio : MonoBehaviour
             return;
 
         a._musicName = musicName;
-        a.FadeMusic(e.clip, e.volume, fadeSeconds);
+        a.FadeMusic(a.ClipFor(e), Mathf.Min(1f, e.volume), fadeSeconds);
     }
 
     public static void StopMusic(float fadeSeconds = DefaultMusicFade)
@@ -128,6 +133,16 @@ public class GameAudio : MonoBehaviour
         _sfx = CreateSource("Sfx", false);
         _music = CreateSource("Music", true);
 
+        // 소리 파일이 "미리 불러오기" 꺼짐으로 되어 있어 처음 재생이 빠질 수 있으므로 시작할 때 불러 둔다
+        if (_table != null)
+        {
+            foreach (SoundTable.Entry e in _table.Entries)
+            {
+                if (e != null && e.clip != null)
+                    e.clip.LoadAudioData();
+            }
+        }
+
         StoryPlayer.OnCue += HandleCue;
     }
 
@@ -160,6 +175,33 @@ public class GameAudio : MonoBehaviour
         }
 
         return e;
+    }
+
+    /// <summary>음량 배율이 1보다 크면 소리를 키운 복사본(한 번 만들어 둔다), 아니면 원래 소리</summary>
+    private AudioClip ClipFor(SoundTable.Entry e)
+    {
+        if (e.volume <= 1f)
+            return e.clip;
+
+        if (_boosted.TryGetValue(e, out AudioClip boosted))
+            return boosted;
+
+        boosted = e.clip;
+        if (e.clip.loadType == AudioClipLoadType.DecompressOnLoad && e.clip.LoadAudioData())
+        {
+            var data = new float[e.clip.samples * e.clip.channels];
+            if (e.clip.GetData(data, 0))
+            {
+                for (int i = 0; i < data.Length; i++)
+                    data[i] = Mathf.Clamp(data[i] * e.volume, -1f, 1f);
+
+                boosted = AudioClip.Create(e.clip.name + "_boost", e.clip.samples, e.clip.channels, e.clip.frequency, false);
+                boosted.SetData(data, 0);
+            }
+        }
+
+        _boosted[e] = boosted;
+        return boosted;
     }
 
     private void FadeMusic(AudioClip clip, float volume, float seconds)

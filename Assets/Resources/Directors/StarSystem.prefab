@@ -167,6 +167,7 @@ GameObject:
   - component: {fileID: 8439074314848691082}
   - component: {fileID: 8535336240534906651}
   - component: {fileID: 3960521241159900658}
+  - component: {fileID: 4286104371480541583}
   m_Layer: 0
   m_Name: StarSystem
   m_TagString: Untagged
@@ -205,12 +206,10 @@ MonoBehaviour:
   _data: {fileID: 11400000, guid: dfb5f983983329f4eb98c54b55c2d960, type: 2}
   _areaRadius: 1600
   _areaExitRadius: 1800
-  _stationArrivalOffset: {x: 0, y: -260}
+  _stationArrivalOffset: {x: 0, y: -400}
   _beaconArrivalOffset: {x: -150, y: -90}
-  _stationModel: {fileID: 7955569653642503555, guid: 488f9af42410c95419059646f23061be, type: 3}
-  _stationModelLength: 480
-  _stationModelDepth: 110
-  _stationSize: 300
+  _stationModel: {fileID: 100104, guid: 469816d089dff5f41b31155f423acfb2, type: 3}
+  _stationModelScale: 20
   _beaconPrefab: {fileID: 2210477213942963215, guid: 76b93c134c4675449ab348389a660b2c, type: 3}
   _asteroidFieldPrefab: {fileID: 3971264978344526677, guid: 5a88a5c45df58294ca29177c6353e445, type: 3}
   _warp: {fileID: 3960521241159900658}
@@ -254,7 +253,29 @@ MonoBehaviour:
   _system: {fileID: 8439074314848691082}
   _stage: {fileID: 2804573416159024721}
   _gatePrefab: {fileID: 184734, guid: f84d57d8fee5f714e86b7e77e277838f, type: 3}
-  _gateDistance: 170
-  _dashSeconds: 2
+  _gateDistance: 260
+  _dashSeconds: 1.2
   _flashSeconds: 0.25
   _tunnelSeconds: {x: 2.5, y: 5}
+--- !u!114 &4286104371480541583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6724283989419838573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4890ec50b8b6e4c4fadc920431a7ea02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _dockRange: 10
+  _redockDistance: 80
+  _fadeSeconds: 0.4
+  _interiorXZ: {x: 0, y: -100000}
+  _interiorBackdrop: {fileID: 21300000, guid: 18a49137e97409343b92e83e3fb44a96, type: 3}
+  _backdropDepth: 600
+  _backdropSize: 2200
+  _viewPrefab: {fileID: 3321069692844099692, guid: 0c2ff4139d1542c42af0f7cca33de1ed, type: 3}
+  _undockClearance: 120
+  _undockSpeed: 40

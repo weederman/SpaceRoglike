@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb32beefa16dfce48bf3dd00b55b3f9c, type: 3}
+  m_Name: MusicPlaylist
+  m_EditorClassIdentifier: 
+  calm:
+  - {fileID: 8300000, guid: f8882ca53fa7b604dae795dc964189ca, type: 3}
+  - {fileID: 8300000, guid: a9569dc34ef492a418132ea973138553, type: 3}
+  - {fileID: 8300000, guid: 37c672c7a04bdae40a1f63701c55adca, type: 3}
+  - {fileID: 8300000, guid: b6380ddc9532b8843b43815e0377be01, type: 3}
+  - {fileID: 8300000, guid: d2df7f54b3c76844d868c9e9d041fbbf, type: 3}
+  - {fileID: 8300000, guid: 527f3354c35931f469bad36d8434bd4a, type: 3}
+  - {fileID: 8300000, guid: 448d2e09afc7f7c44a755adbf6cf1a4a, type: 3}
+  combat:
+  - {fileID: 8300000, guid: bce93afbc003e634ab091c76051d3075, type: 3}
+  - {fileID: 8300000, guid: 7d3a6739da272fd4d950d6f0305879f7, type: 3}
+  - {fileID: 8300000, guid: 57b78c5355161ba41b27b6644787ea15, type: 3}
+  - {fileID: 8300000, guid: 02e71c112cf28c049a664eae08d6f516, type: 3}
+  - {fileID: 8300000, guid: 1453ad21f4e7ce44388e917a393823d4, type: 3}
+  - {fileID: 8300000, guid: baad7db0c03fe3141aed9174ef049ecd, type: 3}
+  - {fileID: 8300000, guid: a468af275e4c1294eb4001d729936695, type: 3}
+  - {fileID: 8300000, guid: f730710cb9d396c40b60ececa6ab125a, type: 3}
+  - {fileID: 8300000, guid: f61a0aed176ace847be7d1b4b9994dc7, type: 3}
+  - {fileID: 8300000, guid: 73f0abf115ba7844589b1d10423303e1, type: 3}
+  - {fileID: 8300000, guid: db51cff56b6c54241a5ef95c578d441b, type: 3}
+  - {fileID: 8300000, guid: b97656d236fe7584db613270d4c83ae1, type: 3}
+  - {fileID: 8300000, guid: 91f95073252fde347b0ba3029a552a86, type: 3}
+  - {fileID: 8300000, guid: a9a267b21deaadb4d9b4db27420de708, type: 3}
+  - {fileID: 8300000, guid: 242291c8a19d7b941a9ba865884747cb, type: 3}
+  - {fileID: 8300000, guid: 78febb30759e80b4b9d92b4dee2c585e, type: 3}
+  - {fileID: 8300000, guid: 24521492293a1f64a9a1b692fc946e13, type: 3}
+  - {fileID: 8300000, guid: 36818831d18d0a3478bf6c823a2086aa, type: 3}
+  calmVolume: 0.35
+  combatVolume: 0.4

@@ -13,16 +13,16 @@ namespace FORGE3D
 
         void Update()
         {
-            // [추가] 조작이 잠긴 동안(스토리 재생 등)에는 터렛이 마우스를 따라 돌지도 않는다
-            if (!GameInputLock.IsLocked)
+            // [추가] 조작이 잠긴 동안(스토리 재생 등)이나 정거장에 도킹해 있는 동안에는 터렛이 마우스를 따라 돌지도 않는다
+            if (!GameInputLock.IsLocked && !StationDocking.IsDocked)
                 CheckForTurn();
             CheckForFire();
         }
 
         void CheckForFire()
         {
-            // 개발자 모드 창이 열려 있거나 스토리가 재생되는 동안에는 발사하지 않고, 쏘던 중이면 멈춘다
-            if (GameInputLock.IsLocked)
+            // 개발자 모드 창이 열려 있거나 스토리가 재생되는 동안, [추가] 정거장에 도킹해 있는 동안에는 발사하지 않고, 쏘던 중이면 멈춘다
+            if (GameInputLock.IsLocked || StationDocking.IsDocked)
             {
                 if (isFiring)
                 {
