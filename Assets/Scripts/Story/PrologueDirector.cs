@@ -16,7 +16,8 @@ using UnityEngine.UI;
 ///  patrol_ships_approach    설명창을 닫고, 자치령 순찰함 2척이 좌우에서 접근해 함선을 둘러싼다
 ///  ship_seized              순찰함이 견인 광선으로 함선을 붙잡고(압류 경고창), 화면이 어두워진다
 ///  corvette_received        까만 화면에서 "보상 함선 지급" 안내. 함선이 새 함선(코르벳)으로 바뀐다
-///  station_start            정거장 구역 가장자리에 붙은 채로 밝아지며 시작
+///  station_start            정거장 앞(선체 바깥, 워프 도착 자리)에서 밝아지며 시작
+/// 터널에서 빠져나와 순찰함을 만나는 곳은 모항 정거장 선체 앞 바깥(_spaceSceneClearance)이다.
 ///
 /// 연출은 큐에 쌓아 한 번에 하나씩 순서대로 실행한다. 대사를 빨리 넘겨도 연출이 겹치지 않는다.
 /// Esc로 건너뛰면 남은 연출을 건너뛰고 곧바로 일반 우주로 복귀한다.
@@ -77,7 +78,9 @@ public class PrologueDirector : MonoBehaviour
     [Tooltip("접근을 시작하는 먼 자리 (함선 기준)")]
     [SerializeField] private Vector2 _patrolStartXZ = new Vector2(330f, 400f);
     [SerializeField] private float _patrolApproachSeconds = 5f;
-    [Tooltip("정거장 위치 기준으로 함선을 놓을 자리 (Y는 함선 높이를 맞추기 위해)")]
+    [Tooltip("터널에서 빠져나와 순찰함을 만나는 자리: 모항 정거장 선체 끝에서 이만큼 떨어진 곳 (정거장 앞, 워프 도착과 같은 쪽). 항성계가 없으면 씬에 놓인 함선 자리.")]
+    [SerializeField, Min(0f)] private float _spaceSceneClearance = 1500f;
+    [Tooltip("정거장 위치 기준으로 함선을 놓을 자리 (Y는 함선 높이를 맞추기 위해). 항성계가 있으면 XZ는 쓰지 않고 정거장 선체 바깥의 워프 도착 자리에 둔다.")]
     [SerializeField] private Vector3 _dockOffset = new Vector3(0f, 25f, -55f);
 
     [Header("무대")]
@@ -259,6 +262,15 @@ public class PrologueDirector : MonoBehaviour
     {
         _homePos = _ship.transform.position;
         _homeRot = _ship.transform.rotation;
+
+        // 씬에 놓인 함선 자리는 아주 큰 정거장 선체 안이므로, 터널에서 빠져나와 순찰함을 만나는 곳은 정거장 앞 바깥으로 한다
+        StationZone home = StationZone.Home;
+        if (StarSystem.Instance != null && home != null)
+        {
+            Vector3 outside = StarSystem.Instance.StationApproach(home, _spaceSceneClearance);
+            _homePos = new Vector3(outside.x, _homePos.y, outside.z);
+        }
+
         _stageOrigin = new Vector3(_stageXZ.x, _homePos.y, _stageXZ.y);
         _originalFov = _cam.fieldOfView;
 
@@ -761,8 +773,14 @@ public class PrologueDirector : MonoBehaviour
 
         _dockApplied = true;
 
+        // 항성계가 있으면 정거장 선체 바깥의 워프 도착 자리 (정거장이 커서 중심 기준으로 재면 선체 안에 들어간다)
         StationZone zone = StationZone.Home;
         Vector3 pos = zone != null ? zone.transform.position + _dockOffset : _homePos;
+        if (zone != null && StarSystem.Instance != null)
+        {
+            Vector3 outside = StarSystem.Instance.StationArrival(zone);
+            pos = new Vector3(outside.x, pos.y, outside.z);
+        }
 
         _ship.transform.SetPositionAndRotation(pos, Quaternion.identity);
         _shipRb.position = pos;

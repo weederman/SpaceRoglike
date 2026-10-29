@@ -1,12 +1,12 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// 우주정거장 도킹/출항 (EVE Online처럼).
 ///  - 입항: 함선이 정거장 선체에서 dockRange 안으로 다가가면 화면 아래에 "F 입항" 안내가 뜨고, F를 누르면 화면이 어두워지며
 ///    정거장 안(내부 공간)으로 들어간다. 내부 공간은 바깥 우주와 떨어진 먼 곳이다. 도킹해 있는 동안 정거장 화면(사이드바:
-///    격납고·스페이스 라운지·지도·미션·정보)이 보이고 자동 저장(SaveSystem)이 된다. 함선은 움직이거나 쏘지 않는다.
+///    격납고·스페이스 라운지·지도·미션·정보)이 보이고 자동 저장(SaveSystem)이 된다. 함선은 제자리에서 움직이거나 쏘지 않고,
+///    창이 아닌 곳을 마우스로 끌면 카메라가 함선 둘레를 돌아 둘러볼 수 있다(CameraController.OrbitEnabled).
 ///  - 출항: 정거장 화면의 창이 모두 닫혀 있을 때(창은 Esc로 닫는다) F를 누르면, 화면이 어두워진 뒤 정거장 앞쪽 바깥에서 밀려 나가며 시작한다.
 ///  - 스토리 재생 중, 워프 중, 임무가 막는 동안(호송·소탕 교전)에는 입항할 수 없다.
 /// F는 채굴 키와 같지만, 입항 안내는 정거장 바로 곁에서만 뜨므로 겹치지 않는다. Shift+F(개발자 창)는 무시한다.
@@ -40,7 +40,6 @@ public class StationDocking : MonoBehaviour
     [Tooltip("출항할 때 밀려 나가는 속도")]
     [SerializeField, Min(0f)] private float _undockSpeed = 40f;
 
-    private readonly Dictionary<StationZone, Bounds> _stationBounds = new Dictionary<StationZone, Bounds>();
     private StationInteriorView _view;
     private SpriteRenderer _backdrop;
     private SpaceshipController _ship;
@@ -137,7 +136,7 @@ public class StationDocking : MonoBehaviour
 
         foreach (StationZone zone in StationZone.All)
         {
-            if (!TryGetBounds(zone, out Bounds b))
+            if (!zone.TryGetBounds(out Bounds b))
                 continue;
 
             float dx = Mathf.Max(b.min.x - p.x, 0f, p.x - b.max.x);
@@ -151,26 +150,6 @@ public class StationDocking : MonoBehaviour
         }
 
         return best;
-    }
-
-    private bool TryGetBounds(StationZone zone, out Bounds bounds)
-    {
-        if (_stationBounds.TryGetValue(zone, out bounds))
-            return true;
-
-        if (zone == null || zone.Model == null)
-            return false;
-
-        bool any = false;
-        foreach (Renderer r in zone.Model.GetComponentsInChildren<Renderer>(true))
-        {
-            if (!any) { bounds = r.bounds; any = true; }
-            else bounds.Encapsulate(r.bounds);
-        }
-
-        if (any)
-            _stationBounds[zone] = bounds;
-        return any;
     }
 
     // ── 도킹 / 출항 ───────────────────────────────────
@@ -219,7 +198,11 @@ public class StationDocking : MonoBehaviour
         _rb.position = pos;
         _rb.rotation = Quaternion.identity;
         if (_cameraController != null)
+        {
+            // 함선은 제자리에 두고, 마우스로 끌어 카메라를 돌려 둘러본다
+            _cameraController.OrbitEnabled = true;
             _cameraController.SnapToTarget();
+        }
 
         if (_grid != null) _grid.gameObject.SetActive(false);
 
@@ -255,20 +238,12 @@ public class StationDocking : MonoBehaviour
         if (_grid != null) _grid.gameObject.SetActive(true);
 
         // 정거장 앞쪽 끝 바깥에 놓고 앞으로 밀어낸다
-        Vector3 center = zone.transform.position;
         Vector3 dir = zone.Model != null ? zone.Model.forward : Vector3.forward;
         dir.y = 0f;
         dir = dir.sqrMagnitude > 0.01f ? dir.normalized : Vector3.forward;
 
-        float extent = 0f;
-        if (TryGetBounds(zone, out Bounds b))
-        {
-            center = b.center;
-            extent = Mathf.Abs(dir.x) * b.extents.x + Mathf.Abs(dir.z) * b.extents.z;
-        }
-
-        Vector3 pos = center + dir * (extent + _dockRange + _undockClearance);
-        pos.y = StarSystem.Instance != null ? StarSystem.Instance.Origin.y : _ship.transform.position.y;
+        float y = StarSystem.Instance != null ? StarSystem.Instance.Origin.y : _ship.transform.position.y;
+        Vector3 pos = zone.PointOutside(dir, _dockRange + _undockClearance, y);
         Quaternion rot = Quaternion.LookRotation(dir);
         _ship.transform.SetPositionAndRotation(pos, rot);
         _rb.position = pos;
@@ -278,7 +253,10 @@ public class StationDocking : MonoBehaviour
         _rb.angularVelocity = Vector3.zero;
         _ship.enabled = true;
         if (_cameraController != null)
+        {
+            _cameraController.OrbitEnabled = false;
             _cameraController.SnapToTarget();
+        }
 
         GameInputLock.Unlock(this);
         yield return Fade(1f, 0f);

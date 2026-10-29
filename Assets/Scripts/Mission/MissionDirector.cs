@@ -8,6 +8,8 @@ using UnityEngine;
 /// 유형별 진행은 하위 클래스(EscortMissionDirector, SweepMissionDirector)의 Run이 정하고, 여기서는
 /// 시작/중단, 수락·성공 대사, 임무 HUD, 적 함선 생성·집계·후퇴, 보수 지급과 결과 표시를 맡는다.
 /// 진행 중 정거장 도킹·지도 워프를 막을지는 BlocksTravel로 알린다 (StationDocking, StarSystemWarp가 읽는다).
+/// 떠날 수 있는 동안(막지 않는 동안) 플레이어와 _despawnDistance보다 멀어진 임무 적(채굴지 순찰대 등)은 없앤다.
+/// 임무가 끝나면(성공·실패·중단) Ended를 알린다 (정거장 임무 게시판이 목록을 새로 뽑는다).
 /// 지금은 개발자 명령(mission start 번호)으로 시작한다.
 /// </summary>
 public abstract class MissionDirector : MonoBehaviour
@@ -29,6 +31,11 @@ public abstract class MissionDirector : MonoBehaviour
     [SerializeField, Min(0f)] private float _retreatDelay = 2f;
     [Tooltip("결과를 화면에 보여 두는 시간 (초)")]
     [SerializeField, Min(0f)] private float _resultSeconds = 8f;
+    [Tooltip("떠날 수 있는 동안, 플레이어와 이보다 멀어진 임무 적은 없앤다 (수평 거리)")]
+    [SerializeField, Min(100f)] private float _despawnDistance = 2500f;
+
+    /// <summary>임무가 끝났을 때 (성공·실패·중단 모두)</summary>
+    public static event System.Action Ended;
 
     /// <summary>이 Director가 진행하는 임무</summary>
     public MissionData Mission { get; private set; }
@@ -120,10 +127,40 @@ public abstract class MissionDirector : MonoBehaviour
         StartCoroutine(Run());
     }
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        Current = null;
+        Ended = null;
+    }
+
+    protected virtual void Update()
+    {
+        if (TravelBlocked || Player == null || Time.frameCount % 15 != 0)
+            return;
+
+        for (int i = Enemies.Count - 1; i >= 0; i--)
+        {
+            PirateShip enemy = Enemies[i];
+            if (enemy == null)
+                continue;
+
+            Vector3 d = enemy.transform.position - Player.position;
+            d.y = 0f;
+            if (d.magnitude > _despawnDistance)
+            {
+                Enemies.RemoveAt(i);
+                Destroy(enemy.gameObject);
+            }
+        }
+    }
+
     protected virtual void OnDestroy()
     {
         if (Current == this)
             Current = null;
+        if (Mission != null)
+            Ended?.Invoke();
 
         CombatHud.HideWaypoint();
 

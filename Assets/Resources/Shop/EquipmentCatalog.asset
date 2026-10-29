@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b835827f27ad7a249bededa82d060b96, type: 3}
+  m_Name: EquipmentCatalog
+  m_EditorClassIdentifier: 
+  items:
+  - id: armor_1
+    kind: 0
+    displayName: "\uACBD\uC7A5\uAC11 Mk1"
+    icon: {fileID: 21300000, guid: 7dd9123b0beb10f48bf6fe308bbe62fe, type: 3}
+    price: 1000
+    forSale: 1
+    description: "\uC120\uCCB4 \uBC14\uAE65\uC5D0 \uB367\uB300\uB294 \uC587\uC740
+      \uBCF5\uD569 \uC7A5\uAC11\uD310. \uAE30\uB3D9\uC131\uC744 \uD06C\uAC8C \uD574\uCE58\uC9C0
+      \uC54A\uC73C\uBA74\uC11C \uC120\uCCB4\uB97C \uC870\uAE08 \uB354 \uBC84\uD2F0\uAC8C
+      \uD55C\uB2E4."
+    hullBonus: 300
+    shieldHp: 0
+    rechargeDelay: 4
+    rechargePerSecond: 0
+  - id: armor_2
+    kind: 0
+    displayName: "\uAC15\uD654 \uC7A5\uAC11 Mk2"
+    icon: {fileID: 21300000, guid: 7dd9123b0beb10f48bf6fe308bbe62fe, type: 3}
+    price: 3000
+    forSale: 1
+    description: "\uCDA9\uACA9 \uD761\uC218\uCE35\uC744 \uACB9\uCE5C \uD45C\uC900
+      \uC804\uD22C \uC7A5\uAC11. \uD574\uC801 \uC18C\uD0D5\uC5D0 \uB098\uC11C\uB294
+      \uD568\uC120\uC774 \uAC00\uC7A5 \uB9CE\uC774 \uC4F4\uB2E4."
+    hullBonus: 700
+    shieldHp: 0
+    rechargeDelay: 4
+    rechargePerSecond: 0
+  - id: armor_3
+    kind: 0
+    displayName: "\uC911\uC7A5\uAC11 Mk3"
+    icon: {fileID: 21300000, guid: 7dd9123b0beb10f48bf6fe308bbe62fe, type: 3}
+    price: 8000
+    forSale: 1
+    description: "\uAD70\uC6A9 \uADDC\uACA9\uC758 \uB450\uAEBC\uC6B4 \uC7A5\uAC11.
+      \uAD6C\uCD95\uD568\uAE09 \uD654\uB825\uB3C4 \uD55C\uB3D9\uC548 \uBC1B\uC544\uB0B8\uB2E4."
+    hullBonus: 1500
+    shieldHp: 0
+    rechargeDelay: 4
+    rechargePerSecond: 0
+  - id: shield_1
+    kind: 1
+    displayName: "\uBCF4\uD638\uB9C9 \uBC1C\uC0DD\uAE30 Mk1"
+    icon: {fileID: 21300000, guid: e7ce837574cb7ef48883710e912c3718, type: 3}
+    price: 1500
+    forSale: 1
+    description: "\uC18C\uD615 \uD568\uC120\uC6A9 \uBCF4\uD638\uB9C9. \uB9DE\uC9C0
+      \uC54A\uB294 \uB3D9\uC548 \uCC9C\uCC9C\uD788 \uB2E4\uC2DC \uCC28\uC624\uB978\uB2E4."
+    hullBonus: 0
+    shieldHp: 300
+    rechargeDelay: 4
+    rechargePerSecond: 30
+  - id: shield_2
+    kind: 1
+    displayName: "\uBCF4\uD638\uB9C9 \uBC1C\uC0DD\uAE30 Mk2"
+    icon: {fileID: 21300000, guid: e7ce837574cb7ef48883710e912c3718, type: 3}
+    price: 4500
+    forSale: 1
+    description: "\uCD9C\uB825\uC744 \uB192\uC778 \uBCF4\uD638\uB9C9. \uB354 \uB9CE\uC774
+      \uB9C9\uACE0 \uB354 \uBE68\uB9AC \uD68C\uBCF5\uD55C\uB2E4."
+    hullBonus: 0
+    shieldHp: 700
+    rechargeDelay: 4
+    rechargePerSecond: 60
+  - id: shield_3
+    kind: 1
+    displayName: "\uBCF4\uD638\uB9C9 \uBC1C\uC0DD\uAE30 Mk3"
+    icon: {fileID: 21300000, guid: e7ce837574cb7ef48883710e912c3718, type: 3}
+    price: 12000
+    forSale: 1
+    description: "\uAD70\uC6A9 \uBCF4\uD638\uB9C9. \uC9E7\uC740 \uD734\uC9C0 \uB4A4
+      \uBE60\uB974\uAC8C \uC7AC\uCDA9\uC804\uB41C\uB2E4."
+    hullBonus: 0
+    shieldHp: 1500
+    rechargeDelay: 3.5
+    rechargePerSecond: 110
+  sellRatio: 0.5

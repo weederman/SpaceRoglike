@@ -7,21 +7,42 @@ using UnityEngine.SceneManagement;
 ///  - 광맥의 종류·수·매장량은 OreCatalog (비콘 레벨이 높을수록 많고, 희귀 광석은 높은 레벨에만)
 ///  - 자리는 비콘마다 늘 같다 (비콘 번호로 정한 무작위)
 ///  - 캐 간 양은 기억한다: 다시 와도 남은 만큼만 있다 (게임을 다시 시작하면 처음부터)
+///  - 다 캔 광맥은 부서지고(폭발), OreCatalog.respawnSeconds(게임 시간)가 지나면 같은 자리에 가득 찬 채로 다시 생긴다
+///    (그 지역에 있으면 그 자리에서, 떠나 있었으면 다음에 들어설 때)
 ///  - 튜토리얼 임무가 진행 중이면 튜토리얼 비콘에는 깔지 않는다 (튜토리얼은 자기 광맥을 쓴다)
-/// 깔고 걷는 일은 StarSystem이 지역이 바뀔 때 부른다.
+/// 깔고 걷는 일은 StarSystem이 지역이 바뀔 때 부르고, 고갈·재생은 StarSystem이 매 프레임 Tick으로 살핀다.
 /// </summary>
 public static class OreDeposits
 {
-    // 비콘 번호 → 광맥마다 남은 매장량 (처음 깔 때 정한 순서대로)
-    private static readonly Dictionary<int, float[]> Remaining = new Dictionary<int, float[]>();
-    private static readonly List<MineableAsteroid> Spawned = new List<MineableAsteroid>();
+    // 비콘 하나의 광맥들 (처음 깔 때 정한 순서대로)
+    private sealed class BeaconState
+    {
+        public float[] remaining;
+        public float[] depletedAt; // 부서진 게임 시각 (부서지지 않았으면 NotDepleted)
+    }
+
+    // 지금 깔린 비콘의 광맥 자리 하나
+    private sealed class Slot
+    {
+        public OreCatalog.Ore ore;
+        public Vector3 position;
+        public float amount;
+        public MineableAsteroid.Look look;
+        public MineableAsteroid deposit; // 부서져 있으면 null
+    }
+
+    private const float NotDepleted = float.NegativeInfinity;
+
+    private static readonly Dictionary<int, BeaconState> States = new Dictionary<int, BeaconState>();
+    private static readonly List<Slot> Slots = new List<Slot>();
     private static int _beacon = -1;
+    private static Transform _parent;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
-        Remaining.Clear();
-        Spawned.Clear();
+        States.Clear();
+        Slots.Clear();
         _beacon = -1;
         SceneManager.sceneLoaded -= HandleSceneLoaded;
         SceneManager.sceneLoaded += HandleSceneLoaded;
@@ -29,8 +50,8 @@ public static class OreDeposits
 
     private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Remaining.Clear();
-        Spawned.Clear();
+        States.Clear();
+        Slots.Clear();
         _beacon = -1;
     }
 
@@ -46,7 +67,6 @@ public static class OreDeposits
         // 같은 비콘이면 늘 같은 자리·같은 매장량
         var rng = new System.Random(beacon * 7919 + 17);
         var placed = new List<Vector3>();
-        var slots = new List<(OreCatalog.Ore ore, Vector3 position, float amount)>();
 
         foreach (OreCatalog.Ore ore in catalog.ores)
         {
@@ -58,56 +78,109 @@ public static class OreDeposits
             {
                 Vector3 position = PickPosition(rng, catalog, center, placed);
                 float amount = Mathf.Lerp(ore.amount.x, ore.amount.y, (float)rng.NextDouble());
+                MineableAsteroid.Look look = ore.looks.Length > 0 ? ore.looks[rng.Next(ore.looks.Length)] : null;
                 placed.Add(position);
-                slots.Add((ore, position, amount));
+                Slots.Add(new Slot { ore = ore, position = position, amount = amount, look = look });
             }
         }
 
-        if (!Remaining.TryGetValue(beacon, out float[] left) || left.Length != slots.Count)
+        if (!States.TryGetValue(beacon, out BeaconState state) || state.remaining.Length != Slots.Count)
         {
-            left = new float[slots.Count];
-            for (int i = 0; i < slots.Count; i++)
-                left[i] = slots[i].amount;
-            Remaining[beacon] = left;
+            state = new BeaconState { remaining = new float[Slots.Count], depletedAt = new float[Slots.Count] };
+            for (int i = 0; i < Slots.Count; i++)
+            {
+                state.remaining[i] = Slots[i].amount;
+                state.depletedAt[i] = NotDepleted;
+            }
+
+            States[beacon] = state;
         }
 
         _beacon = beacon;
-        for (int i = 0; i < slots.Count; i++)
+        _parent = parent;
+        for (int i = 0; i < Slots.Count; i++)
         {
-            var (ore, position, amount) = slots[i];
-            var go = new GameObject($"Deposit_{ore.id}_{i}");
-            go.transform.SetParent(parent, true);
-            go.transform.position = position;
+            // 부서진 광맥은 다시 생길 때가 지났으면 가득 채워 깔고, 아니면 비워 둔다
+            if (state.depletedAt[i] != NotDepleted)
+            {
+                if (Time.time - state.depletedAt[i] < catalog.respawnSeconds)
+                    continue;
+                Regrow(state, i);
+            }
 
-            var deposit = go.AddComponent<MineableAsteroid>();
-            MineableAsteroid.Look look = ore.looks.Length > 0 ? ore.looks[rng.Next(ore.looks.Length)] : null;
-            deposit.Init(look, ore.size, amount, ore.id);
-            deposit.SetRemaining(left[i]);
-            deposit.Reveal(true);
-            Spawned.Add(deposit);
+            Create(i, state.remaining[i]);
         }
     }
 
     /// <summary>깔린 광맥을 걷어낸다 (남은 매장량은 기억해 둔다)</summary>
     public static void Clear()
     {
-        if (_beacon >= 0 && Remaining.TryGetValue(_beacon, out float[] left))
+        if (_beacon >= 0 && States.TryGetValue(_beacon, out BeaconState state))
         {
-            for (int i = 0; i < Spawned.Count && i < left.Length; i++)
+            for (int i = 0; i < Slots.Count && i < state.remaining.Length; i++)
             {
-                if (Spawned[i] != null)
-                    left[i] = Spawned[i].Remaining;
+                if (Slots[i].deposit != null)
+                    state.remaining[i] = Slots[i].deposit.Remaining;
             }
         }
 
-        foreach (MineableAsteroid deposit in Spawned)
+        foreach (Slot slot in Slots)
         {
-            if (deposit != null)
-                Object.Destroy(deposit.gameObject);
+            if (slot.deposit != null)
+                Object.Destroy(slot.deposit.gameObject);
         }
 
-        Spawned.Clear();
+        Slots.Clear();
         _beacon = -1;
+    }
+
+    /// <summary>다 캔 광맥을 부수고, 다시 생길 때가 된 광맥을 깐다 (StarSystem이 매 프레임 부른다)</summary>
+    public static void Tick()
+    {
+        if (_beacon < 0 || !States.TryGetValue(_beacon, out BeaconState state))
+            return;
+
+        OreCatalog catalog = OreCatalog.Load();
+        for (int i = 0; i < Slots.Count; i++)
+        {
+            Slot slot = Slots[i];
+            if (slot.deposit != null)
+            {
+                if (slot.deposit.HasOre)
+                    continue;
+
+                // 다 캤다: 부서진다
+                state.remaining[i] = 0f;
+                state.depletedAt[i] = Time.time;
+                slot.deposit.Shatter(catalog != null ? catalog.breakEffect : null, catalog != null ? catalog.breakEffectScale : 1f);
+                slot.deposit = null;
+            }
+            else if (state.depletedAt[i] != NotDepleted && catalog != null && Time.time - state.depletedAt[i] >= catalog.respawnSeconds)
+            {
+                Regrow(state, i);
+                Create(i, state.remaining[i]);
+            }
+        }
+    }
+
+    private static void Regrow(BeaconState state, int index)
+    {
+        state.remaining[index] = Slots[index].amount;
+        state.depletedAt[index] = NotDepleted;
+    }
+
+    private static void Create(int index, float remaining)
+    {
+        Slot slot = Slots[index];
+        var go = new GameObject($"Deposit_{slot.ore.id}_{index}");
+        go.transform.SetParent(_parent, true);
+        go.transform.position = slot.position;
+
+        var deposit = go.AddComponent<MineableAsteroid>();
+        deposit.Init(slot.look, slot.ore.size, slot.amount, slot.ore.id);
+        deposit.SetRemaining(remaining);
+        deposit.Reveal(true);
+        slot.deposit = deposit;
     }
 
     private static Vector3 PickPosition(System.Random rng, OreCatalog catalog, Vector3 center, List<Vector3> placed)

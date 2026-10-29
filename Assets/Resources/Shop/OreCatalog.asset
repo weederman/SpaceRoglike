@@ -44,3 +44,6 @@ MonoBehaviour:
   depositDistance: {x: 300, y: 800}
   depositSpacing: 220
   depositHeight: -30
+  respawnSeconds: 600
+  breakEffect: {fileID: 100002, guid: 2f47b5cc2c5d54c40b29b62ba825671a, type: 3}
+  breakEffectScale: 1.2

@@ -64,9 +64,11 @@ MonoBehaviour:
   _dustAlpha: 0.6
   _dustColor: {r: 0.75, g: 0.62, b: 0.48, a: 1}
   _dustHeight: -40
-  _maxRocks: 10
-  _maxWrecks: 5
+  _maxRocks: 28
+  _maxWrecks: 14
   _clearRadius: 80
+  _spawnMargin: 350
+  _viewPadding: 90
   _aroundRadius: 280
   _rockSize: {x: 32, y: 105}
   _wreckSize: {x: 18, y: 42}

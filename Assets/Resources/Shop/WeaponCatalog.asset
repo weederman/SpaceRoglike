@@ -19,3 +19,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 72582364ab19dea49a6f25488c837023, type: 2}
   - {fileID: 11400000, guid: 1c91300854accd142972a0756d263095, type: 2}
   - {fileID: 11400000, guid: 3386fafcfc953c54f8be633b91393964, type: 2}
+  sellRatio: 0.5

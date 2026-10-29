@@ -79,7 +79,7 @@ public class FirstWarpDirector : MonoBehaviour
     [Header("귀환 (장면 6)")]
     [Tooltip("귀환 터널 안에 머무는 시간(초)")]
     [SerializeField, Min(0f)] private float _returnTunnelSeconds = 3.5f;
-    [Tooltip("정거장 구역(StationZone) 중심에서 도착 위치까지 (XZ). 프롤로그가 처음 함선을 둔 자리와 같다.")]
+    [Tooltip("항성계(StarSystem)가 없을 때만: 정거장 구역(StationZone) 중심에서 도착 위치까지 (XZ). 항성계가 있으면 정거장 선체 바깥의 워프 도착 자리(StarSystem.StationArrival)에 놓는다.")]
     [SerializeField] private Vector2 _returnDockOffset = new Vector2(0f, -55f);
 
     // ── 장면 참조 ──
@@ -391,9 +391,20 @@ public class FirstWarpDirector : MonoBehaviour
     {
         EnsureRefs();
 
+        // 정거장 선체 바깥, 워프로 정거장에 올 때와 같은 자리 (정거장이 커서 중심 기준으로 재면 선체 안에 들어간다)
         StationZone zone = StationZone.Home;
-        Vector3 center = zone != null ? zone.transform.position : Vector3.zero;
-        Vector3 pos = new Vector3(center.x + _returnDockOffset.x, _baseY, center.z + _returnDockOffset.y);
+        Vector3 pos;
+        if (StarSystem.Instance != null && zone != null)
+        {
+            pos = StarSystem.Instance.StationArrival(zone);
+            pos.y = _baseY;
+        }
+        else
+        {
+            Vector3 center = zone != null ? zone.transform.position : Vector3.zero;
+            pos = new Vector3(center.x + _returnDockOffset.x, _baseY, center.z + _returnDockOffset.y);
+        }
+
         MoveShip(pos, Quaternion.identity);
         _cameraController.SnapToTarget();
 

@@ -43,6 +43,14 @@ public class OreCatalog : ScriptableObject
     [Tooltip("함선이 다니는 높이 기준 광맥 높이 (음수 = 아래, 함선이 위로 지나간다)")]
     public float depositHeight = -30f;
 
+    [Header("고갈 / 재생")]
+    [Tooltip("다 캔 광맥이 부서진 뒤 다시 생기기까지 (초, 게임 시간)")]
+    [Min(0f)] public float respawnSeconds = 600f;
+    [Tooltip("다 캔 광맥이 부서질 때의 폭발 이펙트")]
+    public GameObject breakEffect;
+    [Tooltip("폭발 이펙트 크기 (광맥 크기 대비)")]
+    [Min(0f)] public float breakEffectScale = 0.6f;
+
     private static OreCatalog _loaded;
 
     public static OreCatalog Load()

@@ -166,6 +166,28 @@ public class MineableAsteroid : MonoBehaviour
         _ore = Mathf.Clamp(remaining, 0f, _oreMax);
     }
 
+    /// <summary>부서진다: 폭발 이펙트(크기 = 소행성 크기 × effectScale, 한 번만 재생)를 남기고 사라진다.</summary>
+    public void Shatter(GameObject effect, float effectScale)
+    {
+        if (effect != null)
+        {
+            GameObject fx = Instantiate(effect, transform.position, Quaternion.identity);
+            fx.transform.localScale = effect.transform.localScale * Mathf.Max(0.01f, _size * effectScale / 10f);
+
+            // 폭발 프리팹의 파티클이 반복 재생으로 되어 있어 한 번만 재생되게 끈다 (ShipDestructionEffect와 같은 처리)
+            foreach (ParticleSystem ps in fx.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                ParticleSystem.MainModule main = ps.main;
+                main.loop = false;
+                main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+            }
+
+            Destroy(fx, 5f);
+        }
+
+        Destroy(gameObject);
+    }
+
     /// <summary>광물을 최대 amount만큼 꺼내고 실제로 꺼낸 양을 돌려준다.</summary>
     public float Extract(float amount)
     {

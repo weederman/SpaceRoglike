@@ -39,6 +39,16 @@ public static class PlayerHangar
         OnChanged?.Invoke();
     }
 
+    /// <summary>보관함에서 weapon 하나를 뺀다 (상점에 팔 때). 없으면 false.</summary>
+    public static bool Remove(F3DFXType weapon)
+    {
+        if (!Stored.Remove(weapon))
+            return false;
+
+        OnChanged?.Invoke();
+        return true;
+    }
+
     /// <summary>보관함의 weapon을 slot에 단다. 그 슬롯에 있던 무기는 보관함으로 돌아온다.</summary>
     public static bool Equip(F3DFXType weapon, int slot)
     {

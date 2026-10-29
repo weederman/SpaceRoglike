@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 /// 목표 지정. Tab = 가장 가까운 목표(다시 누르면 그다음으로 가까운 목표), 목표 근처를 좌클릭 = 그 목표.
 /// 목표는 플레이어 함선이 아닌 살아 있는 함선(HullHealth)과, 광물이 남은 광맥 소행성(MineableAsteroid)이다.
 /// 지정하면 스토리에 신호 "target_locked"를 보낸다(광맥이면 "ore_locked"도).
+/// 목표가 _maxLockDistance보다 멀어지면(워프·도킹으로 떠나는 등) 목표를 해제한다. 그보다 먼 것은 고를 수도 없다.
 /// 조준은 바꾸지 않는다(터렛은 계속 마우스를 따른다). 표시는 CombatHud가 Target을 읽어 그린다.
 /// CombatHud 프리팹(Assets/Resources/UI/CombatHud.prefab)에 붙어 함께 생성된다.
 /// </summary>
@@ -19,6 +20,8 @@ public class TargetingSystem : MonoBehaviour
 
     [Tooltip("목표 위를 클릭했다고 볼 화면 거리(픽셀). 함선이 작게 보여도 고르기 쉽게 넉넉히 둔다.")]
     [SerializeField, Min(0f)] private float _clickPickRadius = 70f;
+    [Tooltip("이보다 멀리 있는 목표는 고를 수 없고, 지정한 목표가 이보다 멀어지면 해제한다 (월드 단위, 수평 거리)")]
+    [SerializeField, Min(100f)] private float _maxLockDistance = 1500f;
 
     /// <summary>목표가 바뀌거나 사라졌을 때 (없으면 null)</summary>
     public event Action<Component> OnTargetChanged;
@@ -53,7 +56,7 @@ public class TargetingSystem : MonoBehaviour
     private void Update()
     {
         // 목표가 격파·고갈되었거나 오브젝트가 사라졌으면(파괴된 Unity 오브젝트는 == null) 해제
-        if (!ReferenceEquals(Target, null) && !IsValid(Target))
+        if (!ReferenceEquals(Target, null) && (!IsValid(Target) || !InRange(Target)))
             Clear();
 
         if (GameInputLock.IsLocked)
@@ -167,7 +170,7 @@ public class TargetingSystem : MonoBehaviour
         return target is MineableAsteroid ore && ore.HasOre;
     }
 
-    private bool CollectCandidates()
+    private bool FindPlayer()
     {
         if (_player == null)
         {
@@ -175,19 +178,35 @@ public class TargetingSystem : MonoBehaviour
             _playerHull = _player != null ? _player.GetComponentInChildren<HullHealth>() : null;
         }
 
+        return _player != null;
+    }
+
+    /// <summary>플레이어에게서 목표를 지정할 수 있는 거리 안인지 (정거장 안에 있으면 함선이 먼 내부 공간에 있으므로 무엇이든 멀다)</summary>
+    private bool InRange(Component target)
+    {
+        if (!FindPlayer())
+            return true;
+
+        Vector3 d = PositionOf(target) - _player.transform.position;
+        d.y = 0f;
+        return d.sqrMagnitude <= _maxLockDistance * _maxLockDistance;
+    }
+
+    private bool CollectCandidates()
+    {
         _candidates.Clear();
-        if (_player == null)
+        if (!FindPlayer())
             return false;
 
         foreach (HullHealth hull in FindObjectsOfType<HullHealth>())
         {
-            if (hull != _playerHull && hull.IsActive && !FriendlyShip.Is(hull))
+            if (hull != _playerHull && hull.IsActive && !FriendlyShip.Is(hull) && InRange(hull))
                 _candidates.Add(hull);
         }
 
         foreach (MineableAsteroid ore in MineableAsteroid.All)
         {
-            if (ore.HasOre)
+            if (ore.HasOre && InRange(ore))
                 _candidates.Add(ore);
         }
 

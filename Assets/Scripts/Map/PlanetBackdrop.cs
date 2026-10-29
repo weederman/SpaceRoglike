@@ -4,8 +4,10 @@ using UnityEngine;
 /// 항성계 배경: 지금 위치에서 가장 가까운 행성과 항성을 "아주 멀리 있는 커다란 천체"로 보여준다(2D Space Kit 행성/항성 그림).
 /// 천체는 함선이 다니는 평면보다 훨씬 아래 깊은 곳에, 카메라가 내려다보는 방향을 기준으로 실제 방향 쪽으로 치우쳐 놓는다.
 /// 매 프레임 카메라 시선을 따라 자리를 다시 잡으므로 함선이 움직여도 하늘처럼 거의 제자리에 있고,
-/// 항성계 안에서 위치가 바뀌면 방향과 크기(가까울수록 크게)가 천천히 바뀐다. 가장 가까운 행성이 바뀌면 서서히 바꿔 낀다.
-/// 워프 터널 무대처럼 항성계 밖에 있을 때는 숨긴다. StarSystem 프리팹에 함께 붙는다.
+/// 항성계 안에서 위치가 바뀌면 방향과 크기(가까울수록 크게)가 천천히 바뀐다. 날아가다 가장 가까운 행성이 바뀌면 서서히 바꿔 낀다.
+/// 워프 터널 무대·정거장 내부처럼 항성계 밖에 있을 때는 숨기고, 그동안은 행성을 고르지 않는다(터널 위치에서 가까운 엉뚱한 행성이 끼지 않게).
+/// 워프 도착처럼 순간이동했으면 바꿔 끼는 과정 없이 도착한 곳의 행성으로 바로 바꾼다(예전 행성이 겹쳐 보이다 사라지지 않게).
+/// StarSystem 프리팹에 함께 붙는다.
 /// </summary>
 public class PlanetBackdrop : MonoBehaviour
 {
@@ -34,6 +36,8 @@ public class PlanetBackdrop : MonoBehaviour
     [SerializeField] private Color _starTint = Color.white;
 
     [SerializeField, Min(0.05f)] private float _fadeSeconds = 1.2f;
+    [Tooltip("한 프레임에 이보다 멀리 움직였으면 순간이동(워프 도착 등)으로 보고 행성을 바로 바꾼다 (항성계 단위)")]
+    [SerializeField, Min(10f)] private float _teleportDistance = 400f;
 
     private SpriteRenderer _starRenderer;
     private SpriteRenderer[] _planetRenderers;
@@ -41,6 +45,8 @@ public class PlanetBackdrop : MonoBehaviour
     private float[] _planetAlpha = { 0f, 0f };
     private int _activeSlot;
     private float _visibility;
+    private Vector2 _lastHere;
+    private bool _wasInside;
     private Transform _player;
     private Camera _cam;
 
@@ -103,13 +109,29 @@ public class PlanetBackdrop : MonoBehaviour
             Mathf.InverseLerp(_planetDistanceRange.x, _system.Data.OuterRadius, starDistance));
         Place(_starRenderer, _system.Data.starSprite, center, toStar, _starSize * starScale, facing, _starTint, _visibility);
 
-        // 가장 가까운 행성 (바뀌면 다른 칸에 띄우고 서서히 바꿔 낀다)
-        int nearest = NearestPlanet(here);
-        if (nearest != _planetOrbits[_activeSlot])
+        // 가장 가까운 행성. 항성계 밖(터널·정거장 내부)에서는 고르지 않고, 순간이동해 들어왔으면 바로 바꾼다.
+        // 날아가다 바뀌면 다른 칸에 띄우고 서서히 바꿔 낀다.
+        if (inside)
         {
-            _activeSlot = 1 - _activeSlot;
-            _planetOrbits[_activeSlot] = nearest;
+            bool teleported = !_wasInside || (here - _lastHere).magnitude > _teleportDistance;
+            int nearest = NearestPlanet(here);
+            if (teleported)
+            {
+                _planetOrbits[_activeSlot] = nearest;
+                _planetOrbits[1 - _activeSlot] = -1;
+                _planetAlpha[_activeSlot] = 1f;
+                _planetAlpha[1 - _activeSlot] = 0f;
+            }
+            else if (nearest != _planetOrbits[_activeSlot])
+            {
+                _activeSlot = 1 - _activeSlot;
+                _planetOrbits[_activeSlot] = nearest;
+            }
+
+            _lastHere = here;
         }
+
+        _wasInside = inside;
 
         for (int slot = 0; slot < 2; slot++)
         {

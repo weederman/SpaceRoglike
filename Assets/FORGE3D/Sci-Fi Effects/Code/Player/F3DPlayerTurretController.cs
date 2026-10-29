@@ -32,7 +32,7 @@ namespace FORGE3D
                 return;
             }
 
-            // [추가] 무기 슬롯 선택(1~9키)에서 고르지 않은 터렛은 쏘지 않고, 쏘던 중이면 멈춘다
+            // [추가] 무기를 바꾼 직후(1~9키, 모든 터렛이 함께 바뀐다)에는 쏘던 것을 멈춘다 (아래에서 새 무기로 다시 쏜다)
             if (!PlayerWeaponSelector.CanFire(this))
             {
                 if (isFiring)
@@ -52,7 +52,8 @@ namespace FORGE3D
             }
 
             // Fire turret
-            if (!isFiring && Input.GetKeyDown(KeyCode.Mouse0))
+            // [추가] 누르는 순간뿐 아니라 누르고 있는 동안에도 시작한다 (무기를 바꾼 뒤 버튼을 누른 채면 새 무기로 이어 쏜다)
+            if (!isFiring && Input.GetKey(KeyCode.Mouse0))
             {
                 isFiring = true;
                 fxController.Fire();

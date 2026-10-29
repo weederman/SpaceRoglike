@@ -4,8 +4,9 @@ using UnityEngine;
 /// <summary>
 /// 소행성 지대: 플레이어(함선) 주위에 거대한 암석과 부서진 선박 잔해를 흩뿌린다.
 /// 암석은 항상 "최대 maxRocks개"만 존재하고, 놓이는 범위는 카메라 화면에 담기는 범위 + 여유(spawnMargin, 플레이어가 움직일 만큼)다.
-/// 함선이 움직여 그 범위를 벗어난 조각은 지워지는 대신 화면 바로 밖 여유 띠(주로 함선이 나아가는 쪽)로 옮겨져 서서히 나타난다
-/// (암석은 작게 시작해 커진다). 그래서 어디로 가도 화면 안의 밀도가 같고, 화면 안에서 갑자기 생기지 않는다.
+/// 함선이 움직여 그 범위를 벗어난 조각은 지워지는 대신 화면 밖 여유 띠(주로 함선이 나아가는 쪽)로 옮겨져 서서히 나타난다
+/// (암석은 작게 시작해 커진다). 띠는 화면 가장자리에서 _viewPadding(가장 큰 암석의 반지름보다 크게)만큼 떨어진 곳부터라,
+/// 옮겨진 암석의 몸체가 화면에 걸쳐 보이지 않는다. 그래서 어디로 가도 화면 안의 밀도가 같고, 화면 안에서 갑자기 생기지 않는다.
 /// 암석은 3D 소행성 모델(FreeSciFi 소행성 메시 + 회색 암석 재질)이며, 함선이 다니는 높이보다 조금 아래에 놓여 함선이 그 위를 지나간다.
 /// 저마다 다른 축으로 천천히 구른다. 잔해 조각은 2D Space Kit 스프라이트를 카메라를 향해 세운다(빌보드). 장식용이라 충돌체는 없다.
 /// 함선 주위에는 소행성 벨트의 먼지(Asteroid Field Creator의 Blob Dust 파티클을 이 크기에 맞게 줄인 것)가 떠돈다.
@@ -58,6 +59,8 @@ public class AsteroidField : MonoBehaviour
     [SerializeField, Min(0f)] private float _clearRadius = 80f;
     [Tooltip("카메라 화면에 담기는 범위 바깥으로 이만큼(플레이어가 움직일 만큼) 더 넓은 곳까지 놓는다")]
     [SerializeField, Min(0f)] private float _spawnMargin = 100f;
+    [Tooltip("화면 가장자리에서 이만큼 안쪽까지는 새로 놓지 않는다 (가장 큰 암석의 반지름보다 크게: 몸체가 화면에 걸치지 않게)")]
+    [SerializeField, Min(0f)] private float _viewPadding = 80f;
     [Tooltip("카메라를 쓸 수 없을 때(워프 연출 중 등) 함선 주위로 보는 반지름")]
     [SerializeField, Min(1f)] private float _aroundRadius = 280f;
 
@@ -98,6 +101,7 @@ public class AsteroidField : MonoBehaviour
     private Transform _target;
     private Camera _camera;
     private Rect _view;     // 카메라 화면에 담기는 범위 (월드 XZ)
+    private Rect _hidden;   // _view + _viewPadding: 새로 놓지 않는 범위
     private Rect _region;   // _view + 여유: 조각이 놓이는 범위
     private Vector3 _lastCenter;
     private Vector3 _moveDir = Vector3.forward;
@@ -312,9 +316,9 @@ public class AsteroidField : MonoBehaviour
         Vector2 height = wreck ? _height : _rockHeight;
         float y = center.y + Mathf.Lerp(height.x, height.y, (float)_rng.NextDouble());
 
-        Vector2 best = new Vector2(center.x, center.z) + Vector2.up * _aroundRadius;
+        Vector2 best = OutsideAhead(new Vector2(center.x, center.z)); // 띠에서 자리를 못 찾으면: 나아가는 쪽 띠
         float bestScore = float.NegativeInfinity;
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < 16; i++)
         {
             var c = new Vector2(Mathf.Lerp(_region.xMin, _region.xMax, (float)_rng.NextDouble()),
                                 Mathf.Lerp(_region.yMin, _region.yMax, (float)_rng.NextDouble()));
@@ -325,8 +329,8 @@ public class AsteroidField : MonoBehaviour
             if (initial)
                 return new Vector3(c.x, y, c.y);
 
-            if (_view.Contains(c))
-                continue; // 화면 안에는 새로 놓지 않는다
+            if (_hidden.Contains(c))
+                continue; // 화면 안(과 가장자리)에는 새로 놓지 않는다
 
             float score = Vector2.Dot(fromShip.normalized, new Vector2(_moveDir.x, _moveDir.z)) + (float)_rng.NextDouble() * 0.6f;
             if (score > bestScore)
@@ -337,6 +341,25 @@ public class AsteroidField : MonoBehaviour
         }
 
         return new Vector3(best.x, y, best.y);
+    }
+
+    /// <summary>함선이 나아가는 쪽으로, 새로 놓지 않는 범위(_hidden)와 놓이는 범위(_region) 사이 띠의 한가운데</summary>
+    private Vector2 OutsideAhead(Vector2 from)
+    {
+        Vector2 dir = new Vector2(_moveDir.x, _moveDir.z);
+        dir = dir.sqrMagnitude > 0.001f ? dir.normalized : Vector2.up;
+
+        float enter = ExitDistance(_hidden, from, dir);
+        float exit = ExitDistance(_region, from, dir);
+        return from + dir * ((enter + Mathf.Max(enter, exit)) * 0.5f);
+    }
+
+    /// <summary>rect 안의 점 from에서 dir 방향으로 rect를 벗어나기까지의 거리</summary>
+    private static float ExitDistance(Rect rect, Vector2 from, Vector2 dir)
+    {
+        float tx = dir.x > 0.0001f ? (rect.xMax - from.x) / dir.x : dir.x < -0.0001f ? (rect.xMin - from.x) / dir.x : float.PositiveInfinity;
+        float ty = dir.y > 0.0001f ? (rect.yMax - from.y) / dir.y : dir.y < -0.0001f ? (rect.yMin - from.y) / dir.y : float.PositiveInfinity;
+        return Mathf.Max(0f, Mathf.Min(tx, ty));
     }
 
     /// <summary>
@@ -372,7 +395,13 @@ public class AsteroidField : MonoBehaviour
         if (!ok)
             _view = new Rect(center.x - _aroundRadius * 0.6f, center.z - _aroundRadius * 0.6f, _aroundRadius * 1.2f, _aroundRadius * 1.2f);
 
-        _region = Rect.MinMaxRect(_view.xMin - _spawnMargin, _view.yMin - _spawnMargin, _view.xMax + _spawnMargin, _view.yMax + _spawnMargin);
+        _hidden = Expand(_view, _viewPadding);
+        _region = Expand(_view, Mathf.Max(_spawnMargin, _viewPadding + 50f));
+    }
+
+    private static Rect Expand(Rect rect, float amount)
+    {
+        return Rect.MinMaxRect(rect.xMin - amount, rect.yMin - amount, rect.xMax + amount, rect.yMax + amount);
     }
 
     /// <summary>이 자리에 반지름 radius인 암석을 두면, 이미 놓인 다른 큰 암석(과 채굴용 광맥 소행성)과

@@ -68,7 +68,60 @@ public class StationZone : MonoBehaviour
     public int StationIndex { get; set; } = -1;
 
     /// <summary>정거장 모델 (도킹 거리를 재는 데 쓴다. StarSystem이 채운다)</summary>
-    public Transform Model { get; set; }
+    public Transform Model
+    {
+        get => _model;
+        set
+        {
+            _model = value;
+            _hasBounds = false;
+        }
+    }
+
+    private Transform _model;
+    private Bounds _bounds;
+    private bool _hasBounds;
+
+    /// <summary>정거장 모델이 차지하는 범위 (월드). 모델이 없으면 false. 정거장은 움직이지 않으므로 한 번 재고 기억한다.</summary>
+    public bool TryGetBounds(out Bounds bounds)
+    {
+        if (!_hasBounds && _model != null)
+        {
+            bool any = false;
+            foreach (Renderer r in _model.GetComponentsInChildren<Renderer>(true))
+            {
+                if (!any) { _bounds = r.bounds; any = true; }
+                else _bounds.Encapsulate(r.bounds);
+            }
+
+            _hasBounds = any;
+        }
+
+        bounds = _bounds;
+        return _hasBounds;
+    }
+
+    /// <summary>
+    /// 정거장 선체 바깥, direction(수평) 쪽으로 선체 끝에서 clearance만큼 더 떨어진 곳 (높이 y).
+    /// 정거장 모델이 아주 커서 중심에서 일정 거리로 재면 선체 안에 들어가므로, 워프 도착·출항·귀환 자리는 이것으로 정한다.
+    /// </summary>
+    public Vector3 PointOutside(Vector3 direction, float clearance, float y)
+    {
+        direction.y = 0f;
+        direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.back;
+
+        Vector3 center = transform.position;
+        float extent = 0f;
+        if (TryGetBounds(out Bounds b))
+        {
+            center = b.center;
+            extent = Mathf.Abs(direction.x) * b.extents.x + Mathf.Abs(direction.z) * b.extents.z;
+        }
+
+        Vector3 p = center + direction * (extent + clearance);
+        p.y = y;
+        return p;
+    }
 
     // 에디터에서 도메인 리로드를 꺼 둬도 플레이마다 깨끗이 시작하도록
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

@@ -55,14 +55,16 @@ public class StarSystem : MonoBehaviour
     [SerializeField] private StarSystemData _data;
 
     [Header("지역")]
-    [Tooltip("장소에서 이 거리(XZ) 안이면 그 장소의 지역에 있는 것으로 본다")]
+    [Tooltip("장소에서 이 거리(XZ) 안이면 그 장소의 지역에 있는 것으로 본다 (정거장은 선체 끝에서 잰다)")]
     [SerializeField, Min(100f)] private float _areaRadius = 1600f;
     [Tooltip("지역을 벗어났다고 보는 거리 (들어온 거리보다 조금 크게 두어 경계에서 깜빡이지 않게)")]
     [SerializeField, Min(100f)] private float _areaExitRadius = 1800f;
 
     [Header("도착 위치 (장소 기준 XZ)")]
-    [Tooltip("정거장으로 워프하면 정거장 중심에서 이만큼 떨어진 곳에 도착한다 (도킹 거리 밖)")]
-    [SerializeField] private Vector2 _stationArrivalOffset = new Vector2(0f, -400f);
+    [Tooltip("정거장으로 워프하면 정거장의 이쪽 방향(XZ)에 도착한다")]
+    [SerializeField] private Vector2 _stationArrivalDirection = new Vector2(0f, -1f);
+    [Tooltip("정거장 선체 끝에서 이만큼 떨어진 곳에 도착한다 (정거장이 커서 중심 기준으로 재면 선체 안에 들어간다)")]
+    [SerializeField, Min(0f)] private float _stationArrivalClearance = 900f;
     [Tooltip("비콘이 화면 오른쪽 위에 보이도록 비콘의 왼쪽 아래에 도착한다")]
     [SerializeField] private Vector2 _beaconArrivalOffset = new Vector2(-150f, -90f);
 
@@ -272,12 +274,41 @@ public class StarSystem : MonoBehaviour
         }
     }
 
-    /// <summary>그 장소로 워프했을 때 함선이 나타나는 자리 (함선 높이)</summary>
+    /// <summary>그 장소로 워프했을 때 함선이 나타나는 자리 (함선 높이). 정거장이면 선체 바깥으로 _stationArrivalClearance만큼 떨어진 곳.</summary>
     public Vector3 ArrivalPoint(Location location)
     {
+        if (location.Kind == LocationKind.Station)
+            return StationArrival(FindStation(location.Index));
+
         Vector3 p = LocationWorld(location);
-        Vector2 offset = location.Kind == LocationKind.Station ? _stationArrivalOffset : _beaconArrivalOffset;
-        return new Vector3(p.x + offset.x, Origin.y, p.z + offset.y);
+        return new Vector3(p.x + _beaconArrivalOffset.x, Origin.y, p.z + _beaconArrivalOffset.y);
+    }
+
+    /// <summary>정거장 앞(선체 바깥, 워프 도착과 같은 쪽)에 나타나는 자리 (함선 높이). 튜토리얼 귀환도 이 자리를 쓴다.</summary>
+    public Vector3 StationArrival(StationZone zone)
+    {
+        return StationApproach(zone, _stationArrivalClearance);
+    }
+
+    /// <summary>워프 도착과 같은 쪽으로 정거장 선체 끝에서 clearance만큼 떨어진 자리 (함선 높이)</summary>
+    public Vector3 StationApproach(StationZone zone, float clearance)
+    {
+        Vector3 dir = new Vector3(_stationArrivalDirection.x, 0f, _stationArrivalDirection.y);
+        if (zone == null)
+            return Origin;
+        return zone.PointOutside(dir, clearance, Origin.y);
+    }
+
+    /// <summary>항성계 데이터의 정거장 번호로 정거장을 찾는다 (없으면 null)</summary>
+    public static StationZone FindStation(int index)
+    {
+        foreach (StationZone zone in StationZone.All)
+        {
+            if (zone.StationIndex == index)
+                return zone;
+        }
+
+        return null;
     }
 
     /// <summary>튜토리얼 첫 워프(장면 3)가 도착하는 자리: 모항 옆 벨트의 레벨 1 비콘</summary>
@@ -311,6 +342,8 @@ public class StarSystem : MonoBehaviour
 
     private void Update()
     {
+        OreDeposits.Tick();
+
         if (_player == null || Time.unscaledTime < _nextAreaCheck)
             return;
 
@@ -324,7 +357,7 @@ public class StarSystem : MonoBehaviour
     private Location FindArea(Vector3 world)
     {
         // 지금 지역은 벗어나는 거리를 조금 더 넉넉히 본다
-        if (!CurrentArea.IsNone && HorizontalDistance(LocationWorld(CurrentArea), world) <= _areaExitRadius)
+        if (!CurrentArea.IsNone && DistanceTo(CurrentArea, world) <= _areaExitRadius)
             return CurrentArea;
 
         Location best = Location.None;
@@ -339,7 +372,7 @@ public class StarSystem : MonoBehaviour
 
         void Consider(Location candidate)
         {
-            float d = HorizontalDistance(LocationWorld(candidate), world);
+            float d = DistanceTo(candidate, world);
             if (d < bestDistance)
             {
                 bestDistance = d;
@@ -400,6 +433,23 @@ public class StarSystem : MonoBehaviour
         if (_areaField != null)
             Destroy(_areaField.gameObject);
         _areaField = null;
+    }
+
+    /// <summary>장소까지의 수평 거리. 정거장은 아주 커서 중심이 아니라 선체(모델 범위) 끝에서 잰다.</summary>
+    private float DistanceTo(Location location, Vector3 world)
+    {
+        if (location.Kind == LocationKind.Station)
+        {
+            StationZone zone = FindStation(location.Index);
+            if (zone != null && zone.TryGetBounds(out Bounds b))
+            {
+                float dx = Mathf.Max(b.min.x - world.x, 0f, world.x - b.max.x);
+                float dz = Mathf.Max(b.min.z - world.z, 0f, world.z - b.max.z);
+                return Mathf.Sqrt(dx * dx + dz * dz);
+            }
+        }
+
+        return HorizontalDistance(LocationWorld(location), world);
     }
 
     private static float HorizontalDistance(Vector3 a, Vector3 b)

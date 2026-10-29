@@ -6,6 +6,7 @@ using UnityEngine.UI;
 /// 정거장 내부(도킹 중) 화면. 처음에는 왼쪽 사이드바만 보인다:
 ///   정거장 상징·이름, 그리고 격납고 / 스페이스 라운지 / 지도 / 미션 / 정보 버튼.
 /// 버튼을 누르면 가운데에 그 창이 열린다 (한 번에 하나, 닫기 버튼이나 Esc로 닫는다). 지도는 항성계 지도(StarMapUI)를 연다.
+/// 스페이스 라운지는 임무를 받는 곳, 미션은 받은 임무를 보는 곳이다 (둘 다 MissionBoardWindow, 모드만 다르다).
 /// 창이 모두 닫혀 있을 때만 F로 출항할 수 있다 (StationDocking이 AnyWindowOpen을 본다).
 /// 화면 아래 가운데의 안내(입항·출항 키)와, 도킹/출항 때 쓰는 화면 전체 페이드도 여기에 있다.
 /// 프리팹: Assets/Resources/UI/StationInterior.prefab
@@ -26,7 +27,7 @@ public class StationInteriorView : MonoBehaviour
 
     [Header("창")]
     [SerializeField] private HangarWindow _hangar;
-    [SerializeField] private StationWindow _lounge;
+    [SerializeField] private MissionBoardWindow _lounge;
     [SerializeField] private MissionBoardWindow _missions;
     [SerializeField] private StationInfoWindow _info;
 
@@ -71,7 +72,7 @@ public class StationInteriorView : MonoBehaviour
         foreach (TMP_Text text in GetComponentsInChildren<TMP_Text>(true))
             GameFonts.ApplyKorean(text);
 
-        _windows = new[] { _hangar, _lounge, _missions, (StationWindow)_info };
+        _windows = new StationWindow[] { _hangar, _lounge, _missions, _info };
         foreach (StationWindow window in _windows)
         {
             window.CloseRequested += w => CloseWindows();
@@ -83,6 +84,7 @@ public class StationInteriorView : MonoBehaviour
         _missionButton.onClick.AddListener(() => Toggle(_missions));
         _infoButton.onClick.AddListener(() => Toggle(_info));
         _mapButton.onClick.AddListener(OpenMap);
+        _lounge.Accepted += CloseWindows;
         _missions.Accepted += CloseWindows;
 
         SetFade(0f);

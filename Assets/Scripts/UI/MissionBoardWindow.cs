@@ -3,13 +3,21 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// 정거장의 미션 창 (임무 게시판). 왼쪽에 받을 수 있는 임무를 종류별로 보여주고, 고르면 오른쪽에 의뢰인·목표·보상과 '수락' 버튼이 나온다.
-/// 수락하면 창을 닫고 MissionDirector.TryStart로 임무를 시작한다 (수락 대사부터). 진행 중인 임무가 있으면 수락할 수 없다.
-/// 진행 중인 채굴 임무는 납품처 정거장에서 '납품' 버튼으로 화물칸의 광석을 낸다 (MiningMissionDirector.Deliver).
+/// 정거장의 임무 창. 같은 창을 두 곳에 쓴다 (_mode):
+///  - 스페이스 라운지(Offers): 이 정거장에서 받을 수 있는 임무(MissionBoard가 정거장마다 무작위로 뽑은 _offerCount개)를 종류별로 보여주고,
+///    고르면 오른쪽에 의뢰인·목표·보상과 '수락' 버튼이 나온다. 수락하면 창을 닫고 MissionDirector.TryStart로 임무를 시작한다 (수락 대사부터).
+///    진행 중인 임무가 있으면 수락할 수 없다.
+///  - 미션(Active): 지금 받은 임무를 보여준다. 진행 중인 채굴 임무는 납품처 정거장에서 '납품' 버튼으로 화물칸의 광석을 낸다
+///    (MiningMissionDirector.Deliver).
 /// 임무 목록은 Assets/Resources/Missions/ 아래의 임무 데이터(MissionData)다.
 /// </summary>
 public class MissionBoardWindow : StationWindow
 {
+    public enum Mode { Offers, Active }
+
+    [SerializeField] private Mode _mode = Mode.Offers;
+    [Tooltip("스페이스 라운지: 정거장마다 받을 수 있는 임무 수")]
+    [SerializeField, Min(1)] private int _offerCount = 3;
     [SerializeField] private StationListView _list;
     [SerializeField] private ItemDetailView _detail;
     [Tooltip("호송 임무 아이콘")]
@@ -27,24 +35,27 @@ public class MissionBoardWindow : StationWindow
 
     protected override void OnOpened()
     {
-        SetTitle("미션");
+        SetTitle(_mode == Mode.Offers ? "스페이스 라운지" : "미션");
         _message = null;
-        // 진행 중인 임무가 있으면 그것부터 보여준다 (채굴 임무 납품 등)
-        if (MissionDirector.Current != null && MissionDirector.Current.Mission != null)
-            _selectedId = MissionDirector.Current.Mission.id;
+        _selectedId = null;
         Rebuild(false);
     }
 
     private void Rebuild(bool keepScroll)
     {
         _list.Clear(keepScroll);
-        List<MissionData> missions = MissionDirector.AllMissions().ToList();
+        List<MissionData> missions = _mode == Mode.Offers ? MissionBoard.OffersAt(Zone, _offerCount) : ActiveMissions();
         StationListRow chosenRow = null;
         MissionData chosen = null;
 
+        if (_mode == Mode.Active && missions.Count > 0)
+            _list.AddHeader("진행 중인 임무");
+
         foreach (var group in missions.GroupBy(KindName))
         {
-            _list.AddHeader(group.Key);
+            if (_mode == Mode.Offers)
+                _list.AddHeader(group.Key);
+
             foreach (MissionData mission in group)
             {
                 MissionData m = mission;
@@ -63,13 +74,23 @@ public class MissionBoardWindow : StationWindow
 
         if (chosen == null)
         {
-            _detail.ShowEmpty("받을 수 있는 임무가 없습니다.");
+            _detail.ShowEmpty(_mode == Mode.Offers
+                ? "지금 이 정거장에서 받을 수 있는 임무가 없습니다."
+                : "진행 중인 임무가 없습니다.\n스페이스 라운지에서 임무를 받을 수 있습니다.");
             return;
         }
 
         _selectedId = chosen.id;
         _list.Select(chosenRow);
         ShowMission(chosen);
+    }
+
+    private static List<MissionData> ActiveMissions()
+    {
+        var list = new List<MissionData>();
+        if (MissionDirector.Current != null && MissionDirector.Current.Mission != null)
+            list.Add(MissionDirector.Current.Mission);
+        return list;
     }
 
     private void Select(string id)
@@ -96,17 +117,21 @@ public class MissionBoardWindow : StationWindow
             _detail.AddStat("추가 보상", string.Join(", ", m.extraRewards));
         _detail.AddStat("내용", m.Summary);
 
-        if (IsRunning(m) && MissionDirector.Current is MiningMissionDirector mining)
+        bool running = IsRunning(m);
+        if (running && MissionDirector.Current is MiningMissionDirector mining)
+        {
             ShowDelivery(mining);
-        else if (IsRunning(m))
+            return;
+        }
+
+        if (running)
             _detail.SetPrimary("진행 중", false, null);
         else if (MissionDirector.IsRunning)
             _detail.SetPrimary("다른 임무 진행 중", false, null);
         else
             _detail.SetPrimary("수락", true, () => Accept(m));
 
-        if (!(IsRunning(m) && MissionDirector.Current is MiningMissionDirector))
-            _detail.SetMessage(_message);
+        _detail.SetMessage(_message ?? (running && _mode == Mode.Offers ? "진행 상황은 미션 탭에서 볼 수 있습니다." : null));
     }
 
     /// <summary>진행 중인 채굴 임무: 납품 현황과 '납품' 버튼</summary>
