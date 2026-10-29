@@ -7,7 +7,6 @@ using UnityEngine;
 ///    그래서 씬은 그대로 두고, 나머지 정거장 9곳은 런타임에 만든다.
 ///  - 정거장 10곳 모두 Trading Outpost 3D 모델(프리팹에 정한 크기 × stationModelScale)로, 함선이 다니는 높이에 놓인다.
 ///    함선이 다가가 일정 거리 안에 들어오면 정거장 안으로 도킹한다(StationDocking).
-///    모항의 예전 흰 평면은 보이지 않게 하고 충돌도 끈다(커진 함선 판정이 평면에 끼어 밀려나지 않게).
 ///  - 플레이어가 어떤 장소(정거장/워프 비콘) 가까이에 있는지 판정해 "지역"으로 알린다(OnAreaChanged).
 ///    소행성 벨트의 비콘 지역에 들어오면 비콘(레벨 색)과 소행성 지대를 깔고, 벗어나면 치운다.
 ///  - 궤도 사이 이동은 워프로만 한다(StarSystemWarp). 지역 안에서만 직접 비행한다.
@@ -202,15 +201,6 @@ public class StarSystem : MonoBehaviour
             if (zone != null)
                 zone.Model = model;
         }
-
-        // 모항의 예전 흰 평면은 보이지 않게 하고 충돌도 끈다 (모델이 대신 보이고, 커진 함선 판정이 끼지 않게)
-        StationZone home = StationZone.Home;
-        if (home != null && home.Area != null)
-        {
-            home.Area.forceRenderingOff = true;
-            foreach (Collider c in home.Area.GetComponentsInChildren<Collider>(true))
-                c.enabled = false;
-        }
     }
 
     /// <summary>정거장 모델을 함선이 다니는 높이에 놓는다 (프리팹 크기 × 배율, 판정 없음). 모델이 없으면 null.</summary>
@@ -257,11 +247,6 @@ public class StarSystem : MonoBehaviour
     public Vector3 BeaconWorld(int index)
     {
         return ToWorld(_data.BeaconPosition(index));
-    }
-
-    public Vector3 PlanetWorld(int orbitIndex)
-    {
-        return ToWorld(_data.PlanetPosition(orbitIndex));
     }
 
     public Vector3 LocationWorld(Location location)

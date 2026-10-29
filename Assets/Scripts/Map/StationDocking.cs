@@ -29,9 +29,6 @@ public class StationDocking : MonoBehaviour
     [Header("정거장 내부")]
     [Tooltip("내부 공간 위치 (XZ). 바깥 우주·워프 무대와 겹치지 않는 먼 곳")]
     [SerializeField] private Vector2 _interiorXZ = new Vector2(0f, -100000f);
-    [Tooltip("배경을 함선 아래로 얼마나 깊이 둘지와 크기")]
-    [SerializeField, Min(10f)] private float _backdropDepth = 600f;
-    [SerializeField, Min(10f)] private float _backdropSize = 2200f;
     [SerializeField] private StationInteriorView _viewPrefab;
 
     [Header("출항")]
@@ -41,12 +38,10 @@ public class StationDocking : MonoBehaviour
     [SerializeField, Min(0f)] private float _undockSpeed = 40f;
 
     private StationInteriorView _view;
-    private SpriteRenderer _backdrop;
     private SpaceshipController _ship;
     private Rigidbody _rb;
     private CameraController _cameraController;
     private InfiniteSpaceGrid _grid;
-    private Camera _cam;
 
     private StationZone _docked;
     private bool _busy;
@@ -64,19 +59,12 @@ public class StationDocking : MonoBehaviour
         _rb = _ship != null ? _ship.GetComponent<Rigidbody>() : null;
         _cameraController = FindObjectOfType<CameraController>();
         _grid = FindObjectOfType<InfiniteSpaceGrid>(true);
-        _cam = Camera.main;
 
         if (_viewPrefab != null)
         {
             _view = Instantiate(_viewPrefab, transform);
             _view.SetVisible(false);
         }
-
-        var backdropGo = new GameObject("InteriorBackdrop");
-        backdropGo.transform.SetParent(transform, false);
-        _backdrop = backdropGo.AddComponent<SpriteRenderer>();
-        _backdrop.sortingOrder = -400; // 함선보다 뒤
-        _backdrop.enabled = false;
     }
 
     private void OnDestroy()
@@ -234,7 +222,6 @@ public class StationDocking : MonoBehaviour
         zone.SetDocked(false);
         _docked = null;
         if (_view != null) _view.SetVisible(false);
-        _backdrop.enabled = false;
         if (_grid != null) _grid.gameObject.SetActive(true);
 
         // 정거장 앞쪽 끝 바깥에 놓고 앞으로 밀어낸다
@@ -265,21 +252,6 @@ public class StationDocking : MonoBehaviour
     }
 
     // ── 연출 ──────────────────────────────────────────
-
-    private void LateUpdate()
-    {
-        // 내부 배경: 카메라 시선 중심의 깊은 곳에, 카메라를 향해 화면을 채우도록 놓는다
-        if (!_backdrop.enabled || _cam == null || _ship == null)
-            return;
-
-        Vector3 forward = _cam.transform.forward;
-        float planeY = _ship.transform.position.y - _backdropDepth;
-        Vector3 center = forward.y < -0.05f
-            ? _cam.transform.position + forward * ((_cam.transform.position.y - planeY) / -forward.y)
-            : _ship.transform.position + Vector3.down * _backdropDepth;
-
-        _backdrop.transform.SetPositionAndRotation(center, _cam.transform.rotation);
-    }
 
     private IEnumerator Fade(float from, float to)
     {

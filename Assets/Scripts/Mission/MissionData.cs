@@ -10,7 +10,7 @@ public abstract class MissionData : ScriptableObject
     public const string ResourceFolder = "Missions";
 
     [Header("임무")]
-    [Tooltip("개발자 명령에서 부르는 번호 (예: 1-1)")]
+    [Tooltip("임무 번호 (예: 1-1). 정거장 목록 순서와 개발자 명령 mission start에 쓴다")]
     public string id = "1-1";
     public string title;
     [Tooltip("초급 / 중급 / 상급")]

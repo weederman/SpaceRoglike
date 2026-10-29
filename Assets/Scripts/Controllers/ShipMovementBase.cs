@@ -1,9 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// 플레이어 함선과 적 함선이 공유하는 이동 기반 클래스.
+/// 함선 이동의 기반 클래스 (지금은 플레이어 함선 SpaceshipController가 쓴다).
 /// Rigidbody 초기 설정, 이동 방향 바라보기, 최대 속도 제한, 엔진 사운드를 담당하고,
-/// "어떤 힘을 줄 것인가"(WASD 입력 / 플레이어 주위 공전)만 자식 클래스가 ApplyMovement로 정한다.
+/// "어떤 힘을 줄 것인가"(WASD 입력)만 자식 클래스가 ApplyMovement로 정한다.
+/// 스스로 움직이는 다른 함선(해적선 PirateShip)도 Rigidbody 설정은 ConfigureBody로 같게 맞춘다.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 public abstract class ShipMovementBase : MonoBehaviour
@@ -40,7 +41,19 @@ public abstract class ShipMovementBase : MonoBehaviour
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        ConfigureBody(rb);
 
+        if (engineAudio != null)
+        {
+            engineAudio.loop = true;
+            engineAudio.playOnAwake = false;
+            engineAudio.volume = 0f;
+        }
+    }
+
+    /// <summary>함선 Rigidbody 공통 설정: 약한 감속, 보간, XZ 평면 이동과 Y축 회전만</summary>
+    public static void ConfigureBody(Rigidbody rb)
+    {
         rb.drag = 0.05f;
         rb.angularDrag = 0.5f;
 
@@ -53,13 +66,6 @@ public abstract class ShipMovementBase : MonoBehaviour
             RigidbodyConstraints.FreezePositionY |
             RigidbodyConstraints.FreezeRotationX |
             RigidbodyConstraints.FreezeRotationZ;
-
-        if (engineAudio != null)
-        {
-            engineAudio.loop = true;
-            engineAudio.playOnAwake = false;
-            engineAudio.volume = 0f;
-        }
     }
 
     private void Update()

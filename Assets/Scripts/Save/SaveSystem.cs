@@ -100,15 +100,7 @@ public class SaveSystem : MonoBehaviour
         if (!WillContinue)
             return;
 
-        // 튜토리얼 도중이었으면 일반 적이 나오지 않게, 적 스폰이 시작되기(Start) 전에 끈다 (튜토리얼 끝에 enemies_on)
         SaveData data = Read();
-        if (data != null && !string.IsNullOrEmpty(data.resumeSequence))
-        {
-            var spawner = FindObjectOfType<EnemySpawner>();
-            if (spawner != null)
-                spawner.enabled = false;
-        }
-
         _instance._loading = true;
         _instance.StartCoroutine(_instance.LoadRoutine(data));
     }

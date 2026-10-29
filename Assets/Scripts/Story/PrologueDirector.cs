@@ -112,10 +112,7 @@ public class PrologueDirector : MonoBehaviour
     private Rigidbody _shipRb;
     private CameraController _cameraController;
     private Camera _cam;
-    private EnemySpawner _spawner;
     private InfiniteSpaceGrid _grid;
-    private CanvasGroup _hud;
-    private bool _hudGroupAdded;
     private readonly List<Renderer> _hiddenShipRenderers = new List<Renderer>();
 
     private Vector3 _stageOrigin;
@@ -221,7 +218,6 @@ public class PrologueDirector : MonoBehaviour
         _shipRb = _ship.GetComponent<Rigidbody>();
         _cameraController = FindObjectOfType<CameraController>();
         _cam = Camera.main;
-        _spawner = FindObjectOfType<EnemySpawner>();
         _grid = FindObjectOfType<InfiniteSpaceGrid>();
 
         foreach (TMP_Text text in GetComponentsInChildren<TMP_Text>(true))
@@ -275,14 +271,12 @@ public class PrologueDirector : MonoBehaviour
         _originalFov = _cam.fieldOfView;
 
         // 프롤로그 동안 쓰지 않을 것들을 잠가 둔다. Start가 아직 안 돈 컴포넌트는 다시 켤 때 Start가 돈다
-        // (CameraController는 Start에서 함선 뒤로 바로 자리를 잡고, EnemySpawner는 그때 적을 스폰한다).
+        // (CameraController는 Start에서 함선 뒤로 바로 자리를 잡는다).
         _ship.enabled = false;
         _cameraController.enabled = false;
-        if (_spawner != null) _spawner.enabled = false;
         if (_grid != null) _grid.gameObject.SetActive(false);
 
-        FindHud();
-        if (_hud != null) _hud.alpha = 0f;
+        PlayerHud.Hidden = true;
 
         // 프롤로그 동안은 주인공의 원래 함선(UTI 화물선)의 모습. 보상 함선을 받으면(ApplyNewShip) 소형 전투선이 된다.
         PlayerShipAppearance.For(_ship).Set(PlayerShipAppearance.Look.Freighter);
@@ -323,25 +317,6 @@ public class PrologueDirector : MonoBehaviour
         ApplyCamera(true);
     }
 
-    private void FindHud()
-    {
-        var credit = FindObjectOfType<CreditDisplay>();
-        if (credit == null)
-            return;
-
-        Canvas canvas = credit.GetComponentInParent<Canvas>();
-        if (canvas == null)
-            return;
-
-        canvas = canvas.rootCanvas;
-        _hud = canvas.GetComponent<CanvasGroup>();
-        if (_hud == null)
-        {
-            _hud = canvas.gameObject.AddComponent<CanvasGroup>();
-            _hudGroupAdded = true;
-        }
-    }
-
     private void CollectTints(GameObject tunnel)
     {
         foreach (Renderer r in tunnel.GetComponentsInChildren<Renderer>())
@@ -375,7 +350,9 @@ public class PrologueDirector : MonoBehaviour
 
     private void HandleCue(string cue)
     {
-        _cues.Enqueue(cue);
+        // 프롤로그가 끝난 뒤 이어지는 장면(술집 등)의 cue는 이 연출과 상관없다 (쌓아 두지 않는다)
+        if (!_storyEnded)
+            _cues.Enqueue(cue);
     }
 
     private void HandleEnded(string sequenceId, bool skipped)
@@ -394,9 +371,13 @@ public class PrologueDirector : MonoBehaviour
         }
     }
 
-    /// <summary>프롤로그 연출이 만드는 최종 상태: 터널/순찰함은 없고, 새 함선이 정거장에 붙어 있고, 연출 UI는 모두 닫힘.</summary>
+    /// <summary>프롤로그 연출이 만드는 최종 상태: 터널/순찰함은 없고, 새 함선이 정거장에 붙어 있고, 연출 UI는 모두 닫히고 경보음도 꺼짐.</summary>
     private void FinalizeWorld()
     {
+        // 건너뛰기(StopAllCoroutines)로 경고창 깜빡임(PulsePopup)이 끝까지 돌지 못하면 경보음 반복을 끌 기회가 없다
+        _warningPulse = false;
+        GameAudio.StopLoop(this);
+
         RestoreWorld();
         ClearPatrols();
         ApplyNewShip();
@@ -850,15 +831,7 @@ public class PrologueDirector : MonoBehaviour
         _shipRb.angularVelocity = Vector3.zero;
         _ship.enabled = true;
 
-        // 적 스포너는 다시 켜지 않는다. 이어지는 튜토리얼(장면 4~)은 장면 Director가 적을 직접 만들고,
-        // 튜토리얼이 끝나면 스토리 cue "enemies_on"으로 켠다.
-
-        if (_hud != null)
-        {
-            _hud.alpha = 1f;
-            if (_hudGroupAdded)
-                Destroy(_hud);
-        }
+        PlayerHud.Hidden = false;
 
         Destroy(gameObject);
     }

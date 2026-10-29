@@ -7,15 +7,11 @@ using UnityEngine;
 ///  - 장비: 장갑·쉴드(EquipmentCatalog)도 같은 방식으로 사서 보관함(PlayerEquipment)에 넣고 되판다.
 ///  - 판매: 보관함의 무기를 되판다 (WeaponCatalog.SellPrice. 장착 중인 무기는 먼저 보관함으로 옮겨야 한다).
 /// 파는 무기 목록은 WeaponCatalog(Assets/Resources/Shop/WeaponCatalog.asset)의 forSale 항목이다.
-/// 씬에 있던 옛 상점 창(_panel, _hint)은 쓰지 않고 숨긴다.
 /// </summary>
 public class StationShop : MonoBehaviour
 {
     public static StationShop Instance { get; private set; }
 
-    [Tooltip("씬에 있던 옛 상점 창. 실행 중에는 숨긴다.")]
-    [SerializeField] private GameObject _panel;
-    [SerializeField] private GameObject _hint;
     [Tooltip("선체 체력 1을 고치는 데 드는 크레딧")]
     [SerializeField, Min(0f)] private float _repairCostPerHp = 0.2f;
 
@@ -24,12 +20,6 @@ public class StationShop : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-    }
-
-    private void Start()
-    {
-        if (_panel != null) _panel.SetActive(false);
-        if (_hint != null) _hint.SetActive(false);
     }
 
     private void OnDestroy()

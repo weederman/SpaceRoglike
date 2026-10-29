@@ -37,8 +37,6 @@ public class WarpBeacon : MonoBehaviour
     private float _charge; // 0 → 1: 워프 충전 중이면 링이 빨리 돌고 밝아진다
     private float _selectableSince = -1f;
 
-    public bool IsSelected => _selected;
-
     /// <summary>링과 빛의 색을 바꾼다 (항성계 비콘의 레벨 표시 등)</summary>
     public void SetColor(Color color)
     {
@@ -78,16 +76,6 @@ public class WarpBeacon : MonoBehaviour
         _appearing = true;
         if (_marker != null)
             _marker.gameObject.SetActive(true);
-    }
-
-    /// <summary>건너뛰기: 선택된 상태로 바로 만든다 (신호는 보내지 않는다).</summary>
-    public void SelectInstant()
-    {
-        _appear = 1f;
-        _appearing = true;
-        _selected = true;
-        _charge = Mathf.Max(_charge, 0.2f);
-        RefreshHint();
     }
 
     /// <summary>워프 충전 연출 진행도(0~1). 링이 빨라지고 빛이 세진다.</summary>

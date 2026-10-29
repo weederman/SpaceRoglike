@@ -198,7 +198,7 @@ public class TargetingSystem : MonoBehaviour
         if (!FindPlayer())
             return false;
 
-        foreach (HullHealth hull in FindObjectsOfType<HullHealth>())
+        foreach (HullHealth hull in HullHealth.All)
         {
             if (hull != _playerHull && hull.IsActive && !FriendlyShip.Is(hull) && InRange(hull))
                 _candidates.Add(hull);

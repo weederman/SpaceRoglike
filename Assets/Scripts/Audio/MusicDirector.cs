@@ -113,7 +113,7 @@ public class MusicDirector : MonoBehaviour
 
         HullHealth playerHull = _player.GetComponentInChildren<HullHealth>();
         float radiusSqr = GridRadius * GridRadius;
-        foreach (HullHealth hull in FindObjectsOfType<HullHealth>())
+        foreach (HullHealth hull in HullHealth.All)
         {
             if (hull == playerHull || !hull.IsActive || FriendlyShip.Is(hull))
                 continue;

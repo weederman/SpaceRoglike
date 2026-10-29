@@ -1,13 +1,18 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// 함선 아머(선체) 체력. 쉴드가 깨진 뒤 선체 콜라이더에 맞으면 이 컴포넌트가 데미지를 받는다.
 /// ShieldHealth와 달리 연출을 강제하지 않는다(피격 연출이 필요하면 OnHpChanged/OnBroken을 구독).
+/// 켜져 있는 선체는 All에 모인다 (목표 지정·전투 음악이 씬 전체를 뒤지지 않고 이 목록을 본다).
 /// </summary>
 [DisallowMultipleComponent]
 public class HullHealth : MonoBehaviour, IDamageable
 {
+    /// <summary>지금 켜져 있는 선체 전부 (플레이어 포함)</summary>
+    public static readonly List<HullHealth> All = new List<HullHealth>();
+
     [Header("Health")]
     [SerializeField, Min(1f)] private float _maxHp = 5000f;
 
@@ -35,6 +40,23 @@ public class HullHealth : MonoBehaviour, IDamageable
     private void Awake()
     {
         _hp = _maxHp;
+    }
+
+    private void OnEnable()
+    {
+        All.Add(this);
+    }
+
+    private void OnDisable()
+    {
+        All.Remove(this);
+    }
+
+    // 에디터에서 도메인 리로드를 꺼 둬도 플레이마다 깨끗이 시작하도록
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        All.Clear();
     }
 
     public void TakeDamage(float damage, Vector3 hitPoint)

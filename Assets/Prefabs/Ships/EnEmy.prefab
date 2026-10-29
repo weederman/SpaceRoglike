@@ -274,6 +274,7 @@ MonoBehaviour:
   _hull: {fileID: 3233279281157952292}
   _greenFill: {fileID: 4350687589494445502}
   _whiteFill: {fileID: 8329718222580444209}
+  _label: {fileID: 0}
   _worldOffset: {x: 0, y: 15, z: 0}
 --- !u!1 &5286560781761077766
 GameObject:
@@ -773,9 +774,6 @@ PrefabInstance:
       addedObject: {fileID: 926933118424895552}
     - targetCorrespondingSourceObject: {fileID: -927199367670048503, guid: 7b5c9227d177ec248a8349ac8e0965be, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5719954505945025194}
-    - targetCorrespondingSourceObject: {fileID: -927199367670048503, guid: 7b5c9227d177ec248a8349ac8e0965be, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 3423131677080255871}
     - targetCorrespondingSourceObject: {fileID: -927199367670048503, guid: 7b5c9227d177ec248a8349ac8e0965be, type: 3}
       insertIndex: -1
@@ -953,31 +951,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &5719954505945025194
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8257971698562278379}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2f8d04036554ea4ab03f13c5817620e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  acceleration: 8
-  maxSpeed: 10
-  rotationSpeed: 5
-  engineAudio: {fileID: 926933118424895552}
-  engineMinVolume: 0
-  engineMaxVolume: 0.2
-  engineMinPitch: 0.05
-  engineMaxPitch: 0.09
-  engineFadeSpeed: 5
-  target: {fileID: 0}
-  orbitDistance: 100
-  orbitSpeed: 5
-  clockwise: 1
 --- !u!65 &3423131677080255871
 BoxCollider:
   m_ObjectHideFlags: 0

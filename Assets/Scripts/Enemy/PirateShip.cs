@@ -13,7 +13,7 @@ using UnityEngine;
 ///  Raid  : (임무) 정해진 목표(호위 화물선이나 플레이어)에게 다가와 그 주위를 돌며 쏜다. 목표가 사라지면 플레이어를 노린다
 ///  Warp  : 교전을 포기하고 워프한다. 플레이어 워프와 같이 게이트가 충전되는 동안 멈췄다가 점점 세게 가속하며 사라진다
 ///          (WarpDash, 격파가 아니므로 폭발/보상 없음)
-/// 이동은 이 컴포넌트가 직접 한다(기존 공전 AI EnemyOrbitController는 꺼 둔다). 사격은 기존 EnemyTurretController를 켜고 끈다.
+/// 이동은 이 컴포넌트가 직접 한다(Rigidbody 설정은 플레이어 함선과 같게 ShipMovementBase.ConfigureBody). 사격은 EnemyTurretController를 켜고 끈다.
 /// 수치는 Director 프리팹의 Tuning에서 받는다.
 /// </summary>
 public class PirateShip : MonoBehaviour
@@ -73,7 +73,6 @@ public class PirateShip : MonoBehaviour
 
     public Mode Current { get; private set; }
     public HullHealth Hull { get; private set; }
-    public bool IsAttacking => Current == Mode.Fight && _attacking;
 
     /// <summary>Raid에서 노리는 목표 (사라졌으면 플레이어)</summary>
     public Transform RaidTarget => _raidTarget != null ? _raidTarget : _player;
@@ -86,7 +85,6 @@ public class PirateShip : MonoBehaviour
     private Transform _player;
     private GameObject _warpPrefab;
     private Rigidbody _rb;
-    private EnemyOrbitController _orbit;
     private EnemyTurretController[] _turrets;
     private ShieldHealth _shield;
 
@@ -116,14 +114,11 @@ public class PirateShip : MonoBehaviour
         _warpPrefab = warpPrefab;
 
         _rb = GetComponent<Rigidbody>();
-        _orbit = GetComponent<EnemyOrbitController>();
         _turrets = GetComponentsInChildren<EnemyTurretController>(true);
         _shield = GetComponentInChildren<ShieldHealth>();
         Hull = GetComponentInChildren<HullHealth>();
 
-        // 이동은 이 컴포넌트가 직접 한다
-        if (_orbit != null)
-            _orbit.enabled = false;
+        ShipMovementBase.ConfigureBody(_rb);
     }
 
     private void OnDisable()

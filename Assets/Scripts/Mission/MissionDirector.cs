@@ -10,7 +10,7 @@ using UnityEngine;
 /// 진행 중 정거장 도킹·지도 워프를 막을지는 BlocksTravel로 알린다 (StationDocking, StarSystemWarp가 읽는다).
 /// 떠날 수 있는 동안(막지 않는 동안) 플레이어와 _despawnDistance보다 멀어진 임무 적(채굴지 순찰대 등)은 없앤다.
 /// 임무가 끝나면(성공·실패·중단) Ended를 알린다 (정거장 임무 게시판이 목록을 새로 뽑는다).
-/// 지금은 개발자 명령(mission start 번호)으로 시작한다.
+/// 정거장의 스페이스 라운지(MissionBoardWindow)에서 수락하면 시작한다 (개발자 명령 mission start 번호로도 가능).
 /// </summary>
 public abstract class MissionDirector : MonoBehaviour
 {
@@ -102,7 +102,7 @@ public abstract class MissionDirector : MonoBehaviour
         return true;
     }
 
-    /// <summary>진행 중인 임무를 결과 없이 끝내고 임무 함선들을 치운다 (개발자 명령).</summary>
+    /// <summary>진행 중인 임무를 결과 없이 끝내고 임무 함선들을 치운다 (개발자 명령 mission stop).</summary>
     public static void Abort()
     {
         if (Current == null)

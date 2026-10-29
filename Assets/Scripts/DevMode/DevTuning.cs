@@ -5,18 +5,13 @@ using UnityEngine;
 /// <summary>
 /// 개발자 모드(DevConsole)가 바꾼 값을 담는 정적 저장소.
 /// 값이 null이면 "건드리지 않음"(프리팹/에셋의 원래 값 사용)이다. 에셋은 수정하지 않고 런타임에만 덮어쓰며,
-/// 씬을 다시 불러와도 유지되고 새로 스폰되는 적에게도 적용된다. 개발자 모드 UI 자체는 DevConsole(에디터/개발 빌드 전용).
+/// 씬을 다시 불러와도 유지되고 새로 나오는 임무 적(EnemyShipCatalog.Spawn)에게도 적용된다. 개발자 모드 UI 자체는 DevConsole(에디터/개발 빌드 전용).
 /// </summary>
 public static class DevTuning
 {
     // ── 적 ─────────────────────────────────────────────
-    public static float? EnemyCount;
-    public static float? EnemyRespawnDelay;
     public static float? EnemyHp;
     public static float? EnemyShield;
-    public static float? EnemySpeed;
-    public static float? EnemyAcceleration;
-    public static float? EnemyOrbitDistance;
     public static float? EnemyFireInterval;
     public static float? EnemyFireRange;
 
@@ -35,13 +30,8 @@ public static class DevTuning
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     public static void Clear()
     {
-        EnemyCount = null;
-        EnemyRespawnDelay = null;
         EnemyHp = null;
         EnemyShield = null;
-        EnemySpeed = null;
-        EnemyAcceleration = null;
-        EnemyOrbitDistance = null;
         EnemyFireInterval = null;
         EnemyFireRange = null;
         EnemyDamageAll = null;
@@ -63,7 +53,7 @@ public static class DevTuning
         return EnemyDamageAll ?? damage;
     }
 
-    /// <summary>적 한 기에 덮어쓸 값을 적용한다. 스폰 직후와, 값을 바꾼 직후 살아있는 적에게 호출한다.</summary>
+    /// <summary>적 한 기에 덮어쓸 값을 적용한다. 임무 적을 만든 직후와, 값을 바꾼 직후 살아있는 적에게 호출한다.</summary>
     public static void ApplyToEnemy(GameObject enemy)
     {
         if (enemy == null)
@@ -81,18 +71,6 @@ public static class DevTuning
             var shield = enemy.GetComponentInChildren<ShieldHealth>();
             if (shield != null)
                 shield.SetMaxHp(EnemyShield.Value);
-        }
-
-        var move = enemy.GetComponentInChildren<ShipMovementBase>();
-        if (move != null)
-        {
-            if (EnemySpeed.HasValue)
-                move.MaxSpeed = EnemySpeed.Value;
-            if (EnemyAcceleration.HasValue)
-                move.Acceleration = EnemyAcceleration.Value;
-
-            if (EnemyOrbitDistance.HasValue && move is EnemyOrbitController orbit)
-                orbit.OrbitDistance = EnemyOrbitDistance.Value;
         }
 
         if (EnemyFireInterval.HasValue || EnemyFireRange.HasValue)

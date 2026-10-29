@@ -101,6 +101,7 @@ public class EnemyShipCatalog : ScriptableObject
 
         var pirate = go.AddComponent<PirateShip>();
         pirate.Init(shipClass.tuning, player, warpPrefab);
+        DevTuning.ApplyToEnemy(go); // 개발자 모드로 바꿔 둔 적 체력 등 (런타임만)
         return pirate;
     }
 

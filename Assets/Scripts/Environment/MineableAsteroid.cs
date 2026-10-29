@@ -61,7 +61,6 @@ public class MineableAsteroid : MonoBehaviour
     public float Remaining => _ore;
     public float RemainingRatio => _oreMax > 0f ? _ore / _oreMax : 0f;
     public bool HasOre => _ore > 0f;
-    public bool IsRevealed => _reveal >= 1f;
 
     /// <summary>모양(모델과 광맥 빛깔, 긴 쪽 기준 월드 크기)과 광물 매장량, 광석 종류를 정한다.</summary>
     public void Init(Look look, float size, float ore, string oreId = CargoHold.DefaultOre)

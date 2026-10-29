@@ -22,7 +22,7 @@ using UnityEngine.UI;
 ///  warp_tunnel      워프 게이트로 돌진해 터널에 들어갔다 (장면 3, 6)
 ///  warp_arrived     장면 3 도착 연출이 끝났다
 ///  return_arrived   장면 6 귀환 연출이 끝났다
-///                   정거장 구역 안에 서므로 대사가 끝나면 상점(정비 메뉴)이 열린다. 조작은 시퀀스가 끝날 때 돌려준다.
+///                   정거장 앞(선체 바깥)에 서고, 대사가 끝나면 조작을 돌려준다 (F로 입항).
 ///
 /// cue는 큐에 쌓아 한 번에 하나씩 순서대로 실행한다. 레이더 연출(radar_show/hide)은 RadarPing이 따로 받는다.
 /// Esc로 건너뛰면 남은 연출을 건너뛰고 곧바로 도착한 뒤의 상태가 된다. 프리팹: Assets/Resources/Directors/Cue/FirstWarpDirector.prefab

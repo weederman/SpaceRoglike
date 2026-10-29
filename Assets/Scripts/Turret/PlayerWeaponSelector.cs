@@ -32,10 +32,10 @@ public class PlayerWeaponSelector : MonoBehaviour
     public int SlotCount => _weapons.Count;
 
     /// <summary>
-    /// 이 터렛이 지금 쏠 수 있는지. 모든 터렛이 함께 쏘고, 무기를 바꾼 직후 잠깐만 막는다
+    /// 플레이어 터렛이 지금 쏠 수 있는지. 모든 터렛이 함께 쏘고, 무기를 바꾼 직후 잠깐만 막는다
     /// (쏘던 터렛이 멈췄다가 새 무기로 다시 쏘게).
     /// </summary>
-    public static bool CanFire(F3DPlayerTurretController turret)
+    public static bool CanFire()
     {
         return Instance == null || Time.frameCount - Instance._switchFrame > 1;
     }

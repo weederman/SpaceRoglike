@@ -10,17 +10,10 @@ using UnityEngine;
 /// </summary>
 public static class DevCommands
 {
-    private const int MaxEnemyCount = 30;
-
     public const string HelpText =
         "<b>명령어</b>  (대소문자 구분 없음, 소수 입력 가능)\n" +
-        "enemy count <개수>        동시에 존재하는 적 수 (1~30)\n" +
-        "enemy respawn <초>        적이 죽은 뒤 다시 나오기까지 시간\n" +
-        "enemy hp <값>             적 선체 체력\n" +
+        "enemy hp <값>             적 선체 체력 (살아있는 적 + 이후 나오는 임무 적)\n" +
         "enemy shield <값>         적 쉴드 체력\n" +
-        "enemy speed <값>          적 최고 속도\n" +
-        "enemy accel <값>          적 가속도\n" +
-        "enemy orbit <값>          적이 플레이어를 도는 거리\n" +
         "enemy interval <초>       적 공격 간격\n" +
         "enemy range <값>          적 공격 사거리\n" +
         "enemy damage <값>         모든 무기의 적 공격력 (빔은 초당)\n" +
@@ -37,7 +30,7 @@ public static class DevCommands
         "story list / reload       시퀀스 목록 / 플레이 중 고친 JSON 다시 읽기\n" +
         "prologue on|off           다음 플레이부터 게임 시작 프롤로그 재생/건너뛰기\n" +
         "save / save clear         지금 상태 저장 / 저장 지우기(다음 플레이는 처음부터)\n" +
-        "mission list              임무 목록 (호송 1-x, 해적 소탕 2-x)\n" +
+        "mission list              임무 목록 (호송 1-x, 해적 소탕 2-x, 채굴 3-x)\n" +
         "mission start <번호>      임무 시작 (예: mission start 2-1)\n" +
         "mission stop              진행 중인 임무 중단\n" +
         "pause [on|off]            창이 열려 있는 동안 게임 정지 여부\n" +
@@ -80,20 +73,10 @@ public static class DevCommands
 
         switch (t[1])
         {
-            case "count":
-                return SetSpawner(ref DevTuning.EnemyCount, Mathf.Clamp(Mathf.Round(v), 1, MaxEnemyCount), "동시 개체수", s => s.MaxAliveCount = Mathf.RoundToInt(DevTuning.EnemyCount.Value));
-            case "respawn":
-                return SetSpawner(ref DevTuning.EnemyRespawnDelay, Mathf.Max(0f, v), "리스폰 대기(초)", s => s.RespawnDelay = DevTuning.EnemyRespawnDelay.Value);
             case "hp":
                 return SetEnemy(ref DevTuning.EnemyHp, Mathf.Max(1f, v), "체력");
             case "shield":
                 return SetEnemy(ref DevTuning.EnemyShield, Mathf.Max(1f, v), "쉴드");
-            case "speed":
-                return SetEnemy(ref DevTuning.EnemySpeed, Mathf.Max(0f, v), "최고 속도");
-            case "accel":
-                return SetEnemy(ref DevTuning.EnemyAcceleration, Mathf.Max(0f, v), "가속도");
-            case "orbit":
-                return SetEnemy(ref DevTuning.EnemyOrbitDistance, Mathf.Max(0f, v), "공전 거리");
             case "interval":
                 return SetEnemy(ref DevTuning.EnemyFireInterval, Mathf.Max(0.05f, v), "공격 간격(초)");
             case "range":
@@ -230,35 +213,16 @@ public static class DevCommands
 
     private const string PlayerNotFound = "플레이어를 찾지 못했습니다.";
 
-    /// <summary>값을 저장하고, 살아있는 모든 적에게 적용한다. 이후 스폰되는 적에게도 적용된다.</summary>
+    /// <summary>값을 저장하고, 살아있는 모든 적(해적선)에게 적용한다. 이후 나오는 임무 적에게도 적용된다.</summary>
     private static string SetEnemy(ref float? field, float value, string label)
     {
         field = value;
 
-        int applied = 0;
-        var spawner = UnityEngine.Object.FindObjectOfType<EnemySpawner>();
-        if (spawner != null)
-        {
-            for (int i = 0; i < spawner.AliveEnemies.Count; i++)
-            {
-                DevTuning.ApplyToEnemy(spawner.AliveEnemies[i]);
-                applied++;
-            }
-        }
+        PirateShip[] enemies = UnityEngine.Object.FindObjectsOfType<PirateShip>();
+        foreach (PirateShip enemy in enemies)
+            DevTuning.ApplyToEnemy(enemy.gameObject);
 
-        return Ok($"적 {label} = {F(value)}  (살아있는 적 {applied}기 + 이후 스폰되는 적)");
-    }
-
-    private static string SetSpawner(ref float? field, float value, string label, Action<EnemySpawner> apply)
-    {
-        field = value;
-
-        var spawner = UnityEngine.Object.FindObjectOfType<EnemySpawner>();
-        if (spawner == null)
-            return Err($"EnemySpawner를 찾지 못했습니다. 값({F(value)})은 저장했고 다음 씬 로드 때 적용됩니다.");
-
-        apply(spawner);
-        return Ok($"적 {label} = {F(value)}");
+        return Ok($"적 {label} = {F(value)}  (살아있는 적 {enemies.Length}기 + 이후 나오는 임무 적)");
     }
 
     private static bool TryFloat(string s, out float v)

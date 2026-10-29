@@ -40,7 +40,6 @@ public class DevConsole : MonoBehaviour
 
     private string _status = "";
     private float _nextStatusTime;
-    private EnemySpawner _spawner;
 
     private GUIStyle _statusStyle;
     private GUIStyle _logStyle;
@@ -444,25 +443,13 @@ public class DevConsole : MonoBehaviour
 
     private string BuildStatus()
     {
-        if (_spawner == null)
-            _spawner = FindObjectOfType<EnemySpawner>();
-
         var sb = new StringBuilder();
 
-        sb.Append("<b>[적]</b>  ");
-        GameObject sample = null;
+        PirateShip[] enemies = FindObjectsOfType<PirateShip>();
+        sb.Append("<b>[적]</b>  ").Append($"살아있는 해적선 {enemies.Length}기");
 
-        if (_spawner == null)
-        {
-            sb.Append("EnemySpawner 없음");
-        }
-        else
-        {
-            sb.Append($"생존 {CountAlive(_spawner, out sample)}/{_spawner.MaxAliveCount} · 리스폰 {DevCommands.F(_spawner.RespawnDelay)}초");
-        }
-
-        if (sample != null)
-            AppendEnemyDetails(sb, sample);
+        if (enemies.Length > 0)
+            AppendEnemyDetails(sb, enemies[0].gameObject);
         else
             sb.Append("\n(살아있는 적이 없어 상세 값을 표시할 수 없습니다)");
 
@@ -492,41 +479,17 @@ public class DevConsole : MonoBehaviour
         return sb.ToString();
     }
 
-    private static int CountAlive(EnemySpawner spawner, out GameObject first)
-    {
-        first = null;
-        int count = 0;
-
-        foreach (var enemy in spawner.AliveEnemies)
-        {
-            if (enemy == null)
-                continue;
-
-            count++;
-            if (first == null)
-                first = enemy;
-        }
-
-        return count;
-    }
-
     private static void AppendEnemyDetails(StringBuilder sb, GameObject enemy)
     {
         var hull = enemy.GetComponentInChildren<HullHealth>();
         var shield = enemy.GetComponentInChildren<ShieldHealth>();
-        var move = enemy.GetComponentInChildren<ShipMovementBase>();
-        var orbit = move as EnemyOrbitController;
         var turrets = enemy.GetComponentsInChildren<EnemyTurretController>();
 
         sb.Append("\n체력 ").Append(hull != null ? DevCommands.F(hull.MaxHp) : "-");
         sb.Append(" · 쉴드 ").Append(shield != null ? DevCommands.F(shield.MaxHp) : "-");
-        sb.Append(" · 최고 속도 ").Append(move != null ? DevCommands.F(move.MaxSpeed) : "-");
-        sb.Append(" · 가속도 ").Append(move != null ? DevCommands.F(move.Acceleration) : "-");
-
-        sb.Append("\n공전 거리 ").Append(orbit != null ? DevCommands.F(orbit.OrbitDistance) : "-");
         if (turrets.Length > 0)
         {
-            sb.Append(" · 공격 간격 ").Append(DevCommands.F(turrets[0].fireInterval)).Append("초");
+            sb.Append("\n공격 간격 ").Append(DevCommands.F(turrets[0].fireInterval)).Append("초");
             sb.Append(" · 사거리 ").Append(DevCommands.F(turrets[0].fireRange));
         }
 
