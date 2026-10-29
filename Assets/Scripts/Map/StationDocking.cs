@@ -21,7 +21,7 @@ public class StationDocking : MonoBehaviour
 
     [Header("도킹")]
     [Tooltip("정거장 선체(모델 범위)에서 이 거리(XZ) 안으로 들어오면 도킹한다")]
-    [SerializeField, Min(0f)] private float _dockRange = 10f;
+    [SerializeField, Min(0f)] private float _dockRange = 1f;
     [Tooltip("출항한 정거장은 이만큼(도킹 거리 + 이 값) 멀어진 뒤에야 다시 도킹된다")]
     [SerializeField, Min(0f)] private float _redockDistance = 80f;
     [SerializeField, Min(0.05f)] private float _fadeSeconds = 0.4f;
@@ -29,8 +29,6 @@ public class StationDocking : MonoBehaviour
     [Header("정거장 내부")]
     [Tooltip("내부 공간 위치 (XZ). 바깥 우주·워프 무대와 겹치지 않는 먼 곳")]
     [SerializeField] private Vector2 _interiorXZ = new Vector2(0f, -100000f);
-    [Tooltip("내부 배경 (격납고)")]
-    [SerializeField] private Sprite _interiorBackdrop;
     [Tooltip("배경을 함선 아래로 얼마나 깊이 둘지와 크기")]
     [SerializeField, Min(10f)] private float _backdropDepth = 600f;
     [SerializeField, Min(10f)] private float _backdropSize = 2200f;
@@ -80,7 +78,6 @@ public class StationDocking : MonoBehaviour
         var backdropGo = new GameObject("InteriorBackdrop");
         backdropGo.transform.SetParent(transform, false);
         _backdrop = backdropGo.AddComponent<SpriteRenderer>();
-        _backdrop.sprite = _interiorBackdrop;
         _backdrop.sortingOrder = -400; // 함선보다 뒤
         _backdrop.enabled = false;
     }
@@ -208,7 +205,6 @@ public class StationDocking : MonoBehaviour
             _cameraController.SnapToTarget();
 
         if (_grid != null) _grid.gameObject.SetActive(false);
-        _backdrop.enabled = _interiorBackdrop != null;
 
         if (_view != null)
         {
@@ -289,8 +285,6 @@ public class StationDocking : MonoBehaviour
             : _ship.transform.position + Vector3.down * _backdropDepth;
 
         _backdrop.transform.SetPositionAndRotation(center, _cam.transform.rotation);
-        float longSide = Mathf.Max(_interiorBackdrop.bounds.size.x, _interiorBackdrop.bounds.size.y);
-        _backdrop.transform.localScale = Vector3.one * (_backdropSize / longSide);
     }
 
     private IEnumerator Fade(float from, float to)

@@ -209,7 +209,7 @@ MonoBehaviour:
   _stationArrivalOffset: {x: 0, y: -400}
   _beaconArrivalOffset: {x: -150, y: -90}
   _stationModel: {fileID: 100104, guid: 469816d089dff5f41b31155f423acfb2, type: 3}
-  _stationModelScale: 20
+  _stationModelScale: 100
   _beaconPrefab: {fileID: 2210477213942963215, guid: 76b93c134c4675449ab348389a660b2c, type: 3}
   _asteroidFieldPrefab: {fileID: 3971264978344526677, guid: 5a88a5c45df58294ca29177c6353e445, type: 3}
   _warp: {fileID: 3960521241159900658}
@@ -269,7 +269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4890ec50b8b6e4c4fadc920431a7ea02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _dockRange: 10
+  _dockRange: 0.1
   _redockDistance: 80
   _fadeSeconds: 0.4
   _interiorXZ: {x: 0, y: -100000}

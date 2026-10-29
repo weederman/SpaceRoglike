@@ -19,6 +19,6 @@ MonoBehaviour:
     rotation: {x: 0, y: 0, z: 0}
   freighter:
     model: {fileID: 1626488730406606, guid: ff4e0e4e62247f3459cd53ba2f747149, type: 3}
-    hullRatio: 1.35
+    hullRatio: 2
     offset: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0}
