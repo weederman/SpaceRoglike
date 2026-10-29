@@ -19,6 +19,12 @@ public class PlayerShipAppearance : MonoBehaviour
     [Serializable]
     public class LookSettings
     {
+        [Tooltip("격납고에 보이는 함선 이름")]
+        public string displayName;
+        [Tooltip("격납고에 보이는 함선 아이콘")]
+        public Sprite icon;
+        [Tooltip("격납고 '설명' 탭에 보이는 글")]
+        [TextArea(2, 5)] public string description;
         public GameObject model;
         [Tooltip("모델의 앞뒤 길이: 함선 선체 판정(HullHitbox) 길이의 몇 배인지. 함선 프리팹 배율을 바꾸면 모습도 함께 커진다.")]
         [Min(0.05f)] public float hullRatio = 1f;
@@ -36,6 +42,17 @@ public class PlayerShipAppearance : MonoBehaviour
     private bool _applied;
 
     public Look Current { get; private set; }
+
+    /// <summary>지금 모습의 설정 (이름·아이콘 등). 설정 에셋이 없으면 null.</summary>
+    public LookSettings CurrentSettings
+    {
+        get
+        {
+            if (_config == null)
+                _config = Resources.Load<PlayerShipLooks>(ConfigPath);
+            return _config != null ? _config.Get(Current) : null;
+        }
+    }
 
     /// <summary>그 함선의 겉모습 담당 (없으면 붙인다)</summary>
     public static PlayerShipAppearance For(Component ship)

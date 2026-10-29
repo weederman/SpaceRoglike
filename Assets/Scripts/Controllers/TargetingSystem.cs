@@ -181,7 +181,7 @@ public class TargetingSystem : MonoBehaviour
 
         foreach (HullHealth hull in FindObjectsOfType<HullHealth>())
         {
-            if (hull != _playerHull && hull.IsActive)
+            if (hull != _playerHull && hull.IsActive && !FriendlyShip.Is(hull))
                 _candidates.Add(hull);
         }
 

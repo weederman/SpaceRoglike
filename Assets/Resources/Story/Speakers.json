@@ -8,6 +8,12 @@
     { "id": "patrol",    "name": "자치령 통신",    "color": "#FF8A7A", "side": "left" },
     { "id": "pirate",    "name": "해적 선장",      "color": "#FF6B5A", "side": "left" },
     { "id": "pirate_radio", "name": "해적 선장 (무전)", "color": "#FF6B5A", "side": "left" },
-    { "id": "system",    "name": "시스템",        "color": "#FFD166", "side": "left" }
+    { "id": "system",    "name": "시스템",        "color": "#FFD166", "side": "left" },
+    { "id": "logistics_agent", "name": "물류 회사 담당자", "color": "#9FE0B0", "side": "left" },
+    { "id": "anon_trader",     "name": "익명의 무역상",    "color": "#C9A7FF", "side": "left" },
+    { "id": "defense_officer", "name": "성계 방위군 장교", "color": "#8FB8FF", "side": "left" },
+    { "id": "route_officer",   "name": "항로 관리국 직원", "color": "#9FE0D8", "side": "left" },
+    { "id": "mining_manager",  "name": "광업 회사 관리자", "color": "#E8C27A", "side": "left" },
+    { "id": "bounty_broker",   "name": "현상금 중개인",    "color": "#FF9E7A", "side": "left" }
   ]
 }

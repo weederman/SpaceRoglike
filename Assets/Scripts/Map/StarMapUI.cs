@@ -70,6 +70,15 @@ public class StarMapUI : MonoBehaviour
 
     public bool IsOpen => _window.activeSelf;
 
+    /// <summary>임무 목적지 (해적 소탕 등). 지도를 열면 이곳이 골라져 있고 정보에 "임무 목적지"로 표시된다. 없으면 None.</summary>
+    public static StarSystem.Location MissionTarget = StarSystem.Location.None;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        MissionTarget = StarSystem.Location.None;
+    }
+
     public void Init(StarSystem system, StarSystemWarp warp)
     {
         _system = system;
@@ -144,10 +153,11 @@ public class StarMapUI : MonoBehaviour
         _window.SetActive(true);
         GameInputLock.Lock(this);
 
-        // 지금 있는 곳(없으면 모항)을 골라 둔다
-        StarSystem.Location start = _system.CurrentArea.IsNone
-            ? new StarSystem.Location(StarSystem.LocationKind.Station, _system.Data.homeStation)
-            : _system.CurrentArea;
+        // 임무 목적지가 있으면 그곳을, 없으면 지금 있는 곳(없으면 모항)을 골라 둔다
+        StarSystem.Location start = !MissionTarget.IsNone ? MissionTarget
+            : _system.CurrentArea.IsNone
+                ? new StarSystem.Location(StarSystem.LocationKind.Station, _system.Data.homeStation)
+                : _system.CurrentArea;
         Select(FindMarker(start));
         UpdateOpenMap();
     }
@@ -373,8 +383,11 @@ public class StarMapUI : MonoBehaviour
             _infoDetail.text += $"\n거리 {distance:N0}";
         }
 
+        if (location == MissionTarget)
+            _infoDetail.text += "\n<color=#FFD166>▶ 임무 목적지</color>";
+
         bool here = _system.CurrentArea == location && !StationDocking.IsDocked;
-        bool storyBusy = StoryPlayer.IsPlaying;
+        bool storyBusy = StoryPlayer.IsPlaying || MissionDirector.BlocksTravel;
         bool docked = StationDocking.IsDocked;
         _warpButton.interactable = !here && !storyBusy && !docked && !StarSystemWarp.IsWarping;
         _warpButtonLabel.text = here ? "현재 위치" : storyBusy ? "임무 진행 중" : docked ? "출항 후 워프" : "워프";

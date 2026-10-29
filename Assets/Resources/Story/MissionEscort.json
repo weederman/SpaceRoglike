@@ -1,0 +1,46 @@
+{
+  "sequences": [
+    {
+      "id": "mission_escort_1_1_accept",
+      "lines": [
+        { "speaker": "logistics_agent", "text": "마침 잘 왔군요. 화물선 한 척이 곧 출항할 예정인데, 최근 이 항로에 해적이 출몰하고 있습니다." },
+        { "speaker": "logistics_agent", "text": "화물선이 워프를 시작할 때까지만 보호해 주시면 됩니다. 적을 전부 쓸어버릴 필요는 없어요. 배만 무사하면 됩니다." }
+      ]
+    },
+    {
+      "id": "mission_escort_1_1_success",
+      "lines": [
+        { "speaker": "logistics_agent", "text": "화물선이 무사히 워프했습니다. 선원들도 무사하고 화물 손실도 없군요." },
+        { "speaker": "logistics_agent", "text": "약속한 보수입니다. 다음에도 이런 일이 생기면 연락드리죠." }
+      ]
+    },
+    {
+      "id": "mission_escort_1_2_accept",
+      "lines": [
+        { "speaker": "anon_trader", "text": "선금은 준비됐습니다. 필요한 건 딱 하나, 내 배가 이 정거장을 무사히 벗어나는 겁니다." },
+        { "speaker": "anon_trader", "text": "무슨 화물을 실었는지는 묻지 마십시오. 당신은 다가오는 놈들을 막고, 나는 내 갈 길을 가면 됩니다." }
+      ]
+    },
+    {
+      "id": "mission_escort_1_2_success",
+      "lines": [
+        { "speaker": "anon_trader", "text": "좋아. 배는 떠났고, 꼬리도 붙지 않았군." },
+        { "speaker": "anon_trader", "text": "약속한 돈입니다. 오늘 우리가 만났다는 사실은 서로 잊는 게 좋겠죠." }
+      ]
+    },
+    {
+      "id": "mission_escort_1_3_accept",
+      "lines": [
+        { "speaker": "defense_officer", "text": "수송선에는 외곽 전초기지에 전달할 군수품이 실려 있다. 해당 물자가 도착하지 못하면 현지 방어선에 차질이 생길 수 있다." },
+        { "speaker": "defense_officer", "text": "출항 후 적의 공격이 예상된다. 네 임무는 수송선이 워프를 완료할 때까지 보호하는 것이다. 교전 상황에 맞춰 판단하도록." }
+      ]
+    },
+    {
+      "id": "mission_escort_1_3_success",
+      "lines": [
+        { "speaker": "defense_officer", "text": "수송선의 워프 완료를 확인했다. 군수품도 정상적으로 전달될 예정이다." },
+        { "speaker": "defense_officer", "text": "계약에 따른 보수를 지급하겠다. 이번 작전에서 보여준 실적은 기록에 남을 것이다." }
+      ]
+    }
+  ]
+}

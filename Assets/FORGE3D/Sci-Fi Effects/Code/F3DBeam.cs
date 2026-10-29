@@ -162,7 +162,8 @@ namespace FORGE3D
                 // 지속형 빔은 프레임레이트와 무관하게 DPS가 일정하도록 deltaTime을 곱한다.
 
                 WeaponOwner owner = controller != null ? controller.owner : WeaponOwner.Player;
-                float baseDamage = WeaponStatsTable.GetDamage(fxType, owner);
+                // [추가] 터렛마다 정한 공격력이 있으면 그 값 (EnemyShipCatalog)
+                float baseDamage = controller != null ? controller.GetDamage(fxType) : WeaponStatsTable.GetDamage(fxType, owner);
                 float frameDamage = OneShot ? baseDamage : baseDamage * Time.deltaTime;
                 HitResolver.Resolve(
                     hitPoint,

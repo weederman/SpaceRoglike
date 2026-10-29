@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3749029820493778718
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 852951393419577044}
+  - component: {fileID: 7110656951370816422}
+  m_Layer: 0
+  m_Name: EscortMissionDirector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &852951393419577044
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3749029820493778718}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7110656951370816422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3749029820493778718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17a1e3895b83e0747ac1c6f3ff1a6144, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _freighterPrefab: {fileID: 7033435531907685714, guid: 5970403605f7c7e4abc763e9bf5cfff1, type: 3}
+  _warpOutPrefab: {fileID: 184734, guid: f84d57d8fee5f714e86b7e77e277838f, type: 3}
+  _hudPrefab: {fileID: 2497678275183075496, guid: 81882e6329945a548ad39478e757abc1, type: 3}
+  _freighterOffset: {x: 260, y: 120}
+  _enemySpawnDistance: 1100
+  _enemySpread: 14
+  _retreatDelay: 2
+  _resultSeconds: 8

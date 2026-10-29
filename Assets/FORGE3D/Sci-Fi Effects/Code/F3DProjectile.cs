@@ -175,7 +175,8 @@ namespace FORGE3D
 
                     // 데미지: 무기 데이터 테이블(WeaponStatsTable)에서 (무기 종류, 쏜 쪽)으로 찾는다.
                     WeaponOwner owner = controller != null ? controller.owner : WeaponOwner.Player;
-                    float appliedDamage = WeaponStatsTable.GetDamage(fxType, owner);
+                    // [추가] 터렛마다 정한 공격력이 있으면 그 값 (EnemyShipCatalog)
+                    float appliedDamage = controller != null ? controller.GetDamage(fxType) : WeaponStatsTable.GetDamage(fxType, owner);
 
                     HitResolver.Resolve(
                         hitPoint,

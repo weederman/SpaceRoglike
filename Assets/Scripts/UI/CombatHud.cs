@@ -8,7 +8,7 @@ using UnityEngine.UI;
 /// 무기 선택(PlayerWeaponSelector), 목표 지정(TargetingSystem), 채굴 장비(MiningLaser), 화물칸(CargoHold)도
 /// 같은 프리팹에 붙어 있어 함께 생성된다.
 /// 게임 시작 시 자동 생성(씬에 배치하지 않음), 씬을 다시 불러와도 유지된다.
-/// 조작이 잠긴 스토리 재생 중에는 숨고, 조작하며 듣는 스토리(control 시퀀스) 중에는 보인다.
+/// 조작이 잠긴 스토리 재생 중과 정거장 안(도킹 중)에는 숨고, 조작하며 듣는 스토리(control 시퀀스) 중에는 보인다.
 /// 모양은 Assets/Resources/UI/CombatHud.prefab (SCI-FI UI Pack Btn_WeaponSelect / CircularProgress / Linearprogress 기반).
 /// </summary>
 public class CombatHud : MonoBehaviour
@@ -161,8 +161,9 @@ public class CombatHud : MonoBehaviour
         if (_player == null)
             _player = FindObjectOfType<SpaceshipController>();
 
+        // 잠긴 대사 중과 정거장 안(도킹 중)에는 숨긴다
         bool storyLocked = StoryPlayer.IsPlaying && !StoryPlayer.IsControlMode;
-        _root.alpha = _player != null && !storyLocked ? 1f : 0f;
+        _root.alpha = _player != null && !storyLocked && !StationDocking.IsDocked ? 1f : 0f;
 
         UpdateMarker();
         UpdateWaypoint();

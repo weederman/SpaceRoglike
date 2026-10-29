@@ -5,11 +5,12 @@ using FORGE3D;
 using UnityEngine;
 
 /// <summary>
-/// 튜토리얼(장면 4) 해적선의 행동 상태. CombatTutorialDirector가 적 프리팹(EnEmy)을 생성한 뒤 붙이고 상태를 바꾼다.
+/// 해적선의 행동 상태. 튜토리얼(장면 4)의 CombatTutorialDirector와 임무(EscortMissionDirector 등)가 적 프리팹(EnEmy)을 생성한 뒤 붙이고 상태를 바꾼다.
 ///  Hold  : 정해진 위치로 다가와 플레이어를 바라보며 멈춰 있다 (쏘지 않는다. 통신 대화 중)
 ///  Fight : 평소에는 플레이어에게서 떨어진 암석 뒤에 숨어 천천히 떠다닌다(Lurk). 플레이어가 가까이 오면 맞서 쏜다.
 ///          Director가 공격 신호를 주면 숨어 있던 배들이 한 방향으로 모여 들어와 쏘고(Attack), 신호가 끝나면 다시 흩어진다.
 ///  Flee  : 쏘지 않고 플레이어 반대쪽으로 도망친다. 너무 멀어지면 궁지에 몰려 다시 싸운다
+///  Raid  : (임무) 정해진 목표(호위 화물선이나 플레이어)에게 다가와 그 주위를 돌며 쏜다. 목표가 사라지면 플레이어를 노린다
 ///  Warp  : 교전을 포기하고 워프한다. 플레이어 워프와 같이 게이트가 충전되는 동안 멈췄다가 점점 세게 가속하며 사라진다
 ///          (WarpDash, 격파가 아니므로 폭발/보상 없음)
 /// 이동은 이 컴포넌트가 직접 한다(기존 공전 AI EnemyOrbitController는 꺼 둔다). 사격은 기존 EnemyTurretController를 켜고 끈다.
@@ -17,7 +18,7 @@ using UnityEngine;
 /// </summary>
 public class PirateShip : MonoBehaviour
 {
-    public enum Mode { Hold, Fight, Flee, Warp }
+    public enum Mode { Hold, Fight, Flee, Warp, Raid }
 
     [Serializable]
     public class Tuning
@@ -61,6 +62,10 @@ public class PirateShip : MonoBehaviour
         [Min(1f)] public float warpVanishDistance = 160f;
         [Tooltip("돌진하는 시간(초). 짧을수록 세게 가속한다.")]
         [Min(0.1f)] public float warpDashSeconds = 1.2f;
+
+        [Header("습격 (Raid, 임무)")]
+        [Tooltip("목표 주위를 돌 때 앞서 겨누는 각도. 클수록 빨리 돈다")]
+        [Range(0f, 90f)] public float raidLeadAngle = 30f;
     }
 
     /// <summary>워프로 사라졌을 때 (격파가 아님)</summary>
@@ -69,6 +74,9 @@ public class PirateShip : MonoBehaviour
     public Mode Current { get; private set; }
     public HullHealth Hull { get; private set; }
     public bool IsAttacking => Current == Mode.Fight && _attacking;
+
+    /// <summary>Raid에서 노리는 목표 (사라졌으면 플레이어)</summary>
+    public Transform RaidTarget => _raidTarget != null ? _raidTarget : _player;
 
     // 전투 중인 해적선들 (숨을 암석이 겹치지 않게, 서로 밀어내기 위해)
     private static readonly List<PirateShip> Fighting = new List<PirateShip>();
@@ -84,6 +92,11 @@ public class PirateShip : MonoBehaviour
 
     private Vector3 _holdPoint;
     private Vector3 _holdVelocity;
+
+    // Raid
+    private Transform _raidTarget;
+    private Transform _aimedAt;
+    private float _orbitSign = 1f;
 
     // Fight
     private bool _attacking;
@@ -147,10 +160,10 @@ public class PirateShip : MonoBehaviour
 
         Current = mode;
 
-        bool physics = mode == Mode.Fight || mode == Mode.Flee;
+        bool physics = mode == Mode.Fight || mode == Mode.Flee || mode == Mode.Raid;
         _rb.isKinematic = !physics;
 
-        if (mode == Mode.Fight)
+        if (mode == Mode.Fight || mode == Mode.Raid)
         {
             if (!Fighting.Contains(this))
                 Fighting.Add(this);
@@ -167,6 +180,14 @@ public class PirateShip : MonoBehaviour
 
         if (mode == Mode.Warp)
             StartCoroutine(WarpRoutine());
+    }
+
+    /// <summary>습격: target(호위 화물선 등)에게 다가와 그 주위를 돌며 쏜다. target이 사라지면 플레이어를 노린다.</summary>
+    public void Raid(Transform target)
+    {
+        _raidTarget = target;
+        _orbitSign = UnityEngine.Random.value < 0.5f ? -1f : 1f;
+        SetMode(Mode.Raid);
     }
 
     /// <summary>모여서 공격: direction(플레이어 기준 수평 방향) 쪽에서 플레이어에게 다가가 쏜다.</summary>
@@ -213,6 +234,10 @@ public class PirateShip : MonoBehaviour
             case Mode.Flee:
                 FleeStep();
                 break;
+
+            case Mode.Raid:
+                RaidStep();
+                break;
         }
     }
 
@@ -243,10 +268,18 @@ public class PirateShip : MonoBehaviour
             fire = playerDistance <= _tuning.lurkDefendRange;
         }
 
-        goal.y = _rb.position.y;
         SetTurrets(fire);
+        Vector3 velocity = SteerTo(goal, maxSpeed);
 
-        // 목표 지점으로 다가가며 가까워질수록 느려진다 (도착 조향)
+        // 빠르게 움직일 때는 진행 방향을, 공격 중이거나 거의 멈춰 있을 때는 플레이어를 바라본다
+        Vector3 look = !_attacking && velocity.magnitude > maxSpeed * 0.5f ? velocity : toPlayer;
+        if (look.sqrMagnitude > 0.01f)
+            _rb.MoveRotation(Quaternion.Slerp(_rb.rotation, Quaternion.LookRotation(look), 2f * Time.fixedDeltaTime));
+    }
+
+    /// <summary>목표 지점으로 다가가며 가까워질수록 느려진다 (도착 조향, 서로 밀어내기 포함). 조향 뒤의 수평 속도를 돌려준다.</summary>
+    private Vector3 SteerTo(Vector3 goal, float maxSpeed)
+    {
         Vector3 to = goal - _rb.position;
         to.y = 0f;
         float distance = to.magnitude;
@@ -261,10 +294,45 @@ public class PirateShip : MonoBehaviour
         velocity = _rb.velocity;
         velocity.y = 0f;
         if (velocity.magnitude > maxSpeed)
-            _rb.velocity = velocity.normalized * maxSpeed;
+        {
+            velocity = velocity.normalized * maxSpeed;
+            _rb.velocity = velocity;
+        }
 
-        // 빠르게 움직일 때는 진행 방향을, 공격 중이거나 거의 멈춰 있을 때는 플레이어를 바라본다
-        Vector3 look = !_attacking && velocity.magnitude > maxSpeed * 0.5f ? velocity : toPlayer;
+        return velocity;
+    }
+
+    // ── 습격 (임무) ───────────────────────────────────
+
+    /// <summary>목표에게 다가와(멀면 approachMaxSpeed) attackDistance 거리로 그 주위를 돌며, 사거리 안이면 쏜다.</summary>
+    private void RaidStep()
+    {
+        Transform target = RaidTarget;
+        if (target == null)
+            return;
+
+        if (_aimedAt != target)
+        {
+            _aimedAt = target;
+            foreach (EnemyTurretController turret in _turrets)
+                turret.target = target;
+        }
+
+        Vector3 from = _rb.position - target.position;
+        from.y = 0f;
+        float distance = from.magnitude;
+        bool inRange = distance <= _tuning.fireRange;
+
+        // 목표를 중심으로, 지금 각도에서 조금 앞선 원 위의 점을 쫓는다 → 원을 그리며 돈다
+        float angle = Mathf.Atan2(from.x, from.z) + _orbitSign * _tuning.raidLeadAngle * Mathf.Deg2Rad;
+        Vector3 goal = target.position + new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * _tuning.attackDistance;
+        goal.y = _rb.position.y;
+
+        SetTurrets(inRange);
+        Vector3 velocity = SteerTo(goal, inRange ? _tuning.attackMaxSpeed : _tuning.approachMaxSpeed);
+
+        // 다가올 때는 진행 방향을, 사거리 안에서는 목표를 바라본다
+        Vector3 look = inRange ? -from : velocity;
         if (look.sqrMagnitude > 0.01f)
             _rb.MoveRotation(Quaternion.Slerp(_rb.rotation, Quaternion.LookRotation(look), 2f * Time.fixedDeltaTime));
     }

@@ -115,7 +115,7 @@ public class MusicDirector : MonoBehaviour
         float radiusSqr = GridRadius * GridRadius;
         foreach (HullHealth hull in FindObjectsOfType<HullHealth>())
         {
-            if (hull == playerHull || !hull.IsActive)
+            if (hull == playerHull || !hull.IsActive || FriendlyShip.Is(hull))
                 continue;
 
             Vector3 d = hull.transform.position - _player.position;

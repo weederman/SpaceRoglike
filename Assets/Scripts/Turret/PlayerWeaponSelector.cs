@@ -116,6 +116,16 @@ public class PlayerWeaponSelector : MonoBehaviour
             ApplyLoadout(cue.Substring(LoadoutPrefix.Length).Split(','));
     }
 
+    /// <summary>슬롯 하나의 무기 종류를 바꾼다 (격납고에서 장착할 때)</summary>
+    public void SetWeapon(int slot, F3DFXType weapon)
+    {
+        if (slot < 0 || slot >= _slots.Count)
+            return;
+
+        _slots[slot].fxController.DefaultFXType = weapon;
+        OnChanged?.Invoke();
+    }
+
     /// <summary>슬롯 순서대로 지금 무기 종류 이름 (저장에 쓴다)</summary>
     public string[] CurrentLoadout()
     {

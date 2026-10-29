@@ -4,12 +4,12 @@ using UnityEngine;
 
 /// <summary>
 /// 우주정거장 도킹/출항 (EVE Online처럼).
-///  - 도킹: 함선이 정거장 선체에서 dockRange(기본 10) 안으로 다가가면, 화면이 어두워지며 정거장 안(내부 공간)으로 들어간다.
-///    내부 공간은 바깥 우주와 떨어진 먼 곳이며, 격납고 그림을 배경으로 함선이 서 있다. 도킹해 있는 동안 정비·상점(StationShop)이 열리고
-///    자동 저장(SaveSystem)이 된다. 함선은 움직이거나 쏘지 않는다.
-///  - 출항: 내부 화면의 "출항" 버튼 → 화면이 어두워진 뒤 정거장 바깥, 정거장 앞쪽으로 밀려 나가며 시작한다.
-///    출항한 정거장은 한 번 멀어진 뒤에야 다시 도킹된다 (나오자마자 다시 들어가지 않게).
-///  - 스토리 재생 중이나 워프 중에는 도킹하지 않는다 (튜토리얼은 대사로 정거장을 다룬다. 튜토리얼이 끝나 정거장 곁에 있으면 그때 도킹).
+///  - 입항: 함선이 정거장 선체에서 dockRange 안으로 다가가면 화면 아래에 "F 입항" 안내가 뜨고, F를 누르면 화면이 어두워지며
+///    정거장 안(내부 공간)으로 들어간다. 내부 공간은 바깥 우주와 떨어진 먼 곳이다. 도킹해 있는 동안 정거장 화면(사이드바:
+///    격납고·스페이스 라운지·지도·미션·정보)이 보이고 자동 저장(SaveSystem)이 된다. 함선은 움직이거나 쏘지 않는다.
+///  - 출항: 정거장 화면의 창이 모두 닫혀 있을 때(창은 Esc로 닫는다) F를 누르면, 화면이 어두워진 뒤 정거장 앞쪽 바깥에서 밀려 나가며 시작한다.
+///  - 스토리 재생 중, 워프 중, 임무가 막는 동안(호송·소탕 교전)에는 입항할 수 없다.
+/// F는 채굴 키와 같지만, 입항 안내는 정거장 바로 곁에서만 뜨므로 겹치지 않는다. Shift+F(개발자 창)는 무시한다.
 /// StarSystem 프리팹에 함께 붙는다. 내부 화면 UI: Assets/Resources/UI/StationInterior.prefab
 /// </summary>
 public class StationDocking : MonoBehaviour
@@ -20,10 +20,10 @@ public class StationDocking : MonoBehaviour
     public static bool IsDocked => Instance != null && (Instance._docked != null || Instance._busy);
 
     [Header("도킹")]
-    [Tooltip("정거장 선체(모델 범위)에서 이 거리(XZ) 안으로 들어오면 도킹한다")]
+    [Tooltip("정거장 선체(모델 범위)에서 이 거리(XZ) 안으로 들어오면 입항할 수 있다")]
     [SerializeField, Min(0f)] private float _dockRange = 1f;
-    [Tooltip("출항한 정거장은 이만큼(도킹 거리 + 이 값) 멀어진 뒤에야 다시 도킹된다")]
-    [SerializeField, Min(0f)] private float _redockDistance = 80f;
+    [Tooltip("입항·출항 키")]
+    [SerializeField] private KeyCode _dockKey = KeyCode.F;
     [SerializeField, Min(0.05f)] private float _fadeSeconds = 0.4f;
 
     [Header("정거장 내부")]
@@ -50,7 +50,6 @@ public class StationDocking : MonoBehaviour
     private Camera _cam;
 
     private StationZone _docked;
-    private StationZone _justUndocked;
     private bool _busy;
 
     // ── 시작 ──────────────────────────────────────────
@@ -71,7 +70,6 @@ public class StationDocking : MonoBehaviour
         if (_viewPrefab != null)
         {
             _view = Instantiate(_viewPrefab, transform);
-            _view.UndockButton.onClick.AddListener(Undock);
             _view.SetVisible(false);
         }
 
@@ -89,26 +87,45 @@ public class StationDocking : MonoBehaviour
         GameInputLock.Unlock(this);
     }
 
-    // ── 도킹 판정 ─────────────────────────────────────
+    // ── 입항 / 출항 키 ────────────────────────────────
 
     private void Update()
     {
-        if (_ship == null || _busy || _docked != null)
+        if (_ship == null || _view == null)
             return;
+
+        if (_busy)
+        {
+            _view.ShowPrompt(null);
+            return;
+        }
+
+        if (_docked != null)
+        {
+            // 정거장 화면의 창이 모두 닫혀 있을 때만 출항
+            bool canUndock = !_view.AnyWindowOpen && !StoryPlayer.IsPlaying;
+            _view.ShowPrompt(canUndock ? $"{_dockKey}   출항" : null);
+            if (canUndock && DockKeyPressed())
+                Undock();
+            return;
+        }
 
         StationZone near = NearestStation(out float distance);
 
-        // 출항한 정거장에서 충분히 멀어지면 다시 도킹할 수 있다
-        if (_justUndocked != null && (near != _justUndocked || distance > _dockRange + _redockDistance))
-            _justUndocked = null;
+        // 호송 중이나 소탕 교전 중에는 정거장 곁에서 싸워도 입항하지 않는다
+        bool canDock = near != null && distance <= _dockRange
+                       && !StoryPlayer.IsPlaying && !StarSystemWarp.IsWarping && !MissionDirector.BlocksTravel
+                       && !GameInputLock.IsLockedExcept(this);
+        _view.ShowPrompt(canDock ? $"{_dockKey}   입항 · {near.DisplayName}" : null);
 
-        if (near == null || near == _justUndocked || distance > _dockRange)
-            return;
+        if (canDock && DockKeyPressed())
+            StartCoroutine(DockRoutine(near));
+    }
 
-        if (StoryPlayer.IsPlaying || StarSystemWarp.IsWarping || GameInputLock.IsLockedExcept(this))
-            return;
-
-        StartCoroutine(DockRoutine(near));
+    private bool DockKeyPressed()
+    {
+        // Shift+F는 개발자 창
+        return Input.GetKeyDown(_dockKey) && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift);
     }
 
     /// <summary>함선에서 가장 가까운 정거장과, 그 정거장 선체(모델 범위)까지의 수평 거리</summary>
@@ -208,7 +225,7 @@ public class StationDocking : MonoBehaviour
 
         if (_view != null)
         {
-            _view.Title.text = string.IsNullOrEmpty(zone.DisplayName) ? "정거장" : zone.DisplayName;
+            _view.SetStation(zone);
             _view.SetVisible(true);
         }
 
@@ -263,7 +280,6 @@ public class StationDocking : MonoBehaviour
         if (_cameraController != null)
             _cameraController.SnapToTarget();
 
-        _justUndocked = zone;
         GameInputLock.Unlock(this);
         yield return Fade(1f, 0f);
 

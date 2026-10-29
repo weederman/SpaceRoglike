@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63f3dae0d47767d4d8f8e0f6c55bdc07, type: 3}
+  m_Name: Escort_1_1
+  m_EditorClassIdentifier: 
+  id: 1-1
+  title: "\uBBFC\uAC04 \uD654\uBB3C\uC120 \uD638\uC704"
+  tier: "\uCD08\uAE09"
+  client: "\uBBFC\uAC04 \uBB3C\uB958 \uD68C\uC0AC"
+  objective: "\uD654\uBB3C\uC120\uC774 \uC6CC\uD504\uB97C \uC2DC\uC791\uD560 \uB54C\uAE4C\uC9C0
+    \uBCF4\uD638\uD558\uB77C"
+  freighterHp: 4000
+  warpPrepSeconds: 90
+  waves:
+  - time: 0
+    shipClass: light_fighter
+    count: 3
+    target: 0
+  reward: 8000
+  reducedBelowHpRatio: 0.5
+  reducedReward: 4000
+  bonusShipClass: 
+  bonusReward: 0
+  bonusLabel: 
+  reputation: 0
+  acceptSequence: mission_escort_1_1_accept
+  successSequence: mission_escort_1_1_success

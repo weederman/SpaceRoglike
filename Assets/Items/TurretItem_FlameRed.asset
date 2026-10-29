@@ -17,3 +17,6 @@ MonoBehaviour:
   turretPrefab: {fileID: 6509607899620335586, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
   weaponType: 10
   price: 250
+  forSale: 1
+  description: "\uBBF8\uC0AC\uC77C\uC744 \uD55C \uBC1C\uC529 \uBC1C\uC0AC\uD55C\uB2E4.
+    \uC274\uB4DC\uC640 \uC120\uCCB4 \uBAA8\uB450\uC5D0 \uAC15\uD558\uB2E4."

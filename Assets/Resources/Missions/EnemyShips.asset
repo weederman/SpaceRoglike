@@ -1,0 +1,202 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea710eb9f6924674388489fc50ecb4a0, type: 3}
+  m_Name: EnemyShips
+  m_EditorClassIdentifier: 
+  _basePrefab: {fileID: 8257971698562278379, guid: 8dc19833dd7e04f45b045ab95b09bc54, type: 3}
+  _classes:
+  - id: light_fighter
+    displayName: "\uACBD\uC804\uD22C\uD568"
+    model: {fileID: 0}
+    modelRotation: {x: 0, y: 0, z: 0}
+    modelLengthRatio: 1
+    scale: 1.2
+    shieldHp: 200
+    hullHp: 150
+    weapon: 0
+    damage: 40
+    tuning:
+      approachSmoothTime: 2.5
+      approachMaxSpeed: 120
+      fightAcceleration: 30
+      fireRange: 260
+      fireInterval: 3
+      separation: 70
+      lurkDistance: {x: 170, y: 300}
+      lurkMaxSpeed: 26
+      lurkWander: 18
+      lurkDefendRange: 150
+      attackDistance: 170
+      attackMaxSpeed: 45
+      fleeMaxSpeed: 40
+      fleeAcceleration: 30
+      fleeGiveUpDistance: 650
+      warpTurnSeconds: 1
+      warpMaxSeconds: 5
+      warpVanishDistance: 300
+      warpDashSeconds: 1.2
+      raidLeadAngle: 30
+  - id: interceptor
+    displayName: "\uC694\uACA9\uAE30"
+    model: {fileID: 0}
+    modelRotation: {x: 0, y: 0, z: 0}
+    modelLengthRatio: 1
+    scale: 0.9
+    shieldHp: 120
+    hullHp: 100
+    weapon: 0
+    damage: 15
+    tuning:
+      approachSmoothTime: 2.5
+      approachMaxSpeed: 160
+      fightAcceleration: 50
+      fireRange: 220
+      fireInterval: 2
+      separation: 60
+      lurkDistance: {x: 170, y: 300}
+      lurkMaxSpeed: 26
+      lurkWander: 18
+      lurkDefendRange: 150
+      attackDistance: 130
+      attackMaxSpeed: 80
+      fleeMaxSpeed: 40
+      fleeAcceleration: 30
+      fleeGiveUpDistance: 650
+      warpTurnSeconds: 1
+      warpMaxSeconds: 5
+      warpVanishDistance: 260
+      warpDashSeconds: 1.2
+      raidLeadAngle: 45
+  - id: missile_ship
+    displayName: "\uBBF8\uC0AC\uC77C \uD568\uC120"
+    model: {fileID: 3060088426372616897, guid: 481351381d17b144594f0cceef6ef608, type: 3}
+    modelRotation: {x: 0, y: 0, z: 0}
+    modelLengthRatio: 1
+    scale: 2.2
+    shieldHp: 300
+    hullHp: 300
+    weapon: 10
+    damage: 120
+    tuning:
+      approachSmoothTime: 2.5
+      approachMaxSpeed: 80
+      fightAcceleration: 20
+      fireRange: 420
+      fireInterval: 5
+      separation: 120
+      lurkDistance: {x: 170, y: 300}
+      lurkMaxSpeed: 26
+      lurkWander: 18
+      lurkDefendRange: 150
+      attackDistance: 340
+      attackMaxSpeed: 30
+      fleeMaxSpeed: 40
+      fleeAcceleration: 30
+      fleeGiveUpDistance: 650
+      warpTurnSeconds: 1
+      warpMaxSeconds: 5
+      warpVanishDistance: 420
+      warpDashSeconds: 1.2
+      raidLeadAngle: 20
+  - id: destroyer
+    displayName: "\uAD6C\uCD95\uD568"
+    model: {fileID: 5291324755532815059, guid: 935c1b0bbf9da2841ab720c4851dfcbd, type: 3}
+    modelRotation: {x: 0, y: 0, z: 0}
+    modelLengthRatio: 1
+    scale: 3.6
+    shieldHp: 400
+    hullHp: 500
+    weapon: 0
+    damage: 50
+    tuning:
+      approachSmoothTime: 2.5
+      approachMaxSpeed: 70
+      fightAcceleration: 15
+      fireRange: 380
+      fireInterval: 3
+      separation: 200
+      lurkDistance: {x: 170, y: 300}
+      lurkMaxSpeed: 26
+      lurkWander: 18
+      lurkDefendRange: 150
+      attackDistance: 280
+      attackMaxSpeed: 25
+      fleeMaxSpeed: 40
+      fleeAcceleration: 30
+      fleeGiveUpDistance: 650
+      warpTurnSeconds: 1
+      warpMaxSeconds: 5
+      warpVanishDistance: 520
+      warpDashSeconds: 1.2
+      raidLeadAngle: 15
+  - id: commander
+    displayName: "\uC9C0\uD718\uD568"
+    model: {fileID: 8931336323110693587, guid: 5968e4cded11bb84b8b64531a2a517cb, type: 3}
+    modelRotation: {x: 0, y: 0, z: 0}
+    modelLengthRatio: 1
+    scale: 3
+    shieldHp: 400
+    hullHp: 500
+    weapon: 0
+    damage: 45
+    tuning:
+      approachSmoothTime: 2.5
+      approachMaxSpeed: 70
+      fightAcceleration: 16
+      fireRange: 360
+      fireInterval: 3
+      separation: 180
+      lurkDistance: {x: 170, y: 300}
+      lurkMaxSpeed: 26
+      lurkWander: 18
+      lurkDefendRange: 150
+      attackDistance: 300
+      attackMaxSpeed: 28
+      fleeMaxSpeed: 40
+      fleeAcceleration: 30
+      fleeGiveUpDistance: 650
+      warpTurnSeconds: 1
+      warpMaxSeconds: 5
+      warpVanishDistance: 480
+      warpDashSeconds: 1.2
+      raidLeadAngle: 15
+  - id: pirate_boss
+    displayName: "\uD574\uC801 \uB450\uBAA9 \uD568\uC120"
+    model: {fileID: 5224033400427566544, guid: b136aeb8f0baa4b40a224c2f2dfb5829, type: 3}
+    modelRotation: {x: 0, y: 0, z: 0}
+    modelLengthRatio: 1
+    scale: 4.2
+    shieldHp: 600
+    hullHp: 900
+    weapon: 0
+    damage: 55
+    tuning:
+      approachSmoothTime: 2.5
+      approachMaxSpeed: 70
+      fightAcceleration: 18
+      fireRange: 380
+      fireInterval: 2.5
+      separation: 220
+      lurkDistance: {x: 170, y: 300}
+      lurkMaxSpeed: 26
+      lurkWander: 18
+      lurkDefendRange: 150
+      attackDistance: 280
+      attackMaxSpeed: 26
+      fleeMaxSpeed: 48
+      fleeAcceleration: 32
+      fleeGiveUpDistance: 100000
+      warpTurnSeconds: 1
+      warpMaxSeconds: 5
+      warpVanishDistance: 600
+      warpDashSeconds: 1.2
+      raidLeadAngle: 15

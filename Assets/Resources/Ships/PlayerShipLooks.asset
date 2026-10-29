@@ -13,11 +13,20 @@ MonoBehaviour:
   m_Name: PlayerShipLooks
   m_EditorClassIdentifier: 
   fighter:
+    displayName: "\uC18C\uD615 \uC804\uD22C\uC120"
+    icon: {fileID: 21300000, guid: 37c7faa38711a6044bf12b84912e0dd5, type: 3}
+    description: "\uD504\uB864\uB85C\uADF8 \uB4A4 \uC0C8\uB85C \uBC1B\uC740 \uC18C\uD615
+      \uC804\uD22C\uC120. \uBB34\uAE30 \uC2AC\uB86F \uB450 \uAC1C\uB97C \uAC16\uACE0
+      \uC788\uB2E4."
     model: {fileID: 1152354105411914, guid: cdbec52167efb6a48b63cebb3284c246, type: 3}
     hullRatio: 1
     offset: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0}
   freighter:
+    displayName: "UTI \uD654\uBB3C\uC120"
+    icon: {fileID: 21300000, guid: 37c7faa38711a6044bf12b84912e0dd5, type: 3}
+    description: "\uC8FC\uC778\uACF5\uC774 \uC6D0\uB798 \uBAB0\uB358 UTI \uD654\uBB3C\uC120.
+      \uBB34\uC7A5\uC774 \uC5C6\uB2E4."
     model: {fileID: 1626488730406606, guid: ff4e0e4e62247f3459cd53ba2f747149, type: 3}
     hullRatio: 2
     offset: {x: 0, y: 0, z: 0}

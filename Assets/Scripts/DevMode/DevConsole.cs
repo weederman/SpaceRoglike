@@ -190,6 +190,9 @@ public class DevConsole : MonoBehaviour
             case "save":
                 reply = HandleSave(words);
                 break;
+            case "mission":
+                reply = HandleMission(words);
+                break;
             case "clear":
                 _log.Clear();
                 reply = null;
@@ -230,6 +233,43 @@ public class DevConsole : MonoBehaviour
 
         SaveSystem.Save(null);
         return DevCommands.Ok($"지금 상태를 저장했습니다. ({SaveSystem.FilePath})");
+    }
+
+    /// <summary>임무: mission list / mission start 번호 / mission stop</summary>
+    private string HandleMission(string[] words)
+    {
+        string sub = words.Length > 1 ? words[1] : "list";
+
+        if (sub == "list")
+        {
+            var sb = new StringBuilder("임무:");
+            foreach (MissionData m in MissionDirector.AllMissions())
+                sb.Append($"\n  {m.id}  {m.title} ({m.tier}) · {m.Summary} · {m.reward:N0} CR");
+            if (MissionDirector.IsRunning)
+                sb.Append("\n(진행 중인 임무가 있습니다 — mission stop)");
+            return sb.ToString();
+        }
+
+        if (sub == "stop")
+        {
+            if (!MissionDirector.IsRunning)
+                return DevCommands.Err("진행 중인 임무가 없습니다.");
+
+            MissionDirector.Abort();
+            return DevCommands.Ok("임무를 중단했습니다. (임무 함선들을 치움)");
+        }
+
+        if (sub == "start" && words.Length > 2)
+        {
+            // 창이 열려 있으면 수락 대사가 가려지고 입력도 막히니, 닫고 시작한다
+            if (!MissionDirector.TryStart(words[2], out string error))
+                return DevCommands.Err(error);
+
+            Close();
+            return null;
+        }
+
+        return DevCommands.Err("사용법: mission list / mission start <번호> (예: 1-1) / mission stop");
     }
 
     /// <summary>다음 플레이부터 게임 시작 프롤로그를 재생할지 정한다 (PlayerPrefs에 저장되어 에디터를 껐다 켜도 유지).</summary>

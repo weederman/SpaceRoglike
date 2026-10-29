@@ -44,7 +44,9 @@ public class ShipHealthBar : MonoBehaviour
 
     private void OnEnable()
     {
-        _shield.OnHpChanged += HandleChanged;
+        // 쉴드가 없는 함선(호위 화물선 등)은 선체만 표시한다
+        if (_shield != null)
+            _shield.OnHpChanged += HandleChanged;
         _hull.OnHpChanged += HandleChanged;
     }
 
@@ -57,7 +59,8 @@ public class ShipHealthBar : MonoBehaviour
 
     private void OnDisable()
     {
-        _shield.OnHpChanged -= HandleChanged;
+        if (_shield != null)
+            _shield.OnHpChanged -= HandleChanged;
         _hull.OnHpChanged -= HandleChanged;
     }
 
@@ -72,6 +75,6 @@ public class ShipHealthBar : MonoBehaviour
             return;
 
         _greenFill.fillAmount = Mathf.Clamp01(_hull.CurrentHp / _hull.MaxHp);
-        _whiteFill.fillAmount = Mathf.Clamp01(_shield.CurrentHp / _hull.MaxHp);
+        _whiteFill.fillAmount = _shield != null ? Mathf.Clamp01(_shield.CurrentHp / _hull.MaxHp) : 0f;
     }
 }

@@ -50,6 +50,15 @@ public static class HitResolver
     public static void Resolve(in RaycastHit hit, float damage, float shieldMultiplier, float armorMultiplier,
         F3DFXType weapon, WeaponOwner owner)
     {
+        // 플레이어의 무기는 아군 함선(호위하는 화물선 등)에 피해를 주지 않는다
+        if (owner == WeaponOwner.Player && FriendlyShip.Is(hit.collider))
+            return;
+
+        // 적의 무기는 플레이어 편(플레이어 함선, 아군 함선)에만 피해를 준다 (해적끼리 맞아 격파되지 않게)
+        if (owner == WeaponOwner.Enemy && hit.collider != null
+            && hit.collider.GetComponentInParent<SpaceshipController>() == null && !FriendlyShip.Is(hit.collider))
+            return;
+
         IDamageable target = Resolve(hit, damage, shieldMultiplier, armorMultiplier);
         if (target != null)
             OnHit?.Invoke(target, weapon, owner);

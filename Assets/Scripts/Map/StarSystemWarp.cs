@@ -8,7 +8,7 @@ using UnityEngine.UI;
 /// 함선 자리에 워프 게이트가 열리고 충전되는 동안 함선이 감속해 멈췄다가, 가속도가 점점 커지며 돌진(WarpDash) →
 /// 멈추지 않고 하얀 섬광 → 워프 터널(WarpTunnelStage, 거리에 따라 길게, 워프 엔진음 반복) → 섬광 → 도착 지점에 함선을 놓는다.
 /// 워프하는 동안 조작은 잠기고(GameInputLock) 카메라·격자는 터널 무대가 대신 다룬다.
-/// 스토리 재생 중에는 워프할 수 없다. StarSystem 프리팹에 함께 붙는다. 출발은 항성계 지도(StarMapUI)에서 한다.
+/// 스토리 재생 중이나 임무가 막는 동안(호송·소탕 교전)에는 워프할 수 없다. StarSystem 프리팹에 함께 붙는다. 출발은 항성계 지도(StarMapUI)에서 한다.
 /// </summary>
 public class StarSystemWarp : MonoBehaviour
 {
@@ -56,7 +56,9 @@ public class StarSystemWarp : MonoBehaviour
     /// <summary>지금 워프를 시작할 수 있는지 (스토리 재생 중, 이미 워프 중, 다른 창이 조작을 잠근 중이면 불가)</summary>
     public bool CanWarp(object requester)
     {
-        return !IsWarping && !StoryPlayer.IsPlaying && !StationDocking.IsDocked && !GameInputLock.IsLockedExcept(requester);
+        // 호송 중이거나 소탕 교전 중에는 떠날 수 없다
+        return !IsWarping && !StoryPlayer.IsPlaying && !StationDocking.IsDocked && !MissionDirector.BlocksTravel
+               && !GameInputLock.IsLockedExcept(requester);
     }
 
     public bool WarpTo(StarSystem.Location destination)

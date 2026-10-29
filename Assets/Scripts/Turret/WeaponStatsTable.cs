@@ -111,6 +111,19 @@ public class WeaponStatsTable : ScriptableObject
         return Mathf.Max(MinInterval, Find(type).fireInterval);
     }
 
+    /// <summary>발사 간격이 0인 지속형(빔)인지</summary>
+    public static bool IsContinuous(F3DFXType type)
+    {
+        return Find(type).fireInterval <= 0f;
+    }
+
+    /// <summary>플레이어 기준 초당 공격력 (지속형은 공격력 그대로)</summary>
+    public static float GetDps(F3DFXType type)
+    {
+        var e = Find(type);
+        return e.fireInterval > 0f ? e.damage / e.fireInterval : e.damage;
+    }
+
     /// <summary>화면에 보이는 무기 이름. 표에 이름이 없으면 무기 종류 이름.</summary>
     public static string GetDisplayName(F3DFXType type)
     {

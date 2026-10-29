@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 626599d403544fd44821b7df2cd61000, type: 3}
+  m_Name: Sweep_2_3
+  m_EditorClassIdentifier: 
+  id: 2-3
+  title: "\uD574\uC801 \uB450\uBAA9 \uCC98\uB2E8"
+  tier: "\uC0C1\uAE09"
+  client: "\uD604\uC0C1\uAE08 \uC0AC\uBB34\uC18C"
+  objective: "\uD574\uC801 \uB450\uBAA9 \uD568\uC120\uC744 \uACA9\uD30C\uD558\uB77C
+    \xB7 \uB3C4\uC8FC\uD558\uAC8C \uB450\uBA74 \uC2E4\uD328"
+  reward: 35000
+  extraRewards:
+  - "\uD604\uC0C1\uAE08"
+  acceptSequence: mission_sweep_2_3_accept
+  successSequence: mission_sweep_2_3_success
+  beaconLevels: {x: 4, y: 5}
+  arrivalDelay: 3
+  fleet:
+  - shipClass: pirate_boss
+    count: 1
+  - shipClass: light_fighter
+    count: 6
+  goal: 1
+  commanderClass: 
+  reinforceAfterSeconds: 60
+  reinforcements: []
+  targetClass: pirate_boss
+  fleeBelowHpRatio: 0.5
+  escapeDistance: 1400

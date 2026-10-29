@@ -30,6 +30,16 @@ namespace FORGE3D
         // 데미지는 WeaponStatsTable에서 (무기 종류, 쏜 쪽)으로 찾는다.
         [Header("Damage")] public WeaponOwner owner = WeaponOwner.Player;
 
+        // [추가] 0 이상이면 WeaponStatsTable 대신 이 값을 한 발(빔은 초당) 공격력으로 쓴다.
+        // 임무의 적 함종(EnemyShipCatalog)처럼 같은 무기라도 함선마다 공격력이 다를 때 런타임에만 정한다.
+        [System.NonSerialized] public float damageOverride = -1f;
+
+        // [추가] 이 터렛이 쏜 무기의 공격력 (발사체·빔이 부른다)
+        public float GetDamage(F3DFXType type)
+        {
+            return damageOverride >= 0f ? damageOverride : WeaponStatsTable.GetDamage(type, owner);
+        }
+
         // [추가] 이 터렛이 달린 함선의 루트. 발사체/빔이 자기 함선에 맞지 않도록 무시할 때 쓴다.
         private Transform shipRoot;
 

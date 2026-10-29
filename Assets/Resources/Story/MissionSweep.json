@@ -1,0 +1,46 @@
+{
+  "sequences": [
+    {
+      "id": "mission_sweep_2_1_accept",
+      "lines": [
+        { "speaker": "route_officer", "text": "최근 이 구역의 민간 선박들이 연달아 습격당하고 있습니다. 해적들이 워프 비콘 주변을 장악한 모양입니다." },
+        { "speaker": "route_officer", "text": "비콘 좌표를 보내드리겠습니다. 현장의 해적들을 제거하고 항로를 다시 안전하게 만들어 주십시오." }
+      ]
+    },
+    {
+      "id": "mission_sweep_2_1_success",
+      "lines": [
+        { "speaker": "route_officer", "text": "비콘 주변의 적대 신호가 모두 사라졌습니다. 이제 민간 선박들도 해당 항로를 이용할 수 있겠군요." },
+        { "speaker": "route_officer", "text": "수고하셨습니다. 계약 보수를 지급하겠습니다." }
+      ]
+    },
+    {
+      "id": "mission_sweep_2_2_accept",
+      "lines": [
+        { "speaker": "mining_manager", "text": "채굴 장비와 원자재를 실은 수송선들이 계속 사라지고 있습니다. 손실을 계산하는 것도 이젠 지쳤어요." },
+        { "speaker": "mining_manager", "text": "조사 결과 해적들이 보급 함대를 꾸린 것으로 보입니다. 그들의 지휘함을 제거하면 적어도 당분간은 숨을 돌릴 수 있겠죠." }
+      ]
+    },
+    {
+      "id": "mission_sweep_2_2_success",
+      "lines": [
+        { "speaker": "mining_manager", "text": "지휘함의 파괴가 확인됐습니다. 해적들의 보급망도 상당한 타격을 입었겠군요." },
+        { "speaker": "mining_manager", "text": "약속한 보수와 광물 거래 우대권입니다. 앞으로도 이런 성과를 기대하겠습니다." }
+      ]
+    },
+    {
+      "id": "mission_sweep_2_3_accept",
+      "lines": [
+        { "speaker": "bounty_broker", "text": "이번 표적은 평범한 해적이 아니야. 여러 성계를 돌아다니며 수송선과 민간 정거장을 털어 온 놈이지." },
+        { "speaker": "bounty_broker", "text": "녀석의 함선이 발견됐어. 호위함이 붙어 있겠지만, 두목만 제거해도 현상금은 네 몫이다. 다만 도망치게 두면 계약은 실패야." }
+      ]
+    },
+    {
+      "id": "mission_sweep_2_3_success",
+      "lines": [
+        { "speaker": "bounty_broker", "text": "확인했어. 표적의 함선이 파괴됐군. 이 정도면 그놈도 더는 누구를 괴롭히지 못하겠지." },
+        { "speaker": "bounty_broker", "text": "현상금은 계약대로 지급하겠어. 이제 네 이름을 기억하는 사람들이 좀 늘어나겠군." }
+      ]
+    }
+  ]
+}
