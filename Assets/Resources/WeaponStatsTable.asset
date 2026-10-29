@@ -13,57 +13,135 @@ MonoBehaviour:
   m_Name: WeaponStatsTable
   m_EditorClassIdentifier: 
   _entries:
-  - name: Vulcan
+  - name: vulcan (Vulcan)
+    id: vulcan
     weaponType: 0
-    displayName: "\uBC1C\uCE78"
+    displayName: "\uAE30\uBCF8 \uAE30\uAD00\uD3EC"
     damage: 38.33
     enemyDamage: 50
     fireInterval: 1
     shieldMultiplier: 1
     armorMultiplier: 1
+    homing: 0
+    homingTurnRate: 120
     damagePerSecond: 38.33
-  - name: PlasmaGun
+  - name: plasma_gun (PlasmaGun)
+    id: plasma_gun
     weaponType: 6
-    displayName: 
+    displayName: "\uD50C\uB77C\uC2A4\uB9C8 \uAC74"
     damage: 10
     enemyDamage: 0
     fireInterval: 0.2
     shieldMultiplier: 1
     armorMultiplier: 1
+    homing: 0
+    homingTurnRate: 120
     damagePerSecond: 50
-  - name: PlasmaBeam
+  - name: beam (PlasmaBeam)
+    id: beam
     weaponType: 7
-    displayName: 
-    damage: 30
-    enemyDamage: 0
+    displayName: "\uACE0\uCD9C\uB825 \uB808\uC774\uC800"
+    damage: 90
+    enemyDamage: 30
     fireInterval: 0
-    shieldMultiplier: 1
-    armorMultiplier: 1
-    damagePerSecond: 30
-  - name: LaserImpulse
+    shieldMultiplier: 1.5
+    armorMultiplier: 0.75
+    homing: 0
+    homingTurnRate: 120
+    damagePerSecond: 90
+  - name: laser (LaserImpulse)
+    id: laser
     weaponType: 11
-    displayName: "\uB808\uC774\uC800"
+    displayName: "\uACBD\uB7C9 \uB808\uC774\uC800"
     damage: 11.5
     enemyDamage: 0
     fireInterval: 0.3
     shieldMultiplier: 1.5
     armorMultiplier: 0.5
+    homing: 0
+    homingTurnRate: 120
     damagePerSecond: 38.333332
-  - name: RailGun
+  - name: railgun (RailGun)
+    id: railgun
     weaponType: 5
-    displayName: 
-    damage: 30
-    enemyDamage: 0
-    fireInterval: 0.2
+    displayName: "\uC911\uD615 \uB808\uC77C\uAC74"
+    damage: 24
+    enemyDamage: 30
+    fireInterval: 0.3
     shieldMultiplier: 0.5
     armorMultiplier: 2
-    damagePerSecond: 150
-  - name: FlameRed
+    homing: 0
+    homingTurnRate: 120
+    damagePerSecond: 80
+  - name: missile (FlameRed)
+    id: missile
     weaponType: 10
-    displayName: 
+    displayName: "\uACBD\uB7C9 \uBBF8\uC0AC\uC77C \uBC1C\uC0AC\uAE30"
     damage: 30
     enemyDamage: 0
     fireInterval: 0.75
     shieldMultiplier: 1.5
     armorMultiplier: 1.5
+    homing: 0
+    homingTurnRate: 120
     damagePerSecond: 40
+  - name: plasma_cannon (PlasmaBeamHeavy)
+    id: plasma_cannon
+    weaponType: 8
+    displayName: "\uD50C\uB77C\uC2A4\uB9C8 \uD3EC"
+    damage: 150
+    enemyDamage: 0
+    fireInterval: 0
+    shieldMultiplier: 1.25
+    armorMultiplier: 1.25
+    homing: 0
+    homingTurnRate: 120
+    damagePerSecond: 150
+  - name: vulcan_heavy (Vulcan)
+    id: vulcan_heavy
+    weaponType: 0
+    displayName: "\uAC15\uD654 \uAE30\uAD00\uD3EC"
+    damage: 46
+    enemyDamage: 0
+    fireInterval: 0.8
+    shieldMultiplier: 1
+    armorMultiplier: 1
+    homing: 0
+    homingTurnRate: 120
+    damagePerSecond: 57.5
+  - name: laser_rapid (LaserImpulse)
+    id: laser_rapid
+    weaponType: 11
+    displayName: "\uACE0\uC18D \uB808\uC774\uC800"
+    damage: 13
+    enemyDamage: 0
+    fireInterval: 0.22
+    shieldMultiplier: 1.5
+    armorMultiplier: 0.5
+    homing: 0
+    homingTurnRate: 120
+    damagePerSecond: 59.090908
+  - name: missile_medium (FlameRed)
+    id: missile_medium
+    weaponType: 10
+    displayName: "\uC911\uD615 \uBBF8\uC0AC\uC77C \uBC1C\uC0AC\uAE30"
+    damage: 48
+    enemyDamage: 0
+    fireInterval: 0.75
+    shieldMultiplier: 1.5
+    armorMultiplier: 1.5
+    homing: 0
+    homingTurnRate: 120
+    damagePerSecond: 64
+  - name: missile_guided (FlameRed)
+    id: missile_guided
+    weaponType: 10
+    displayName: "\uACE0\uAE09 \uC720\uB3C4\uD0C4 \uBC1C\uC0AC\uAE30"
+    damage: 70
+    enemyDamage: 0
+    fireInterval: 0.75
+    shieldMultiplier: 1.5
+    armorMultiplier: 1.5
+    homing: 1
+    homingTurnRate: 120
+    damagePerSecond: 93.333336

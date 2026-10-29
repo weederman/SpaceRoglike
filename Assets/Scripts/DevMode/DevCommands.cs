@@ -33,6 +33,8 @@ public static class DevCommands
         "mission list              임무 목록 (호송 1-x, 해적 소탕 2-x, 채굴 3-x)\n" +
         "mission start <번호>      임무 시작 (예: mission start 2-1)\n" +
         "mission stop              진행 중인 임무 중단\n" +
+        "mainquest [stage <0~6>]   첫 번째 함선 퀘스트 상태 / 단계 옮기기\n" +
+        "ship [grant|switch <id>]  함선 목록 / 주기·갈아타기 (specter, ironwall)\n" +
         "pause [on|off]            창이 열려 있는 동안 게임 정지 여부\n" +
         "reset                     바꾼 값을 모두 되돌리고 씬 다시 시작\n" +
         "clear                     채팅 지우기";

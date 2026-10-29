@@ -19,7 +19,7 @@ MonoBehaviour:
   objective: "\uAD11\uC11D 500\uAC1C\uB97C \uCC44\uAD74\uD574 \uC774 \uC815\uAC70\uC7A5\uC5D0
     \uB0A9\uD488\uD558\uB77C (\uC885\uB958 \uBB34\uAD00) \xB7 \uC2DC\uAC04\uC774
     \uAC08\uC218\uB85D \uD574\uC801 \uCD9C\uD604 \uC99D\uAC00"
-  reward: 40000
+  reward: 35000
   extraRewards: []
   acceptSequence: 
   successSequence: 

@@ -81,6 +81,8 @@ public abstract class MissionDirector : MonoBehaviour
             error = "워프 중입니다.";
         else if (FindObjectOfType<SpaceshipController>() == null)
             error = "플레이어 함선이 없습니다.";
+        else if (!data.CanStart(out string reason))
+            error = reason;
 
         MissionDirector prefab = error == null ? Resources.Load<MissionDirector>(data.DirectorPath) : null;
         if (error == null && prefab == null)
@@ -179,6 +181,10 @@ public abstract class MissionDirector : MonoBehaviour
         if (string.IsNullOrEmpty(sequenceId))
             yield break;
 
+        // 교전 중 무전(control 시퀀스) 등이 아직 나오고 있으면 끝날 때까지 기다린다
+        while (StoryPlayer.IsPlaying)
+            yield return null;
+
         bool done = false;
         if (!StoryPlayer.Play(sequenceId, () => done = true))
             yield break;
@@ -222,6 +228,40 @@ public abstract class MissionDirector : MonoBehaviour
         return Player != null ? Player.position : Vector3.zero;
     }
 
+    /// <summary>레벨 범위의 워프 비콘 중 지금 위치에서 가장 가까운 곳 (지금 있는 비콘은 뺀다). 없으면 None.</summary>
+    protected StarSystem.Location NearestBeacon(StarSystem system, Vector2Int levels)
+    {
+        StarSystemData data = system.Data;
+        Vector2 here = system.ToSystem(PlayerWorldPosition());
+        StarSystem.Location best = StarSystem.Location.None;
+        float bestDistance = float.PositiveInfinity;
+
+        for (int i = 0; i < data.beacons.Length; i++)
+        {
+            var location = new StarSystem.Location(StarSystem.LocationKind.Beacon, i);
+            int level = data.beacons[i].level;
+            if (level < levels.x || level > levels.y || location == system.CurrentArea)
+                continue;
+
+            float d = Vector2.Distance(here, data.BeaconPosition(i));
+            if (d < bestDistance)
+            {
+                bestDistance = d;
+                best = location;
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>그 장소에 와 있는지 (워프·도킹 중이 아니고, 지역 판정이나 거리로 그 장소 안)</summary>
+    protected bool IsAt(StarSystem system, StarSystem.Location location)
+    {
+        if (system == null || location.IsNone || StarSystemWarp.IsWarping || StationDocking.IsDocked || Player == null)
+            return false;
+        return system.CurrentArea == location || system.IsNear(location, Player.position);
+    }
+
     protected static bool IsAlive(PirateShip enemy)
     {
         return enemy != null && enemy.Hull != null && enemy.Hull.IsActive && enemy.Current != PirateShip.Mode.Warp;
@@ -249,14 +289,18 @@ public abstract class MissionDirector : MonoBehaviour
         Hud.SetEnemies(0);
     }
 
-    /// <summary>성공: 적 후퇴 → 성공 대사 → 보수 지급 → 결과 표시 → 끝. lines는 보수 줄 아래에 덧붙일 내용.</summary>
-    protected IEnumerator Succeed(MissionData data, int credits, string rewardLine, IEnumerable<string> extraLines)
+    /// <summary>
+    /// 성공: 적 후퇴 → 성공 대사 → 보수 지급 → 결과 표시 → 끝. lines는 보수 줄 아래에 덧붙일 내용.
+    /// successSequence를 주면 임무 데이터의 성공 대사 대신 그것을 재생한다 (결과에 따라 대사가 갈리는 임무).
+    /// </summary>
+    protected IEnumerator Succeed(MissionData data, int credits, string rewardLine, IEnumerable<string> extraLines,
+        string successSequence = null)
     {
         CombatHud.HideWaypoint();
         yield return RetreatEnemies();
-        yield return PlayStory(data.successSequence);
+        yield return PlayStory(successSequence ?? data.successSequence);
 
-        if (CreditWallet.Instance != null)
+        if (CreditWallet.Instance != null && credits > 0)
             CreditWallet.Instance.Add(credits);
 
         var lines = new List<string> { rewardLine };

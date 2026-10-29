@@ -3,8 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// 게임에 있는 무기 아이템 전체 목록(단일 출처). 위치: Assets/Resources/Shop/WeaponCatalog.asset
-/// 상점은 이 중 forSale인 것을 팔고, 격납고는 무기 종류로 아이템(이름·아이콘·설명)을 찾는다.
-/// 플레이어가 보관 중인 무기는 상점에 되팔 수 있다 (가격 × sellRatio, 기본 장비인 발칸은 가격이 0이라 0 CR).
+/// 상점은 이 중 forSale인 것을 팔고, 격납고는 무기 id(weaponId)로 아이템(이름·아이콘·설명)을 찾는다.
+/// 플레이어가 보관 중인 무기는 상점에 되팔 수 있다 (가격 × sellRatio).
 /// </summary>
 [CreateAssetMenu(fileName = "WeaponCatalog", menuName = "SpaceRoglike/Weapon Catalog")]
 public class WeaponCatalog : ScriptableObject
@@ -31,15 +31,26 @@ public class WeaponCatalog : ScriptableObject
         return item != null ? Mathf.FloorToInt(item.price * sellRatio) : 0;
     }
 
-    /// <summary>무기 종류의 아이템 (없으면 null)</summary>
-    public TurretItemData Find(F3DFXType type)
+    /// <summary>무기 id의 아이템 (없으면 null)</summary>
+    public TurretItemData Find(string weaponId)
     {
         foreach (TurretItemData item in weapons)
         {
-            if (item != null && item.weaponType == type)
+            if (item != null && item.weaponId == weaponId)
                 return item;
         }
 
         return null;
+    }
+
+    /// <summary>화면에 보이는 무기 이름 (아이템 이름, 없으면 WeaponStatsTable의 이름)</summary>
+    public static string NameOf(string weaponId)
+    {
+        WeaponCatalog catalog = Load();
+        TurretItemData item = catalog != null ? catalog.Find(weaponId) : null;
+        if (item != null && !string.IsNullOrEmpty(item.displayName))
+            return item.displayName;
+
+        return WeaponStatsTable.TryGetType(weaponId, out F3DFXType type) ? WeaponStatsTable.GetDisplayName(type, weaponId) : weaponId;
     }
 }

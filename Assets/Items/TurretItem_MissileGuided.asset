@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74f5d40fdc9142c4dbc1e2114ca377e8, type: 3}
+  m_Name: TurretItem_MissileGuided
+  m_EditorClassIdentifier: 
+  weaponId: missile_guided
+  displayName: "\uACE0\uAE09 \uC720\uB3C4\uD0C4 \uBC1C\uC0AC\uAE30"
+  icon: {fileID: 21300000, guid: 1f1e13a4805163e42a8a3ae39f20a657, type: 3}
+  turretPrefab: {fileID: 6509607899620335586, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
+  weaponType: 10
+  price: 350000
+  forSale: 1
+  description: "\uB77D\uC628\uD55C \uC801\uC744 \uB05D\uAE4C\uC9C0 \uCAD3\uC544\uAC00\uB294
+    \uACE0\uAE09 \uC720\uB3C4\uD0C4. \uC911\uD615 \uBBF8\uC0AC\uC77C\uBCF4\uB2E4
+    \uC704\uB825\uB3C4 \uD06C\uB2E4."

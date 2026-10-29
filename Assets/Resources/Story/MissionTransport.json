@@ -1,0 +1,46 @@
+{
+  "sequences": [
+    {
+      "id": "mission_transport_4_1_accept",
+      "lines": [
+        { "speaker": "maintenance_officer", "text": "도착지 정거장의 정비 부품 재고가 부족합니다. 보급선이 늦어지고 있어서 다른 방법을 찾아야 하는 상황이죠." },
+        { "speaker": "maintenance_officer", "text": "여기서 부품 상자 10개를 받아 전달해 주세요. 도착지 주변에 해적이 나타난다는 보고가 있으니 조심하시고요." }
+      ]
+    },
+    {
+      "id": "mission_transport_4_1_success",
+      "lines": [
+        { "speaker": "maintenance_officer", "text": "부품이 전부 도착했습니다. 이 정도면 밀린 정비 작업을 다시 시작할 수 있겠군요." },
+        { "speaker": "maintenance_officer", "text": "계약 보수입니다. 안전하게 운송해 줘서 고맙습니다." }
+      ]
+    },
+    {
+      "id": "mission_transport_4_2_accept",
+      "lines": [
+        { "speaker": "shipyard_rep", "text": "도착지 정거장에서 진행 중인 함선 시험이 중단됐습니다. 고에너지 배터리 공급이 지연되고 있기 때문입니다." },
+        { "speaker": "shipyard_rep", "text": "여기서 배터리 5개를 인수해 전달해 주세요. 목적지에 도착하면 적대 세력이 나타날 가능성이 높습니다. 화물을 보호할 준비를 해 두십시오." }
+      ]
+    },
+    {
+      "id": "mission_transport_4_2_success",
+      "lines": [
+        { "speaker": "shipyard_rep", "text": "배터리 인수와 장비 점검이 완료됐습니다. 함선 시험을 재개할 수 있겠군요." },
+        { "speaker": "shipyard_rep", "text": "계약 보수와 평판 보너스를 지급하겠습니다. 이번 운송은 저희 프로젝트에 큰 도움이 됐습니다." }
+      ]
+    },
+    {
+      "id": "mission_transport_4_3_accept",
+      "lines": [
+        { "speaker": "secret_contractor", "text": "이번 화물은 일반적인 군수품과 다릅니다. 내용물은 기밀이며, 운송 경로 역시 외부에 공개할 수 없습니다." },
+        { "speaker": "secret_contractor", "text": "여기서 장비 상자 3개를 인수해 외곽의 연구 정거장으로 전달하십시오. 목적지에 도착하면 적의 공격이 예상됩니다. 화물의 보존이 최우선입니다." }
+      ]
+    },
+    {
+      "id": "mission_transport_4_3_success",
+      "lines": [
+        { "speaker": "secret_contractor", "text": "화물의 인수가 확인됐습니다. 장비 상태도 양호하군요." },
+        { "speaker": "secret_contractor", "text": "계약 보수를 지급하겠습니다. 이번 운송과 관련된 정보는 기밀로 유지됩니다. 앞으로도 신뢰할 수 있는 운송원이 필요하다면 다시 연락하겠습니다." }
+      ]
+    }
+  ]
+}

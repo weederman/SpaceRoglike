@@ -18,6 +18,10 @@ MonoBehaviour:
   client: "\uBBFC\uAC04 \uBB3C\uB958 \uD68C\uC0AC"
   objective: "\uD654\uBB3C\uC120\uC774 \uC6CC\uD504\uB97C \uC2DC\uC791\uD560 \uB54C\uAE4C\uC9C0
     \uBCF4\uD638\uD558\uB77C"
+  reward: 12000
+  extraRewards: []
+  acceptSequence: mission_escort_1_1_accept
+  successSequence: mission_escort_1_1_success
   freighterHp: 4000
   warpPrepSeconds: 90
   waves:
@@ -25,12 +29,8 @@ MonoBehaviour:
     shipClass: light_fighter
     count: 3
     target: 0
-  reward: 8000
   reducedBelowHpRatio: 0.5
-  reducedReward: 4000
+  reducedReward: 6000
   bonusShipClass: 
   bonusReward: 0
   bonusLabel: 
-  reputation: 0
-  acceptSequence: mission_escort_1_1_accept
-  successSequence: mission_escort_1_1_success

@@ -46,6 +46,7 @@ public class QuestTracker : MonoBehaviour
     private StoryQuest _quest;
     private readonly HashSet<string> _done = new HashSet<string>();
     private Coroutine _routine;
+    private Canvas _canvas;
 
     private void Awake()
     {
@@ -59,6 +60,16 @@ public class QuestTracker : MonoBehaviour
     private void OnEnable()
     {
         StoryPlayer.OnCue += HandleCue;
+    }
+
+    // 정거장 안에서는 정거장 화면(왼쪽 사이드바)과 겹치므로 목표 창을 그리지 않는다 (대사 중의 수락 연출은 보인다)
+    private void LateUpdate()
+    {
+        if (_canvas == null)
+            _canvas = GetComponent<Canvas>();
+        bool show = !StationDocking.IsDocked || StoryPlayer.IsPlaying;
+        if (_canvas != null && _canvas.enabled != show)
+            _canvas.enabled = show;
     }
 
     private void OnDisable()

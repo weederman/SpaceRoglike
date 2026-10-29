@@ -14,6 +14,10 @@
     { "id": "defense_officer", "name": "성계 방위군 장교", "color": "#8FB8FF", "side": "left" },
     { "id": "route_officer",   "name": "항로 관리국 직원", "color": "#9FE0D8", "side": "left" },
     { "id": "mining_manager",  "name": "광업 회사 관리자", "color": "#E8C27A", "side": "left" },
-    { "id": "bounty_broker",   "name": "현상금 중개인",    "color": "#FF9E7A", "side": "left" }
+    { "id": "bounty_broker",   "name": "현상금 중개인",    "color": "#FF9E7A", "side": "left" },
+    { "id": "maintenance_officer", "name": "정비소 담당자",      "color": "#B8D8A0", "side": "left" },
+    { "id": "shipyard_rep",        "name": "함선 제조 기업 담당자", "color": "#A0C4FF", "side": "left" },
+    { "id": "secret_contractor",   "name": "비밀 군수 계약 담당자", "color": "#B0B0C8", "side": "left" },
+    { "id": "enemy_commander",     "name": "적 지휘관 (무전)",      "color": "#FF6B5A", "side": "left" }
   ]
 }

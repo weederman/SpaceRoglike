@@ -83,7 +83,30 @@ public class CargoWindow : MonoBehaviour
         }
 
         _bar.value = _cargo.Ratio;
-        _capacity.text = $"{Mathf.FloorToInt(_cargo.Ore)} / {Mathf.FloorToInt(_cargo.Capacity)}";
+        _capacity.text = $"{Mathf.FloorToInt(_cargo.Used)} / {Mathf.FloorToInt(_cargo.Capacity)}";
+
+        // 메인 퀘스트 물품 (화물칸 자리를 쓰지 않는다)
+        FirstShipQuestData quest = FirstShipQuest.Data;
+        if (quest != null && (FirstShipQuest.HasBlueprint || FirstShipQuest.Alloys > 0 || FirstShipQuest.HasCore || FirstShipQuest.HasCommsLog))
+        {
+            _list.AddHeader("퀘스트 물품");
+            if (FirstShipQuest.HasBlueprint)
+                _list.AddRow().Bind(null, quest.blueprintName, "라스에게서 구매", "1개", () => { });
+            if (FirstShipQuest.Alloys > 0 && FirstShipQuest.Current < FirstShipQuest.Stage.Done)
+                _list.AddRow().Bind(null, quest.alloyName, "함선 제작 재료", $"{FirstShipQuest.Alloys}개", () => { });
+            if (FirstShipQuest.HasCore && FirstShipQuest.Current < FirstShipQuest.Stage.Done)
+                _list.AddRow().Bind(null, quest.coreName, "함선 제작 재료", "1개", () => { });
+            if (FirstShipQuest.HasCommsLog)
+                _list.AddRow().Bind(null, quest.commsLogName, "배후 세력의 단서", "1개", () => { });
+        }
+
+        // 운송 임무 화물 (팔 수 없다)
+        if (_cargo.MissionCargo > 0)
+        {
+            _list.AddHeader("임무 화물");
+            StationListRow cargoRow = _list.AddRow();
+            cargoRow.Bind(null, _cargo.MissionCargoName, "운송 임무 · 판매 불가", $"{_cargo.MissionCargo:N0}개", () => { });
+        }
 
         OreCatalog catalog = OreCatalog.Load();
         var contents = _cargo.Contents.Where(p => p.Value >= 1f).ToList();

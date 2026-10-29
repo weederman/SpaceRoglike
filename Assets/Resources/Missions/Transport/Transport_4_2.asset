@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50439c8fa48d18b42b8e68d7919b96e0, type: 3}
+  m_Name: Transport_4_2
+  m_EditorClassIdentifier: 
+  id: 4-2
+  title: "\uACE0\uC5D0\uB108\uC9C0 \uBC30\uD130\uB9AC \uAE34\uAE09 \uC218\uC1A1"
+  tier: "\uC911\uAE09"
+  client: "\uD568\uC120 \uC81C\uC870 \uAE30\uC5C5"
+  objective: "\uC5D0\uB108\uC9C0 \uBC30\uD130\uB9AC 5\uAC1C\uB97C \uB3C4\uCC29\uC9C0
+    \uC815\uAC70\uC7A5\uC5D0 \uC804\uB2EC\uD558\uB77C. \uC120\uCCB4\uAC00 50% \uC544\uB798\uB85C
+    \uC190\uC0C1\uB418\uBA74 \uD654\uBB3C\uC774 \uD30C\uC190\uB418\uC5B4 \uC2E4\uD328\uD55C\uB2E4."
+  reward: 28000
+  extraRewards:
+  - "\uAE30\uC5C5 \uD3C9\uD310"
+  acceptSequence: mission_transport_4_2_accept
+  successSequence: mission_transport_4_2_success
+  cargoName: "\uC5D0\uB108\uC9C0 \uBC30\uD130\uB9AC"
+  cargoAmount: 5
+  destinationRank: {x: 0.33, y: 0.67}
+  arrivalDelay: 3
+  fleet:
+  - shipClass: interceptor
+    count: 4
+    damageMultiplier: 1
+  - shipClass: missile_ship
+    count: 1
+    damageMultiplier: 1.6
+  failBelowHullRatio: 0.5

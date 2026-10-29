@@ -1,78 +1,68 @@
 # 작업 인수인계
-- 날짜: 2026-10-28
+- 날짜: 2026-10-30
 - 브랜치: sehui
-- 기준 커밋: 412d123 장면 5, 6 임시 구현
+- 기준 커밋: 6a9bc33 최적?화? 한번 함 (이후 작업은 모두 아직 커밋 안 됨)
 
 ## 1. 목표
-SpaceRoglike(탑다운 우주 로그라이크)의 **스토리 연출 시스템과 튜토리얼 스토리**를 장면 단위로 구현 중이다.
-프롤로그 → 튜토리얼 퀘스트 「변방의 황금」(장면 1~6)이 **처음부터 끝까지 한 번에 이어지게 모두 구현됐다**(장면 4~6은 "임시 구현" 상태).
-다음은 사람이 직접 키보드/마우스로 끝까지 플레이해 보고 난이도·배치·문구를 다듬는 단계다.
+SpaceRoglike의 튜토리얼 이후 "반복 임무 + 정거장 경제 + 메인 스토리" 루프를 만들고 있다.
+반복 임무 12개(호송·해적 소탕·채굴·운송), 경제·무기 10종·장비 5종×4등급, **메인 스토리 ① 첫 번째 함선 해금 퀘스트(라스)와 함선 시스템(스펙터·아이언월)**까지 들어갔다.
+다음은 메인 스토리 ② 최종 함선 → 보스 볼테르 → 엔딩(`docs/game-design.md` 4장)이다.
 
 ## 2. 완료한 것
-- **스토리 시스템** (`Assets/Scripts/Story/`): JSON(`Resources/Story/*.json`) → `StoryDatabase` → `StoryPlayer` → `NarrationBar`. 선택지, `then` 연결, `waitFor` + `StoryPlayer.Signal`, 다중 cue(`;`), Esc 건너뛰기, `bg:`, `quest_accept/done`, `tutorial_show/hide`(이미지 포함), `radar_show/hide`.
-  - **`"control": true` 시퀀스**(조작하며 듣는 대사): 조작이 잠기지 않고, 대사는 시간 또는 `waitFor` 신호로만 넘어간다(클릭/Esc로 안 넘어감, 선택지 불가). `StoryPlayer.IsControlMode`.
-- **프롤로그, 장면 1 술집, 장면 2 격납고, 장면 3 첫 워프** — 이전부터 완료. 장면 3 도착 시 임무 목표 1번 완료 처리.
-- **장면 4 첫 교전** (`TutorialCombat.json`, `CombatTutorialDirector` + `Resources/Directors/Cue/CombatTutorialDirector.prefab`, `Scripts/Enemy/PirateShip.cs`): 해적 3척 접근·통신 → 전투 튜토리얼 4단계(목표 지정 → 레이저 → 발칸 → 피격) → 1척 격파 시 1척 도주 → 2척째 격파 시 마지막 1척 워프 이탈 → 마무리 대화.
-  - 해적 AI: 평소엔 플레이어에서 170~300 떨어진 **소행성 뒤에 숨어** 떠다니고(150 안에 오면 반격), 8~12초마다 한 방향에 **모여서 공격**(6~8초) 후 다시 흩어진다.
-  - 플레이어 선체 하한 30%. 닿으면 **비상 프로토콜**: 화면 위쪽 경고 + 쉴드 재가동·무적(피격 연출만).
-- **전투 시스템**: 무기 슬롯 1/2키 전환(`PlayerWeaponSelector`), 목표 지정 Tab/클릭(`TargetingSystem`, 함선·광맥 모두), 전투 HUD(`CombatHud` + `Resources/UI/CombatHud.prefab`: 무기 슬롯, 목표 마커, 화물 게이지, 목적지 표시, 경고), 발사 간격 강제, 자기 함선 피격 방지(`HitResolver.Raycast`), 피격 이벤트 `HitResolver.OnHit`.
-- **장면 5 채굴** (`TutorialMining.json`, `MiningTutorialDirector` + 프리팹): 목적지 표시 따라 비행 → 광맥 드러남 → 채굴 튜토리얼(`mining.jpg`) → 65% 대사 → 레이더 + 해적 3척 원거리 대기·무전 → 화물칸 가득 → 해적 워프 후퇴.
-  - 채굴: `MiningLaser`(광맥 지정 후 사거리 150 안에서 F 길게, 빔 + 광석 파편 연출), `CargoHold`(한도 100 = 의뢰 목표치), `MineableAsteroid`(장식 `AsteroidField`와 별개, 보랏빛 광맥).
-- **장면 6 귀환·정산** (`TutorialReturn.json`, 귀환 워프는 `FirstWarpDirector`의 `s6_return`): 워프 → 정거장 도착(소행성 지대 제거) → 격납고 배경 대화 → `credits_add:300;cargo_sell:3` → 목표 3번 완료 → 마지막 줄에서 상점(정비 메뉴) 열림 + `enemies_on`.
-- **버그 수정**: 프롤로그가 스토리 전체가 끝날 때까지 함선·터렛을 꺼 두던 문제(레이저 미발사·이동 불가·HUD 숨김의 원인), 카메라 떨림(Rigidbody 보간 + 지수 감쇠 추적), 탄이 반대편 터렛/자기 쉴드에 맞던 문제, 연타 시 발사 간격 무시.
-- **소행성 간격**: 큰 암석끼리 가장자리 간격 30 이상(`AsteroidField._minRockGap`), 광맥 소행성과도 겹치지 않음.
-- **상점**: 조작이 잠긴 대사 중에는 열리지 않고 끝나면 연다(`StationShop`).
-- **문서**: 장면 4~6 원문과 설계 결정 `docs/story/scenes-4-6.md`.
+- **임무 시스템** (`Scripts/Mission/`): 공통 `MissionData`/`MissionDirector`, `EnemyShipCatalog`. 스페이스 라운지(`MissionBoardWindow`)에서 수락.
+  - 호송 1-x, 해적 소탕 2-x, 채굴 3-x, 운송 4-x (`docs/missions.md`). 미션 보수는 기획 "미션 보수" 표의 기본 보수.
+  - `MissionData.OnBoard`(false면 라운지 목록에 안 나옴), `CanStart`(수락 조건), `MissionDirector.NearestBeacon/IsAt`(공용 도구), `Succeed(…, successSequence)`(대사 지정).
+- **경제·무기·장비** (`docs/game-design.md` 7장): 시작 자금 10,000, 무기 id 체계(`WeaponStatsTable`), 유도탄, 플라스마 포, 장비 5종×4등급, 장비 칸, 광석 구매(시장가×2, 10개씩), 티타늄 광석.
+- **함선 시스템 (2026-10-30)**: `Scripts/Ships/ShipCatalog`(`Resources/Ships/ShipCatalog.asset`) + `PlayerShips`.
+  - 스펙터(무기 2·장비 4) / 아이언월(무기 4·장비 6, 모델 K4_Green 임시). 선체·속도·가속·보호막 기준값은 함선 데이터. 장비 칸·보호막 기준값은 `EquipmentCatalog`에서 옮겼다.
+  - 무기는 함선마다 따로 기억(`Loadouts`), 장비는 공유. 무기 슬롯 3·4는 터렛 복제(`extraTurretMounts`), 무기 HUD 4칸.
+  - 격납고 탭 함선 목록에서 갈아타기. cue `ship_grant:id`. 저장 `ship`/`ships`/`shipLoadouts`.
+- **첫 번째 함선 퀘스트 (2026-10-30)**: `Scripts/MainQuest/FirstShipQuest`(진행)·`FirstShipQuestData`(`Resources/MainQuest/FirstShipQuest.asset`), 대사 `Story/MainFirstShip.json`.
+  - 흐름·수치·임시값은 `docs/game-design.md` 8장. 라운지·미션 탭 맨 위 '라스' 항목에서 단계별 버튼(구매·납품·임무 출발·조립).
+  - 임무: `SalvageMissionDirector`(잔해 수색, `Missions/Main/Salvage_1_4.asset`), `InterceptMissionDirector`(수송선 요격, `Intercept_1_5.asset`). 새 함종 `munitions_transport`.
+  - 개발자 명령: `mainquest [stage 0~6]`, `ship [grant|switch id]`.
+- 정거장 안에서는 퀘스트 목표 창(`QuestTracker`)을 숨긴다(사이드바와 겹침).
 
 ## 3. 결정 사항
-채택:
-- **대사 데이터는 JSON**, **UI는 SCI-FI UI Pack 프리팹 기반**, **연출은 cue → 장면별 Director**(건너뛰기 시 최종 상태로 직행), **씬 파일 수정 없이 Resources 프리팹을 런타임 생성** — 이전부터 유지.
-- **조작 잠금은 `GameInputLock`으로만.** 연출 담당이 터렛 컴포넌트를 직접 끄던 코드를 제거하고, 잠긴 동안 터렛이 마우스를 따라 돌지 않게 `F3DPlayerTurretController`에서 처리.
-- **프롤로그는 control 시퀀스가 시작되면 조작을 돌려준다**(`PrologueDirector.FinishWhenStoryIdle`). 장면 1~6이 `then`으로 이어져 스토리가 "재생 중"으로 유지되기 때문.
-- **장면 4 설계**(사용자 선택): 무기 1/2키 전환 + 좌클릭 발사 / 목표 지정은 정보 표시만(조준은 마우스) / 튜토리얼 중 선체 하한 30% / 1척 격파 → 1척 도주 → 1척 워프.
-- **해적 AI는 숨었다가 모여서 공격**(사용자 요청): 기존 공전 AI(`EnemyOrbitController`)는 해적에서 끄고 `PirateShip`이 직접 조향. 이유: 플레이어를 중심으로 계속 도는 적은 플레이어가 가만히 있어도 되고 조준하기 어려웠다.
-- **해적 피해는 전역 수치(`WeaponStatsTable`)를 건드리지 않고** Director 프리팹의 `PirateShip.Tuning.fireInterval`(4.5초)로 조절. 다른 적도 같은 표를 쓰기 때문.
-- **비상 프로토콜 연출 = 쉴드 재가동 + 무적 + 경고**: 체력 고정만으로는 플레이어가 "방어 중"임을 알 수 없어서.
-- **장면 5 설계**(사용자 선택): 채굴은 광맥 지정 후 F 길게 누르기 / 해적 증원은 **기본 튜토리얼형**(무전만, 가득 차면 후퇴) / 라스의 좌표는 목적지 표시를 보고 직접 비행 / 장면 6까지 한 번에 구현.
-- **귀환 워프는 `FirstWarpDirector`에 추가**: 터널 무대·워프 이펙트·소행성 지대 참조를 이미 갖고 있어서.
-- **"정비 메뉴" = 기존 정거장 상점**: 수리 기능이 아직 없음. 정거장 도착 위치가 상점 구역 안(`(0,5,445)`)이라 대사가 끝나면 자동으로 열린다.
-
-버린 대안과 이유:
-- **해적 전투 연계형(장면 5에서 해적 1척 추가 교전)** → 원문 문서와 사용자 모두 첫 플레이는 채굴·귀환에 집중하는 쪽을 택함.
-- **3번 슬롯 채굴 레이저(좌클릭으로 조준해 채굴)** → 무기와 조작이 섞여 헷갈림. 지정 후 F 키로 분리.
-- **지정만 하면 자동 채굴** → 너무 수동적이라 제외.
-- **연출로 광맥까지 자동 이동** → 사용자가 직접 비행을 선택.
-- **목적지 표시로 목표 마커(광맥 자동 지정) 재사용** → 튜토리얼의 "목표 지정" 단계가 무의미해져서 별도 노란 표시를 만듦.
-- **전역 적 발칸 공격력 하향** → 일반 적에도 영향.
-- **채굴 빔·파편을 HUD 캔버스 아래에 두기** → 캔버스 배율(약 0.5) 때문에 파편이 작아져서 별도 `MiningLaserFX` 루트로 분리.
-- **팁 패널을 체력바 자리에 겹쳐 오른쪽 위 끝으로** → 기존 HUD 체력바(오른쪽 위)를 가려서 그 바로 아래(-24,-84), 82% 크기로.
-- (이전 결정 유지) ScriptableObject 대사, ClusterEmitter, VFX Graph 터널, FORGE3D 파편 소행성, 소행성 110개 고정 배치, pulsewave 비콘, `PrologueDirector`→`WarpTunnelStage` 리팩터링 보류, WEBP 이미지.
+- **운송**: 받은 정거장 출발, 도착지는 거리 구간에서 무작위, 화물은 화물칸 한도 공유, 진행 중 임무는 저장 안 함, 4-2는 선체 50% 미만 즉시 실패 (사용자 선택).
+- **첫 번째 함선 퀘스트는 질문 없이 기록된 정보로 구현** (사용자 지시). 가정한 것은 `docs/game-design.md` 8.4에 번호로 정리해 두었다 → 나중에 사용자에게 묻는다.
+- **기본 보호막 없음 유지**: 증폭기를 달아야 보호막이 생기고 기준값은 함선별.
+- **무기 가격 1000배 유지, 장비 가격은 기획 단위** (사용자 선택).
+- 메인 퀘스트 임무는 반복 임무와 같은 `MissionDirector` 구조 위에 만들고 `OnBoard=false`로 라운지 목록에서 뺐다.
 
 ## 4. 현재 상태·주의
-- **모든 변경이 커밋됨**(412d123). `git status` 깨끗함.
-- **사람이 직접 끝까지 플레이한 적이 없다.** 자동 테스트는 신호·피해·채굴량을 코드로 넣어 진행했다. 실제 F 채굴, Tab/클릭 지정, 1/2 전환, 해적 숨기/모여서 공격의 체감은 미확인.
-- **해적 난이도 조정은 사용자가 보류**("나중에"). 가만히 있으면 한 번 모여서 공격할 때 선체가 약 350 깎여 두 번째 공격쯤 비상 프로토콜이 발동한다.
-- 알려진 문제·임시:
-  - 광맥 쪽 접근 방향에 따라 오른쪽 위 튜토리얼 안내창이 광맥 소행성을 가릴 수 있다.
-  - 장면 4 해적 격파 시 기존 적 프리팹의 처치 보상이 들어가 장면 6 크레딧이 정산액(600)보다 많다.
-  - 정산 금액(300 + 광물 단가 3)은 임시값. 마무리 대사의 "장갑 손상률 18%"는 고정 문구.
-  - 무기 아이콘은 UI 팩의 소총 아이콘(임시), 광맥 소행성·파편은 2D Space Kit 그림을 보라색으로 물들인 임시 연출.
-  - 퀘스트 목표 창은 3개 모두 완료돼도 화면에 남는다(닫는 cue 없음).
-  - 장면 6 끝에서 `enemies_on`으로 일반 적 스폰이 켜져, 상점이 열린 정거장 근처에 적이 나온다(원래 게임 루프와 같음).
-- 출시 전 교체 필요(라이선스): `Resources/Story/Tutorials/*.jpg` 5장(상용 게임 화면), 술집 배경 `tavern.jpg`(Star Citizen 콘셉트 아트로 보임).
-- **이 기기에만 있는 것**: 개발자 모드 `prologue off` 설정(PlayerPrefs, 에디터 로컬). Claude 메모리 폴더 경로가 기기마다 다르다(`C:\Users\<사용자>\.claude\projects\...`).
-- 함정:
-  - Unity가 백그라운드면 컴파일이 멈춘다 → 컴파일 요청 전에 Unity 창을 앞으로(PowerShell `WScript.Shell.AppActivate`). Play 전에 새 코드가 들어갔는지 확인.
-  - **control 시퀀스 중에 `StoryPlayer.Skip()`을 코드로 부르면 그 시퀀스가 통째로 빨리 감긴다**(Esc 키는 막혀 있지만 API는 막지 않음). 테스트 시 control 구간에서는 Skip 대신 `Signal`을 쓸 것.
-  - `execute_code`는 같은 코드가 여러 번 실행될 수 있다 → 멱등하게. JSON 수정 후엔 `refresh_unity` 후 Play.
-  - 전투 HUD 레이아웃(1920x1080 기준): 왼쪽 위 크레딧·퀘스트 창, 그 아래 화물 게이지(y +150), 왼쪽 가운데 무기 슬롯, 아래 대사창, 오른쪽 위 체력바(씬 HUD)와 그 아래 튜토리얼 안내창. 새 UI를 넣을 때 겹침 확인.
-  - `F3DFXController` 등 FORGE3D 코드에 `[추가]` 주석으로 표시한 수정이 있다(에셋 업데이트 시 덮어쓰이지 않게 주의).
+- **커밋 안 된 변경이 많다** (아래 커밋 제안). `SampleScene.unity`는 `_startCredits: 0 → 10000` 한 줄만 바뀌었다(의도한 변경).
+- **게임 반영 금지 유지**: `docs/game-design.md` 4장(최종 함선·보스·엔딩)은 사용자가 말하기 전에는 구현하지 않는다.
+- **알려진 문제**
+  - 아이언월 모델이 임시(K4_Green 구축함 모델)이고 아이콘은 스펙터 것을 쓴다. 터렛 위치(`extraTurretMounts`)도 눈대중이다.
+  - 수송선 요격·잔해 수색의 전투 밸런스(적 수·체력·제한 시간)는 실제 플레이로 확인하지 않았다. 코드로 격파·수색을 강제해 흐름만 확인했다.
+  - 광물 구매가 시장가의 2배라 라스 재료(철 200·티타늄 100·희귀 30) 전부 사면 약 17,000 CR 수준.
+  - 빔 무기는 마우스를 뗄 때 사라진다(F3D 원래 동작). 무기 아이콘은 하얀 임시 그림.
+  - 퀘스트는 라스 연락 후 '모항'에서만 광물 납품·조립이 된다. 모항이 아닌 정거장에서는 이유가 표시된다.
+  - 진행 중 임무(운송·메인 퀘스트 임무 포함)는 저장하지 않는다. 메인 임무 도중 종료하면 임무는 처음부터, 모은 특수 합금은 남는다.
+- **임시값**: 무기·함선·잔해·수송선 수치, 보호막 기준값, 광물 구매가 배율 (`docs/game-design.md` 7·8장).
+- **테스트 함정**
+  - 테스트 전 `save.json`(`%USERPROFILE%/AppData/LocalLow/DefaultCompany/SpaceRoglike/`)을 백업하고 끝나면 되돌린다(도킹하면 자동 저장).
+  - 저장에서 시작하려면 에디터 메뉴 "SpaceRoglike/저장/에디터에서 이어 하기"(EditorPrefs `SpaceRoglike.ContinueInEditor`)를 켠다. 끝나면 끈다.
+  - Play 직후 저장 불러오기가 몇 프레임 뒤에 끝난다(`SaveSystem.IsLoading`). 그 전에 임무를 시작하면 엉킨다.
+  - 라스의 첫 연락은 자금이 100만을 넘으면 자동 재생된다 → 테스트 세이브의 자금이 크면 Play 직후 대사가 나온다.
+  - `PlayerPrefs` `dev.skipPrologue`는 0으로 되돌린다. `Assets/Screenshots`는 지운다.
+  - 사용자가 Play 중일 수 있다. Play를 멈추기 전에 묻는다.
+  - Unity MCP `execute_code`는 `AssetDatabase.DeleteAsset`을 막는다. 파일 삭제는 셸로 파일과 `.meta`를 함께 지운다. `git rm`은 쓰지 않는다.
+  - Bash heredoc에 한글·따옴표·`\n`이 섞인 파이썬을 넣으면 깨진다 → 스크래치 파일로 써서 실행하고, C# 문자열의 `\n`이 실제 개행으로 바뀌지 않았는지 확인한다.
 
 ## 5. 다음 단계
-1. **장면 1~6 수동 플레이 확인**: 사용자가 Play에서 처음부터 끝까지 실제 입력으로 진행하며 문제를 적는다. 끝난 기준: 레이저/발칸 명중, Tab 지정, F 채굴, 해적 격파·도주·워프, 귀환 정산까지 막힘 없이 도달하고 콘솔 에러 0.
-2. **해적 난이도 조정**(사용자가 요청할 때): `Resources/Directors/Cue/CombatTutorialDirector.prefab`의 `_pirateTuning`(fireInterval, attackDistance), `_lurkSeconds`/`_attackSeconds`만 조절. 끝난 기준: 사용자가 정한 목표(예: 가만히 있으면 첫 공격 후 선체 70% 이상) 측정 확인.
-3. **튜토리얼 안내창과 광맥 겹침 해소**(1번에서 거슬리면): `MiningTutorialDirector.prefab`의 `_oreAngle`/`_reachDistance` 또는 `Resources/UI/TutorialTips.prefab` 크기 조정. 끝난 기준: 광맥에 접근해 채굴하는 동안 광맥이 안내창에 가리지 않음.
-4. **프롤로그 "처음 한 번만" 재생**: `PrologueDirector`에 저장 플래그(PlayerPrefs 등) 도입, 개발자 모드 `prologue on`으로 다시 볼 수 있게. 끝난 기준: 두 번째 실행부터 정거장에서 바로 시작.
-5. **정거장 수리 기능**("일단 장갑부터 수리하자"): 상점에 선체 수리 항목 추가(`StationShop`, SCI-FI UI Pack 기반). 끝난 기준: 크레딧을 내고 선체가 최대로 회복.
-6. **`PrologueDirector`의 터널·카메라 코드를 `WarpTunnelStage`로 통합**: 끝난 기준: 프롤로그 전체 재생과 장면 3·6 워프가 이전과 같게 동작.
-7. **출시 전 교체**: 튜토리얼 이미지 5장·술집 배경·무기 아이콘·광맥 그림, 한글 OFL 폰트 TMP 에셋을 `Resources/Fonts/KoreanFallback`에.
+1. **커밋** (사용자가 한다). 제안:
+   - `무기 id 도입, 무기 10종·유도탄·플라스마 포` — `Assets/FORGE3D/Sci-Fi Effects/Code/F3D*.cs`, `Scripts/Turret/*`, `Scripts/Economy/{PlayerHangar,StationShop,WeaponCatalog}.cs`, `Scripts/UI/CombatHud.cs`, `Assets/Items/*`, `Resources/Shop/WeaponCatalog.asset`, `Resources/WeaponStatsTable.asset`, `Prefabs/Turrets/Turret1.prefab`, `Resources/UI/CombatHud.prefab`
+   - `장비 5종 4등급과 장비 칸, 광물 구매` — `Scripts/Economy/{EquipmentCatalog,PlayerEquipment,CargoHold,OreCatalog}.cs`, `Scripts/Controllers/MiningLaser.cs`, `Resources/Shop/{EquipmentCatalog,OreCatalog}.asset`
+   - `경제 반영: 시작 자금·튜토리얼 보상·미션 보수` — `Scenes/SampleScene.unity`, `Resources/Story/Tutorial{Hangar,Return}.json`, `Resources/Missions/{Escort,Sweep,Mining}/*.asset`
+   - `운송 임무 4-1~4-3` — `Scripts/Mission/Transport*`, `Scripts/Map/StarSystem.cs`, `Resources/Missions/Transport*`, `Resources/Story/{MissionTransport,Speakers}.json`
+   - `함선 시스템과 첫 번째 함선 퀘스트` — `Scripts/Ships/*`, `Scripts/MainQuest/*`, `Scripts/Mission/{Salvage*,Intercept*}`, `Scripts/Controllers/PlayerShipAppearance.cs`, `Scripts/Save/SaveSystem.cs`, `Scripts/UI/{HangarWindow,CargoWindow,MissionBoardWindow}.cs`, `Scripts/Story/QuestTracker.cs`, `Scripts/DevMode/*`, `Resources/{Ships,MainQuest,Missions/Main}/*`, `Resources/Story/MainFirstShip.json`, `Resources/UI/StationInterior.prefab`, `Resources/Missions/EnemyShips.asset`
+   - `문서` — `docs/*`, `CLAUDE.md`
+2. **사용자에게 질문** (`docs/game-design.md` 8.4): 첫 번째 함선이 아이언월인지, 임시 재료 이름("희귀 결정"=희귀 광석), 납품 위치(모항 한정), 거래소 구매 방식, 새로 쓴 대사.
+3. **실제 플레이로 확인**: 100만 CR을 모아 라스 연락 → 구매 → 재료 → 두 임무 → 조립. 끝 기준: 임무 난이도(적 수·제한 시간)가 적당하고 아이언월 4슬롯이 불편하지 않은지.
+4. **(사용자가 요청하면) 최종 함선 퀘스트**: 3,000,000 CR + 완료 임무 50회 → 완료 임무 수 저장·카운트가 먼저 필요하다. 브레이크포인트 함선(6/8)을 `ShipCatalog`에 추가.
+5. **(필요하면) 아이언월 전용 모델·아이콘, 진행 중 임무 저장**.
+
+## 추가 메모
+- 기획 문서 원본(그림 포함)은 이 기기의 `Downloads/425a3c47-…_ExportBlock-…/`에만 있다. 텍스트는 `docs/design-source.md`에 복사해 두었다.

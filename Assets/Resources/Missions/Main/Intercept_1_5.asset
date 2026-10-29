@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e306ebd220c60d4faa7cb1862b446b8, type: 3}
+  m_Name: Intercept_1_5
+  m_EditorClassIdentifier: 
+  id: main_1_5
+  title: "\uD754\uC801\uC744 \uCAD3\uC544\uC11C"
+  tier: "\uBA54\uC778"
+  client: "\uB77C\uC2A4"
+  objective: "\uAD70\uC218\uD488 \uC218\uC1A1\uC120\uC744 \uCD94\uC801\uD574 \uACA9\uD30C\uD558\uACE0
+    \uACE0\uAE09 \uB3D9\uB825 \uCF54\uC5B4\uB97C \uD655\uBCF4\uD558\uB77C. (\uC120\uD0DD)
+    \uC9C0\uD718\uD568\uC744 \uACA9\uD30C\uD574 \uD1B5\uC2E0 \uAE30\uB85D\uC744 \uD68C\uC218\uD558\uB77C."
+  reward: 0
+  extraRewards:
+  - "\uBC30\uD6C4 \uC138\uB825\uC5D0 \uB300\uD55C \uB2E8\uC11C"
+  acceptSequence: first_ship_core_depart
+  successSequence: first_ship_core_done
+  beaconLevels: {x: 3, y: 4}
+  arrivalDelay: 3
+  transportClass: munitions_transport
+  escapeSeconds: 150
+  escorts:
+  - shipClass: interceptor
+    count: 3
+  - shipClass: destroyer
+    count: 1
+  commanderClass: commander
+  commanderSequence: first_ship_core_commander
+  commanderLineDelay: 12
+  successSequenceNoLog: first_ship_core_done_nolog

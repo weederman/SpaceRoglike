@@ -37,11 +37,20 @@ public class SaveSystem : MonoBehaviour
         public string[] hangar = new string[0];
         [Tooltip("화물칸의 광석 (id:양)")]
         public string[] cargo = new string[0];
-        [Tooltip("장착한 장갑·쉴드 (EquipmentCatalog id, 없으면 빈 문자열)")]
+        [Tooltip("함선에 단 장비 (EquipmentCatalog id)")]
+        public string[] equipped = new string[0];
+        [Tooltip("예전 저장(장갑 칸·쉴드 칸)의 장착 장비. 읽기만 하고 equipped가 비었을 때 쓴다")]
         public string armor;
         public string shield;
         [Tooltip("격납고에 보관 중인 장비 (장착하지 않은 것)")]
         public string[] equipment = new string[0];
+        [Tooltip("타고 있는 함선과 가진 함선 (ShipCatalog id, 예전 저장은 비어 있음 → 기본 함선)")]
+        public string ship;
+        public string[] ships = new string[0];
+        [Tooltip("타고 있지 않은 함선들의 무장 (함선id=무기1,무기2,...). 타고 있는 함선의 무장은 loadout")]
+        public string[] shipLoadouts = new string[0];
+        [Tooltip("메인 스토리 ① 첫 번째 함선 해금 진행")]
+        public FirstShipQuest.SaveState firstShip = new FirstShipQuest.SaveState();
         [Tooltip("다시 시작하면 재생할 스토리 시퀀스 (없으면 자유 플레이)")]
         public string resumeSequence;
     }
@@ -55,6 +64,9 @@ public class SaveSystem : MonoBehaviour
 
     public static string FilePath => Path.Combine(Application.persistentDataPath, FileName);
     public static bool HasSave => File.Exists(FilePath);
+
+    /// <summary>이어 하기로 저장을 불러오는 중인지 (이 동안은 저장·퀘스트 연락을 하지 않는다)</summary>
+    public static bool IsLoading => _instance != null && _instance._loading;
 
     /// <summary>게임을 시작할 때 저장을 불러와 이어 하는지 (에디터에서는 메뉴로 켰을 때만)</summary>
     public static bool WillContinue
@@ -188,11 +200,14 @@ public class SaveSystem : MonoBehaviour
             data.questDone = new System.Collections.Generic.List<string>(quest.DoneObjectives).ToArray();
         }
 
+        data.ship = PlayerShips.CurrentId;
+        data.ships = PlayerShips.OwnedForSave();
+        data.shipLoadouts = PlayerShips.LoadoutsForSave();
+        data.firstShip = FirstShipQuest.ToSave();
         if (PlayerWeaponSelector.Instance != null)
             data.loadout = PlayerWeaponSelector.Instance.CurrentLoadout();
         data.hangar = PlayerHangar.ToNames();
-        data.armor = PlayerEquipment.ArmorId;
-        data.shield = PlayerEquipment.ShieldId;
+        data.equipped = PlayerEquipment.EquippedIds();
         data.equipment = PlayerEquipment.StoredIds();
         if (CargoHold.Instance != null)
             data.cargo = CargoHold.Instance.ToSave();
@@ -283,12 +298,16 @@ public class SaveSystem : MonoBehaviour
         if (CreditWallet.Instance != null)
             CreditWallet.Instance.SetAmount(data.credits);
 
+        // 함선이 먼저다 (터렛 수 = 무기 슬롯 수, 장비 칸 수)
+        PlayerShips.Restore(data.ship, data.ships, data.shipLoadouts);
         if (PlayerWeaponSelector.Instance != null && data.loadout != null && data.loadout.Length > 0)
             PlayerWeaponSelector.Instance.ApplyLoadout(data.loadout);
         PlayerHangar.Restore(data.hangar);
-        PlayerEquipment.Restore(data.armor, data.shield, data.equipment);
+        bool oldSlots = data.equipped == null || data.equipped.Length == 0;
+        PlayerEquipment.Restore(oldSlots ? new[] { data.armor, data.shield } : data.equipped, data.equipment);
         if (CargoHold.Instance != null)
             CargoHold.Instance.Restore(data.cargo);
+        FirstShipQuest.Restore(data.firstShip);
 
         StoryPlayer.EnsureCreated();
         yield return null; // 퀘스트 창이 생기도록

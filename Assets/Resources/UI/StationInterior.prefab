@@ -5453,6 +5453,8 @@ MonoBehaviour:
   _escortIcon: {fileID: 21300000, guid: 3f129cabb35ab4d45bd2fa4880196b4b, type: 3}
   _sweepIcon: {fileID: 21300000, guid: 9e406253d198e3144bfc5127c13048a1, type: 3}
   _miningIcon: {fileID: 21300000, guid: fed69d784ff1b6645a3904ccfc8e9aba, type: 3}
+  _transportIcon: {fileID: 21300000, guid: 5e8bbf0b3b493614abc6c463ba85a46a, type: 3}
+  _mainQuestIcon: {fileID: 21300000, guid: 431922d5b048ccd43a9ce25241874003, type: 3}
 --- !u!1 &3056207145967483696
 GameObject:
   m_ObjectHideFlags: 0
@@ -16268,6 +16270,8 @@ MonoBehaviour:
   _escortIcon: {fileID: 21300000, guid: 3f129cabb35ab4d45bd2fa4880196b4b, type: 3}
   _sweepIcon: {fileID: 21300000, guid: 9e406253d198e3144bfc5127c13048a1, type: 3}
   _miningIcon: {fileID: 21300000, guid: fed69d784ff1b6645a3904ccfc8e9aba, type: 3}
+  _transportIcon: {fileID: 21300000, guid: 5e8bbf0b3b493614abc6c463ba85a46a, type: 3}
+  _mainQuestIcon: {fileID: 21300000, guid: 431922d5b048ccd43a9ce25241874003, type: 3}
 --- !u!1 &7468904487042756869
 GameObject:
   m_ObjectHideFlags: 0

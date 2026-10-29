@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74f5d40fdc9142c4dbc1e2114ca377e8, type: 3}
   m_Name: TurretItem_PlasmaBeam
   m_EditorClassIdentifier: 
-  displayName: Plasma Beam
+  weaponId: beam
+  displayName: "\uACE0\uCD9C\uB825 \uB808\uC774\uC800"
   icon: {fileID: 21300000, guid: 3f83ab8fbe3a9c4488f4d911d3d04dfe, type: 3}
   turretPrefab: {fileID: 6509607899620335586, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
   weaponType: 7
-  price: 200
+  price: 140000
   forSale: 1
-  description: "\uC3D8\uB294 \uB3D9\uC548 \uB04A\uAE30\uC9C0 \uC54A\uACE0 \uD53C\uD574\uB97C
-    \uC8FC\uB294 \uC9C0\uC18D\uD615 \uD50C\uB77C\uC988\uB9C8 \uBE54."
+  description: "\uB04A\uAE40 \uC5C6\uC774 \uC3D8\uC544 \uB300\uB294 \uACE0\uCD9C\uB825
+    \uB808\uC774\uC800 \uBE54. \uC3D8\uB294 \uB3D9\uC548 \uACC4\uC18D \uD53C\uD574\uB97C
+    \uC900\uB2E4."

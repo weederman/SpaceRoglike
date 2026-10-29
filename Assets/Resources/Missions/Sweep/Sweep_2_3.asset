@@ -18,7 +18,7 @@ MonoBehaviour:
   client: "\uD604\uC0C1\uAE08 \uC0AC\uBB34\uC18C"
   objective: "\uD574\uC801 \uB450\uBAA9 \uD568\uC120\uC744 \uACA9\uD30C\uD558\uB77C
     \xB7 \uB3C4\uC8FC\uD558\uAC8C \uB450\uBA74 \uC2E4\uD328"
-  reward: 35000
+  reward: 45000
   extraRewards:
   - "\uD604\uC0C1\uAE08"
   acceptSequence: mission_sweep_2_3_accept

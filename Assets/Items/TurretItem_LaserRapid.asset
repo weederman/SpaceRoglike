@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74f5d40fdc9142c4dbc1e2114ca377e8, type: 3}
+  m_Name: TurretItem_LaserRapid
+  m_EditorClassIdentifier: 
+  weaponId: laser_rapid
+  displayName: "\uACE0\uC18D \uB808\uC774\uC800"
+  icon: {fileID: 21300000, guid: 66c3b59285095af4e8f45e67e9f813ee, type: 3}
+  turretPrefab: {fileID: 6509607899620335586, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
+  weaponType: 11
+  price: 50000
+  forSale: 1
+  description: "\uB0C9\uAC01 \uD68C\uB85C\uB97C \uB298\uB824 \uC5F0\uC0AC \uC18D\uB3C4\uB97C
+    \uB04C\uC5B4\uC62C\uB9B0 \uB808\uC774\uC800. \uC274\uB4DC\uB97C \uBE60\uB974\uAC8C
+    \uAE4E\uB294\uB2E4."

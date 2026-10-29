@@ -200,3 +200,34 @@ MonoBehaviour:
       warpVanishDistance: 600
       warpDashSeconds: 1.2
       raidLeadAngle: 15
+  - id: munitions_transport
+    displayName: "\uAD70\uC218\uD488 \uC218\uC1A1\uC120"
+    model: {fileID: 1626488730406606, guid: ff4e0e4e62247f3459cd53ba2f747149, type: 3}
+    modelRotation: {x: 0, y: 0, z: 0}
+    modelLengthRatio: 1.6
+    scale: 3.2
+    shieldHp: 900
+    hullHp: 2400
+    weapon: 0
+    damage: 15
+    tuning:
+      approachSmoothTime: 2.5
+      approachMaxSpeed: 70
+      fightAcceleration: 16
+      fireRange: 360
+      fireInterval: 3
+      separation: 180
+      lurkDistance: {x: 170, y: 300}
+      lurkMaxSpeed: 26
+      lurkWander: 18
+      lurkDefendRange: 150
+      attackDistance: 300
+      attackMaxSpeed: 28
+      fleeMaxSpeed: 38
+      fleeAcceleration: 18
+      fleeGiveUpDistance: 100000
+      warpTurnSeconds: 1
+      warpMaxSeconds: 5
+      warpVanishDistance: 480
+      warpDashSeconds: 1.2
+      raidLeadAngle: 15

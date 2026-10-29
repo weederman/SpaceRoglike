@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74f5d40fdc9142c4dbc1e2114ca377e8, type: 3}
   m_Name: TurretItem_Railgun
   m_EditorClassIdentifier: 
-  displayName: Railgun
+  weaponId: railgun
+  displayName: "\uC911\uD615 \uB808\uC77C\uAC74"
   icon: {fileID: 21300000, guid: 0614d263994183a48957190ceca76925, type: 3}
   turretPrefab: {fileID: 6509607899620335586, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
   weaponType: 5
-  price: 300
+  price: 100000
   forSale: 1
-  description: "\uACE0\uC18D \uAD00\uD1B5\uD0C4\uC744 \uC3D8\uB294 \uB808\uC77C\uAC74.
-    \uC120\uCCB4\uC5D0 \uAC15\uD558\uC9C0\uB9CC \uC274\uB4DC\uC5D0\uB294 \uC57D\uD558\uB2E4."
+  description: "\uC804\uC790\uAE30\uB825\uC73C\uB85C \uD0C4\uC744 \uAC00\uC18D\uD574
+    \uAFF0\uB6AB\uB294\uB2E4. \uC120\uCCB4\uC5D0 \uB9E4\uC6B0 \uAC15\uD558\uC9C0\uB9CC
+    \uC274\uB4DC\uC5D0\uB294 \uC57D\uD558\uB2E4."

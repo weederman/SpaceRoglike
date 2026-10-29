@@ -15,8 +15,13 @@ MonoBehaviour:
   weapons:
   - {fileID: 11400000, guid: c301d42cc709ba5428027ef78905d51c, type: 2}
   - {fileID: 11400000, guid: b39153c38946a6649bf26e4af514c9bf, type: 2}
-  - {fileID: 11400000, guid: 75b71afaf4a4f0a479b2b583998ad137, type: 2}
-  - {fileID: 11400000, guid: 72582364ab19dea49a6f25488c837023, type: 2}
+  - {fileID: 11400000, guid: ec3e095b560c1a04ba88d3d0e00d7bcd, type: 2}
+  - {fileID: 11400000, guid: ed2c46f276816e84c88fd8b3265a0891, type: 2}
   - {fileID: 11400000, guid: 1c91300854accd142972a0756d263095, type: 2}
   - {fileID: 11400000, guid: 3386fafcfc953c54f8be633b91393964, type: 2}
+  - {fileID: 11400000, guid: 72582364ab19dea49a6f25488c837023, type: 2}
+  - {fileID: 11400000, guid: f83f1ea517d86e341b724a4ae0e07658, type: 2}
+  - {fileID: 11400000, guid: b702a053277e0544ab96d7e38a27e2c2, type: 2}
+  - {fileID: 11400000, guid: 114087f614691f64fbced7f9a1004752, type: 2}
+  - {fileID: 11400000, guid: 75b71afaf4a4f0a479b2b583998ad137, type: 2}
   sellRatio: 0.5

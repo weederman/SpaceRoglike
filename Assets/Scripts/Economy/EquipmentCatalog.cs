@@ -2,10 +2,14 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// 함선 장비(장갑·쉴드) 전체 목록(단일 출처). 위치: Assets/Resources/Shop/EquipmentCatalog.asset
-///  - 장갑: 선체 최대 체력을 더한다 (함선 기본 선체 + hullBonus)
-///  - 쉴드: 쉴드를 단다 (최대 체력, 피격이 없으면 rechargeDelay초 뒤부터 초당 rechargePerSecond씩 재충전)
-/// 함선은 장갑 칸 하나·쉴드 칸 하나를 갖고, 처음에는 둘 다 비어 있다(쉴드 없음). 상점에서 사서 격납고에서 장착한다.
+/// 함선 장비 전체 목록(단일 출처). 위치: Assets/Resources/Shop/EquipmentCatalog.asset
+/// 기획 가격·성능표(docs/game-design.md 2.3)의 5종 × 4단계. 효과는 모두 함선 기본값에 대한 % 증가다(bonusPercent).
+///  - 강화 장갑: 선체 최대 체력 +%
+///  - 보호막 증폭기: 보호막 용량·재충전 +%. 함선에 기본 보호막이 없으므로(장착해야 보호막이 생긴다) 함선의 보호막 기준값(ShipCatalog)에 %를 더한 보호막을 단다
+///  - 추진기 개량: 가속 +%
+///  - 화물창 확장: 화물칸 용량 +%
+///  - 채굴 장비 개량: 채굴 속도 +%
+/// 같은 종류는 하나만 단다(등급끼리 합산하지 않고 교체). 함선의 장비 칸 수(ShipCatalog.equipmentSlots)만큼 종류를 고를 수 있다.
 /// 장착·보관 상태는 PlayerEquipment가 갖는다.
 /// </summary>
 [CreateAssetMenu(fileName = "EquipmentCatalog", menuName = "SpaceRoglike/Equipment Catalog")]
@@ -13,7 +17,9 @@ public class EquipmentCatalog : ScriptableObject
 {
     public const string ResourcePath = "Shop/EquipmentCatalog";
 
-    public enum Kind { Armor, Shield }
+    public enum Kind { Armor, Shield, Thruster, Cargo, Mining }
+
+    public static readonly Kind[] AllKinds = { Kind.Armor, Kind.Shield, Kind.Thruster, Kind.Cargo, Kind.Mining };
 
     [Serializable]
     public class Item
@@ -21,6 +27,8 @@ public class EquipmentCatalog : ScriptableObject
         [Tooltip("저장·장착에서 부르는 이름 (예: armor_1)")]
         public string id;
         public Kind kind;
+        [Tooltip("등급 (1~4)")]
+        [Range(1, 4)] public int tier = 1;
         public string displayName;
         public Sprite icon;
         [Min(0)] public int price = 1000;
@@ -28,16 +36,8 @@ public class EquipmentCatalog : ScriptableObject
         public bool forSale = true;
         [TextArea(2, 6)] public string description;
 
-        [Header("장갑")]
-        [Tooltip("선체 최대 체력에 더하는 값")]
-        [Min(0f)] public float hullBonus;
-
-        [Header("쉴드")]
-        [Min(0f)] public float shieldHp;
-        [Tooltip("마지막으로 맞은 뒤 재충전이 시작되기까지 (초)")]
-        [Min(0f)] public float rechargeDelay = 4f;
-        [Tooltip("재충전 속도 (초당 쉴드 체력)")]
-        [Min(0f)] public float rechargePerSecond;
+        [Tooltip("함선 기본값에 더하는 비율 (%)")]
+        [Min(0f)] public float bonusPercent = 10f;
     }
 
     public Item[] items = new Item[0];
@@ -76,6 +76,32 @@ public class EquipmentCatalog : ScriptableObject
 
     public static string KindName(Kind kind)
     {
-        return kind == Kind.Armor ? "장갑" : "쉴드";
+        switch (kind)
+        {
+            case Kind.Armor: return "강화 장갑";
+            case Kind.Shield: return "보호막 증폭기";
+            case Kind.Thruster: return "추진기 개량";
+            case Kind.Cargo: return "화물창 확장";
+            default: return "채굴 장비 개량";
+        }
+    }
+
+    /// <summary>효과가 무엇에 붙는지 (예: "선체 내구도")</summary>
+    public static string EffectName(Kind kind)
+    {
+        switch (kind)
+        {
+            case Kind.Armor: return "선체 내구도";
+            case Kind.Shield: return "보호막 용량";
+            case Kind.Thruster: return "가속";
+            case Kind.Cargo: return "화물 용량";
+            default: return "채굴 속도";
+        }
+    }
+
+    /// <summary>"선체 내구도 +10%"</summary>
+    public static string EffectLine(Item item)
+    {
+        return item != null ? $"{EffectName(item.kind)} +{item.bonusPercent:0.#}%" : "";
     }
 }

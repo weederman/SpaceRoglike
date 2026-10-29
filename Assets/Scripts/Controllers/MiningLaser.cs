@@ -143,7 +143,9 @@ public class MiningLaser : MonoBehaviour
 
         if (IsMining)
         {
-            float taken = ore.Extract(_orePerSecond * Time.deltaTime);
+            // 채굴 장비 개량을 달았으면 그만큼 빨리 캔다
+            float rate = _orePerSecond * (1f + PlayerEquipment.Bonus(EquipmentCatalog.Kind.Mining));
+            float taken = ore.Extract(rate * Time.deltaTime);
             CargoHold.Instance.Add(ore.OreId, taken);
         }
 

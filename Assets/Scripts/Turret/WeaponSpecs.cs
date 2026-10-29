@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// 격납고·상점 '세부정보'에 보여줄 무기 성능. 따로 적어 두지 않고 실제로 쓰는 값에서 읽는다.
-///  - 데미지·발사 간격·DPS: WeaponStatsTable (플레이어 기준)
+///  - 데미지·발사 간격·DPS: WeaponStatsTable의 무기 id 항목 (플레이어 기준)
 ///  - 사정거리·탄속: 터렛 프리팹(F3DFXController)이 쏘는 발사체(F3DProjectile 속도 × 수명)나 빔(F3DBeam 최대 길이)
 /// </summary>
 public static class WeaponSpecs
@@ -23,10 +23,11 @@ public static class WeaponSpecs
     public static Specs Get(TurretItemData item)
     {
         F3DFXType type = item.weaponType;
+        string id = item.weaponId;
         var specs = new Specs
         {
-            damage = WeaponStatsTable.GetDamage(type, WeaponOwner.Player),
-            dps = WeaponStatsTable.GetDps(type),
+            damage = WeaponStatsTable.GetDamage(type, WeaponOwner.Player, id),
+            dps = WeaponStatsTable.GetDps(type, id),
         };
 
         Transform shot = ShotPrefab(item.turretPrefab, type);
@@ -45,7 +46,7 @@ public static class WeaponSpecs
         }
 
         // 지속형 빔(발사 간격 0)은 쏘는 동안 계속 피해를 준다 → 발사 간격 대신 '지속'
-        specs.shotsPerSecond = WeaponStatsTable.IsContinuous(type) ? 0f : 1f / WeaponStatsTable.GetFireInterval(type);
+        specs.shotsPerSecond = WeaponStatsTable.IsContinuous(type, id) ? 0f : 1f / WeaponStatsTable.GetFireInterval(type, id);
         return specs;
     }
 

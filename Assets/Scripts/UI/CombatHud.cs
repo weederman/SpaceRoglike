@@ -194,7 +194,7 @@ public class CombatHud : MonoBehaviour
                 continue;
 
             view.key.text = (i + 1).ToString();
-            view.weaponName.text = WeaponStatsTable.GetDisplayName(_weapons.GetWeapon(i));
+            view.weaponName.text = WeaponCatalog.NameOf(_weapons.GetWeapon(i));
             view.group.alpha = i == _weapons.SelectedIndex ? 1f : _unselectedAlpha;
         }
     }
@@ -266,13 +266,13 @@ public class CombatHud : MonoBehaviour
     private void UpdateCargo()
     {
         // 실은 광물이 있거나 캘 수 있는 광맥이 있을 때만 보인다
-        bool show = _cargoHold != null && (_cargoHold.Ore > 0f || MineableAsteroid.All.Count > 0);
+        bool show = _cargoHold != null && (_cargoHold.Used > 0f || MineableAsteroid.All.Count > 0);
         _cargo.alpha = show ? 1f : 0f;
         if (!show)
             return;
 
         _cargoBar.value = _cargoHold.Ratio;
-        _cargoText.text = string.Format(_cargoFormat, _cargoHold.Ore, _cargoHold.Capacity, _cargoHold.Ratio * 100f);
+        _cargoText.text = string.Format(_cargoFormat, _cargoHold.Used, _cargoHold.Capacity, _cargoHold.Ratio * 100f);
     }
 
     /// <summary>월드 위치를 화면(캔버스) 위치로 옮긴다. 카메라 뒤나 화면 밖이면 가장자리에 붙인다.

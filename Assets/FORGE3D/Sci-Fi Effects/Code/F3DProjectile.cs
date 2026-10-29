@@ -19,6 +19,11 @@ namespace FORGE3D
         // 착탄 이펙트가 마지막에 Awake된 컨트롤러로 섞이는 문제를 막는다.
         [System.NonSerialized] public F3DFXController controller;
 
+        // [추가] 유도탄: 이 표적(락온한 함선)을 향해 초당 homingTurnRate도씩 방향을 튼다. 표적이 없거나 부서지면 직진.
+        // 풀에서 다시 쓰므로 쏘는 쪽(F3DFXController)이 매번 정한다.
+        [System.NonSerialized] public Component homingTarget;
+        [System.NonSerialized] public float homingTurnRate;
+
         ParticleSystem[] particles;
         new Transform transform;
         RaycastHit hitPoint;
@@ -151,6 +156,8 @@ namespace FORGE3D
 
             else
             {
+                Steer();
+
                 Vector3 step =
                     transform.forward *
                     Time.deltaTime *
@@ -181,8 +188,8 @@ namespace FORGE3D
                     HitResolver.Resolve(
                         hitPoint,
                         appliedDamage,
-                        WeaponStatsTable.GetShieldMultiplier(fxType),
-                        WeaponStatsTable.GetArmorMultiplier(fxType),
+                        controller != null ? controller.GetShieldMultiplier(fxType) : WeaponStatsTable.GetShieldMultiplier(fxType),
+                        controller != null ? controller.GetArmorMultiplier(fxType) : WeaponStatsTable.GetArmorMultiplier(fxType),
                         fxType,
                         owner);
 
@@ -214,6 +221,26 @@ namespace FORGE3D
             }
 
             timer += Time.deltaTime;
+        }
+
+        // [추가] 유도탄이면 표적 쪽으로 방향을 돌린다
+        void Steer()
+        {
+            if (homingTarget == null)
+                return;
+
+            if (homingTarget is HullHealth hull && !hull.IsActive)
+            {
+                homingTarget = null;
+                return;
+            }
+
+            Vector3 to = TargetingSystem.PositionOf(homingTarget) - transform.position;
+            if (to.sqrMagnitude < 0.01f)
+                return;
+
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(to),
+                homingTurnRate * Time.deltaTime);
         }
 
         public void SetOffset(float offset)

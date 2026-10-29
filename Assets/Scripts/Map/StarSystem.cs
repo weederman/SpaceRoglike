@@ -421,6 +421,15 @@ public class StarSystem : MonoBehaviour
     }
 
     /// <summary>장소까지의 수평 거리. 정거장은 아주 커서 중심이 아니라 선체(모델 범위) 끝에서 잰다.</summary>
+    /// <summary>
+    /// world가 그 장소의 지역 범위 안인지. 붙어 있는 두 장소(가까운 정거장 둘 등)는 지역 판정이 먼저 들어간 쪽에 머무르므로,
+    /// "이 장소에 왔는가"를 볼 때는 CurrentArea와 함께 이것도 본다.
+    /// </summary>
+    public bool IsNear(Location location, Vector3 world)
+    {
+        return !location.IsNone && DistanceTo(location, world) <= _areaRadius;
+    }
+
     private float DistanceTo(Location location, Vector3 world)
     {
         if (location.Kind == LocationKind.Station)

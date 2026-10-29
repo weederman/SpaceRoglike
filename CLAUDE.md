@@ -10,14 +10,17 @@
 - 에디터 자동화: Unity MCP (`execute_code`, `manage_editor`, `refresh_unity`, `read_console` 등)
 
 ## 폴더 구조
-- `Assets/Scripts/` — `Controllers`(함선·카메라·입력 잠금), `Turret`, `Enemy`, `Health`, `Economy`, `Environment`, `Story`, `UI`, `DevMode`
-- `Assets/Resources/` — 런타임에 코드로 불러오는 것만: `Story/*.json`(대사), `UI/`(스토리 UI 프리팹), `Directors/`(연출 담당), `WeaponStatsTable.asset`
+- `Assets/Scripts/` — `Controllers`(함선·카메라·입력 잠금), `Turret`, `Enemy`, `Health`, `Economy`, `Environment`, `Mission`, `Ships`(함선 카탈로그·보유), `MainQuest`(메인 스토리 퀘스트), `Story`, `UI`, `DevMode`
+- `Assets/Resources/` — 런타임에 코드로 불러오는 것만: `Story/*.json`(대사), `UI/`(스토리·HUD·정거장 UI 프리팹), `Directors/`(연출 담당), `Missions/`(임무 데이터·Director·적 함종), `Shop/`(무기·장비·광석 카탈로그), `Ships/`(함선 카탈로그), `MainQuest/`(메인 퀘스트 정의), `WeaponStatsTable.asset`
 - `Assets/Prefabs/` — `Effects`, `Projectiles`, `Ships`, `Turrets`, `UI`
 - `Assets/Scenes/SampleScene.unity` — 메인 씬
 - `docs/handoff.md` — 진행 중 작업 인수인계
 
 ## 아키텍처 원칙
-- **데이터는 한 곳에서**: 무기 수치는 `WeaponStatsTable`, 대사는 `Resources/Story/*.json`. 코드에 수치/대사를 박지 않는다.
+- **데이터는 한 곳에서**: 무기 수치는 `WeaponStatsTable`, 무기 이름·가격은 `Assets/Items/TurretItem_*`, 장비는 `Shop/EquipmentCatalog`, 대사는 `Resources/Story/*.json`. 코드에 수치/대사를 박지 않는다. 기획 가격·성능표와 반영 값은 `docs/game-design.md` 7장.
+- **무기는 무기 id로 다룬다** (`WeaponStatsTable` 항목 id = `TurretItemData.weaponId`, 예: `vulcan_heavy`). 같은 이펙트(`F3DFXType`)를 쓰는 변형 무기가 있으므로 장착·보관·저장·HUD에서 `F3DFXType`을 무기 식별자로 쓰지 않는다. 적은 무기 종류의 기본형(그 종류의 첫 항목)을 쓴다.
+- **장비 효과는 `PlayerEquipment`에서만** 적용한다(선체·보호막·가속은 `Apply`, 화물칸·채굴 속도는 `Bonus`로 읽어 감). 장비 칸 수·기본 성능은 지금 함선(`PlayerShips.Current`, `ShipCatalog`)의 값이다.
+- **함선은 `PlayerShips`로만 바꾼다**(`Grant`/`Switch`). 무기는 함선마다 따로 기억하고 장비는 공유한다. 메인 퀘스트 진행은 `FirstShipQuest`(저장 포함), 해금·보상은 cue(`ship_grant:`, `equip:`)로 부른다.
 - **개발자 모드(`DevTuning`)는 런타임 값만 덮어쓴다.** 에셋과 프리팹은 절대 수정하지 않는다.
 - **피해 처리**: `IDamageable` + `HitResolver`, 체력/쉴드는 `HullHealth`/`ShieldHealth`의 이벤트로 알린다.
 - **스토리 파이프라인**: JSON → `StoryDatabase` → `StoryPlayer` → `NarrationBar`. 연출은 대사의 `cue`로 호출하고 장면별 Director가 처리한다.

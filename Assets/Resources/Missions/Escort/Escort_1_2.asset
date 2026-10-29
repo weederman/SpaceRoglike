@@ -19,6 +19,10 @@ MonoBehaviour:
   objective: "120\uCD08 \uB3D9\uC548 \uD654\uBB3C\uC120\uC744 \uBCF4\uD638\uD558\uB77C
     \xB7 \uBBF8\uC0AC\uC77C \uD568\uC120\uC744 \uBA3C\uC800 \uACA9\uD30C\uD558\uBA74
     \uCD94\uAC00 \uBCF4\uC0C1"
+  reward: 20000
+  extraRewards: []
+  acceptSequence: mission_escort_1_2_accept
+  successSequence: mission_escort_1_2_success
   freighterHp: 5000
   warpPrepSeconds: 120
   waves:
@@ -30,12 +34,8 @@ MonoBehaviour:
     shipClass: missile_ship
     count: 1
     target: 0
-  reward: 15000
   reducedBelowHpRatio: 0
   reducedReward: 0
   bonusShipClass: missile_ship
   bonusReward: 5000
   bonusLabel: "\uBBF8\uC0AC\uC77C \uD568\uC120 \uC120\uC81C \uACA9\uD30C \uBCF4\uB108\uC2A4"
-  reputation: 0
-  acceptSequence: mission_escort_1_2_accept
-  successSequence: mission_escort_1_2_success

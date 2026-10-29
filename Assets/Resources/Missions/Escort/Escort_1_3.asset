@@ -18,7 +18,7 @@ MonoBehaviour:
   client: "\uC131\uACC4 \uBC29\uC704\uAD70"
   objective: "150\uCD08 \uB3D9\uC548 \uC218\uC1A1\uC120\uC744 \uBCF4\uD638\uD558\uB77C
     \xB7 60\uCD08 \uD6C4 \uC99D\uC6D0 \uD568\uB300 \uC811\uADFC"
-  reward: 25000
+  reward: 35000
   extraRewards:
   - "\uC131\uACC4 \uBC29\uC704\uAD70 \uD3C9\uD310 \uC0C1\uC2B9"
   acceptSequence: mission_escort_1_3_accept

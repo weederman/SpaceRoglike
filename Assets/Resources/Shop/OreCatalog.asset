@@ -28,6 +28,21 @@ MonoBehaviour:
     depositsPerLevel: 0400000004000000050000000500000006000000
     amount: {x: 60, y: 100}
     size: 110
+  - id: titanium
+    displayName: "\uD2F0\uD0C0\uB284 \uAD11\uC11D"
+    icon: {fileID: 21300000, guid: c0f9b7ed2e8cc9346ba7b9a80b141ae7, type: 3}
+    price: 25
+    description: "\uAC00\uBCCD\uACE0 \uB2E8\uB2E8\uD55C \uC120\uCCB4 \uC7AC\uB8CC.
+      \uCCA0\uAD11\uC11D\uBCF4\uB2E4 \uB4DC\uBB3C\uC5B4 \uC911\uAC04 \uB808\uBCA8
+      \uBE44\uCF58\uC758 \uAD11\uB9E5\uC5D0\uC11C \uB098\uC628\uB2E4."
+    looks:
+    - model: {fileID: 1822345149752838, guid: 45b62242ff99b0a48a47f713cd6d1687, type: 3}
+      glow: {r: 0.75, g: 0.88, b: 1, a: 1}
+    - model: {fileID: 1846397802687310, guid: 8c22678d7aa562145804b6f0af7e603a, type: 3}
+      glow: {r: 0.75, g: 0.88, b: 1, a: 1}
+    depositsPerLevel: 0000000002000000030000000300000004000000
+    amount: {x: 40, y: 70}
+    size: 110
   - id: rare
     displayName: "\uD76C\uADC0 \uAD11\uC11D"
     icon: {fileID: 21300000, guid: 6448b82046e9dd542ab37ce629da1cf1, type: 3}
@@ -41,6 +56,8 @@ MonoBehaviour:
     depositsPerLevel: 0000000000000000020000000200000003000000
     amount: {x: 25, y: 35}
     size: 90
+  buyPriceRatio: 2
+  buyBatch: 10
   depositDistance: {x: 300, y: 800}
   depositSpacing: 220
   depositHeight: -30

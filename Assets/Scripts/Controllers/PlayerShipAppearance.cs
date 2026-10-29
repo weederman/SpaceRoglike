@@ -7,6 +7,7 @@ using UnityEngine;
 ///  - Fighter  : 보상으로 받은 소형 전투선 (SF Fighter). 프롤로그 이후의 플레이어 함선. 기본 모습.
 ///  - Freighter: 주인공의 원래 함선, UTI 화물선 (SF RF5). 프롤로그 동안만. 무장이 없는 배라 포탑은 숨긴다.
 /// 모델과 크기는 Assets/Resources/Ships/PlayerShipLooks.asset 에서 정한다. 게임 씬이 시작되면 자동으로 기본 모습(Fighter)이 된다.
+/// 함선을 바꾸면(PlayerShips) Fighter 자리에 그 함선의 모습(ShipCatalog의 look)을 쓴다(SetShip).
 /// </summary>
 public class PlayerShipAppearance : MonoBehaviour
 {
@@ -37,6 +38,7 @@ public class PlayerShipAppearance : MonoBehaviour
     private const string ConfigPath = "Ships/PlayerShipLooks";
 
     private PlayerShipLooks _config;
+    private LookSettings _shipLook; // 지금 탄 함선의 모습 (없으면 PlayerShipLooks의 fighter)
     private MeshRenderer _originalHull;
     private GameObject _model;
     private bool _applied;
@@ -48,10 +50,20 @@ public class PlayerShipAppearance : MonoBehaviour
     {
         get
         {
+            if (Current == Look.Fighter && _shipLook != null && _shipLook.model != null)
+                return _shipLook;
             if (_config == null)
                 _config = Resources.Load<PlayerShipLooks>(ConfigPath);
             return _config != null ? _config.Get(Current) : null;
         }
+    }
+
+    /// <summary>탄 함선의 모습을 정한다. 지금 Fighter 모습이면(프롤로그의 화물선이 아니면) 바로 바꾼다.</summary>
+    public void SetShip(LookSettings settings)
+    {
+        _shipLook = settings;
+        if (!_applied || Current == Look.Fighter)
+            Set(Look.Fighter);
     }
 
     /// <summary>그 함선의 겉모습 담당 (없으면 붙인다)</summary>
@@ -91,7 +103,9 @@ public class PlayerShipAppearance : MonoBehaviour
         if (_config == null)
             _config = Resources.Load<PlayerShipLooks>(ConfigPath);
 
-        LookSettings settings = _config != null ? _config.Get(look) : null;
+        LookSettings settings = look == Look.Fighter && _shipLook != null && _shipLook.model != null
+            ? _shipLook
+            : _config != null ? _config.Get(look) : null;
         if (settings == null || settings.model == null)
         {
             Debug.LogWarning($"[PlayerShip] Assets/Resources/{ConfigPath}.asset에 {look} 모델이 없어 원래 모습으로 둡니다.");

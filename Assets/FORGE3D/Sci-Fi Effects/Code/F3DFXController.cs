@@ -34,10 +34,35 @@ namespace FORGE3D
         // 임무의 적 함종(EnemyShipCatalog)처럼 같은 무기라도 함선마다 공격력이 다를 때 런타임에만 정한다.
         [System.NonSerialized] public float damageOverride = -1f;
 
+        // [추가] 플레이어 무기 id (WeaponStatsTable 항목). 같은 무기 종류의 변형(강화 기관포·중형 미사일 등)은 이 id로 수치를 찾는다.
+        // 비어 있으면(적 등) 무기 종류의 기본형. PlayerWeaponSelector가 무기를 바꿀 때 정한다.
+        [System.NonSerialized] public string weaponId;
+
         // [추가] 이 터렛이 쏜 무기의 공격력 (발사체·빔이 부른다)
         public float GetDamage(F3DFXType type)
         {
-            return damageOverride >= 0f ? damageOverride : WeaponStatsTable.GetDamage(type, owner);
+            return damageOverride >= 0f ? damageOverride : WeaponStatsTable.GetDamage(type, owner, weaponId);
+        }
+
+        // [추가] 이 터렛이 쏜 무기의 쉴드·선체 피해 배율
+        public float GetShieldMultiplier(F3DFXType type)
+        {
+            return WeaponStatsTable.GetShieldMultiplier(type, weaponId);
+        }
+
+        public float GetArmorMultiplier(F3DFXType type)
+        {
+            return WeaponStatsTable.GetArmorMultiplier(type, weaponId);
+        }
+
+        // [추가] 유도탄이면 쫓을 표적 (플레이어가 락온한 함선). 아니면 null.
+        private Component HomingTarget(F3DFXType type)
+        {
+            if (owner != WeaponOwner.Player || !WeaponStatsTable.IsHoming(type, weaponId) || TargetingSystem.Instance == null)
+                return null;
+
+            HullHealth target = TargetingSystem.Instance.Current;
+            return target != null && target.IsActive ? target : null;
         }
 
         // [추가] 이 터렛이 달린 함선의 루트. 발사체/빔이 자기 함선에 맞지 않도록 무시할 때 쓴다.
@@ -232,7 +257,7 @@ namespace FORGE3D
         // 적은 EnemyTurretController가 자체 간격으로 Fire/Stop을 부르므로 기존처럼 바로 쏜다.
         private void StartRepeating(F3DFXType type, Action shot)
         {
-            float interval = WeaponStatsTable.GetFireInterval(type);
+            float interval = WeaponStatsTable.GetFireInterval(type, weaponId);
             float wait = lastShotTime + interval - Time.time;
 
             if (owner == WeaponOwner.Player && wait > 0f)
@@ -497,9 +522,12 @@ namespace FORGE3D
         {
             for (var i = 0; i < TurretSocket.Length; i++)
             {
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmaBeam, TurretSocket[i].position,
+                var beam = F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmaBeam, TurretSocket[i].position,
                     TurretSocket[i].rotation,
-                    TurretSocket[i]);
+                    TurretSocket[i]).GetComponent<F3DBeam>();
+                // [추가] 피해를 이 터렛 기준(무기 id·쏜 쪽)으로 계산하고 자기 함선은 맞히지 않도록
+                if (beam)
+                    beam.controller = this;
             }
 
             F3DAudioController.instance.PlasmaBeamLoop(transform.position, transform.parent);
@@ -510,9 +538,12 @@ namespace FORGE3D
         {
             for (var i = 0; i < TurretSocket.Length; i++)
             {
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmaBeamHeavy, TurretSocket[i].position,
+                var beam = F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmaBeamHeavy, TurretSocket[i].position,
                     TurretSocket[i].rotation,
-                    TurretSocket[i]);
+                    TurretSocket[i]).GetComponent<F3DBeam>();
+                // [추가] 피해를 이 터렛 기준(무기 id·쏜 쪽)으로 계산하고 자기 함선은 맞히지 않도록
+                if (beam)
+                    beam.controller = this;
             }
 
             F3DAudioController.instance.PlasmaBeamHeavyLoop(transform.position, transform.parent);
@@ -545,6 +576,9 @@ namespace FORGE3D
             {
                 proj.controller = this;
                 proj.SetOffset(flameOffset);
+                // [추가] 유도탄이면 락온한 표적을 쫓는다 (풀에서 다시 쓰므로 매번 정한다)
+                proj.homingTarget = HomingTarget(F3DFXType.FlameRed);
+                proj.homingTurnRate = WeaponStatsTable.GetHomingTurnRate(F3DFXType.FlameRed, weaponId);
             }
 
             AdvanceSocket();

@@ -39,7 +39,7 @@ public static class MissionBoard
     public static List<MissionData> OffersAt(StationZone zone, int count)
     {
         int key = zone != null ? zone.StationIndex : -1;
-        List<MissionData> all = MissionDirector.AllMissions().ToList();
+        List<MissionData> all = MissionDirector.AllMissions().Where(m => m.OnBoard).ToList();
 
         if (!Offers.TryGetValue(key, out List<string> ids))
         {

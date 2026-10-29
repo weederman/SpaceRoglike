@@ -21,7 +21,7 @@
         { "speaker": "ras",  "text": "이게 자네 배인가? 생각보다 멀쩡하군." },
         { "speaker": "hero", "text": "네가 준 돈으로 고친 거야." },
         { "speaker": "ras",  "text": "아, 그렇지. 내 투자였지. 아주 훌륭한 투자야." },
-        { "cue": "loadout:LaserImpulse,Vulcan", "text": "정비사가 무기를 장착하고 연료를 보충한다." },
+        { "cue": "loadout:LaserImpulse,Vulcan;equip:armor_1", "text": "정비사가 무기를 장착하고 연료를 보충한다." },
         { "speaker": "ras",  "text": "기본 레이저 하나, 발칸 포대 하나. 장갑판도 보강했어. 그리고 채굴 장비까지. 초짜가 쓸 만한 구성이지." },
         { "speaker": "hero", "text": "해적 소탕에 채굴까지 하라는 거치곤 빈약한데." },
         { "speaker": "ras",  "text": "그럼 더 좋은 장비를 사면 되겠군. 물론 자네 돈으로." },

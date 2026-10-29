@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b29a3d5582ab8444887b4339263cb548, type: 3}
+  m_Name: FirstShipQuest
+  m_EditorClassIdentifier: 
+  unlockCredits: 1000000
+  blueprintPrice: 1000000
+  blueprintName: "1\uCC28 \uD2B9\uC218 \uD568\uC120 \uBE14\uB8E8\uD504\uB9B0\uD2B8"
+  materials:
+  - oreId: iron
+    amount: 200
+  - oreId: titanium
+    amount: 100
+  - oreId: rare
+    amount: 30
+  alloyName: "\uD2B9\uC218 \uD569\uAE08"
+  alloyRequired: 10
+  coreName: "\uACE0\uAE09 \uB3D9\uB825 \uCF54\uC5B4"
+  commsLogName: "\uC801 \uC9C0\uD718\uAD00 \uD1B5\uC2E0 \uAE30\uB85D"
+  alloyMission: main_1_4
+  coreMission: main_1_5
+  shipId: ironwall
+  offerSequence: first_ship_offer
+  offerAgainSequence: first_ship_offer_again
+  purchasedSequence: first_ship_purchased
+  noMoneySequence: first_ship_no_money
+  mineralsDoneSequence: first_ship_minerals_done
+  assemblySequence: first_ship_assembly
+  buyChoiceId: buy
+  questMinerals: first_ship_minerals
+  questAlloy: first_ship_alloy
+  questCore: first_ship_core
+  questBuild: first_ship_build

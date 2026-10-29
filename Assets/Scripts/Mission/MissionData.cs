@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// 임무 하나의 정의에서 모든 임무 유형이 공통으로 갖는 부분 (번호·이름·의뢰인·보상·대사).
-/// 유형별 내용은 하위 클래스가 더한다: EscortMissionData(호송), SweepMissionData(해적 소탕).
+/// 유형별 내용은 하위 클래스가 더한다: EscortMissionData(호송), SweepMissionData(해적 소탕), MiningMissionData(채굴), TransportMissionData(운송).
 /// 에셋 위치: Assets/Resources/Missions/ 아래 (유형별 폴더). 실행은 유형별 MissionDirector가 한다.
 /// </summary>
 public abstract class MissionData : ScriptableObject
@@ -32,4 +32,14 @@ public abstract class MissionData : ScriptableObject
 
     /// <summary>임무 목록에 보여줄 한 줄 요약 (예: "90초 호위")</summary>
     public abstract string Summary { get; }
+
+    /// <summary>스페이스 라운지 목록에 나오는 반복 임무인지. 메인 퀘스트 임무는 false (라스 항목에서 시작한다)</summary>
+    public virtual bool OnBoard => true;
+
+    /// <summary>지금 이 임무를 받을 수 있는지 (못 받으면 이유). 유형별 조건(운송 임무의 화물칸 자리 등)은 하위 클래스가 정한다.</summary>
+    public virtual bool CanStart(out string error)
+    {
+        error = null;
+        return true;
+    }
 }

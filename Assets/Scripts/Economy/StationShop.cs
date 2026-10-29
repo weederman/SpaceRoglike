@@ -80,7 +80,7 @@ public class StationShop : MonoBehaviour
         if (item == null || !item.forSale || CreditWallet.Instance == null || !CreditWallet.Instance.TrySpend(item.price))
             return false;
 
-        PlayerHangar.Add(item.weaponType);
+        PlayerHangar.Add(item.weaponId);
         return true;
     }
 
@@ -92,6 +92,22 @@ public class StationShop : MonoBehaviour
 
         PlayerEquipment.Add(item.id);
         return true;
+    }
+
+    /// <summary>광석을 시장에서 사서 화물칸에 싣는다 (화물칸 빈 자리만큼). 산 개수를 돌려준다.</summary>
+    public int BuyOre(OreCatalog.Ore ore, int amount)
+    {
+        OreCatalog catalog = OreCatalog.Load();
+        CargoHold cargo = CargoHold.Instance;
+        if (ore == null || catalog == null || cargo == null || CreditWallet.Instance == null)
+            return 0;
+
+        amount = Mathf.Min(amount, Mathf.FloorToInt(cargo.Capacity - cargo.Used));
+        if (amount <= 0 || !CreditWallet.Instance.TrySpend(amount * catalog.BuyPrice(ore)))
+            return 0;
+
+        cargo.Add(ore.id, amount);
+        return amount;
     }
 
     /// <summary>보관함의 장비를 판다. 받은 크레딧 (팔지 못하면 -1).</summary>
@@ -111,7 +127,7 @@ public class StationShop : MonoBehaviour
     public int Sell(TurretItemData item)
     {
         WeaponCatalog catalog = WeaponCatalog.Load();
-        if (item == null || catalog == null || CreditWallet.Instance == null || !PlayerHangar.Remove(item.weaponType))
+        if (item == null || catalog == null || CreditWallet.Instance == null || !PlayerHangar.Remove(item.weaponId))
             return -1;
 
         int credits = catalog.SellPrice(item);

@@ -17,7 +17,7 @@
         { "speaker": "ras",  "text": "역할 분담이라는 거지." },
 
         { "text": "라스가 정산용 데이터 패드를 건넨다." },
-        { "cue": "credits_add:300;cargo_sell:3", "speaker": "ras", "text": "약속한 보수야. 선금으로 들어간 장비값은 이미 처리했고, 광물 대금도 따로 넣어뒀어." },
+        { "cue": "credits_add:2500;cargo_sell:3", "speaker": "ras", "text": "약속한 보수야. 선금으로 들어간 장비값은 이미 처리했고, 광물 대금도 따로 넣어뒀어." },
         { "speaker": "hero", "text": "다음에도 이런 일이 있으면 연락해." },
         { "speaker": "ras",  "text": "물론이지. 자네 같은 파일럿은 흔하지 않거든." },
 

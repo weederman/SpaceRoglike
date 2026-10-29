@@ -18,7 +18,7 @@ MonoBehaviour:
   client: "\uC815\uAC70\uC7A5 \uC81C\uB828\uC18C"
   objective: "\uCCA0\uAD11\uC11D 100\uAC1C\uB97C \uCC44\uAD74\uD574 \uC774 \uC815\uAC70\uC7A5\uC5D0
     \uB0A9\uD488\uD558\uB77C \xB7 \uCCA0\uAD11\uC11D\uB9CC \uC778\uC815"
-  reward: 5000
+  reward: 8000
   extraRewards: []
   acceptSequence: 
   successSequence: 

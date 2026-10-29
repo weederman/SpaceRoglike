@@ -192,6 +192,12 @@ public class DevConsole : MonoBehaviour
             case "mission":
                 reply = HandleMission(words);
                 break;
+            case "mainquest":
+                reply = HandleMainQuest(words);
+                break;
+            case "ship":
+                reply = HandleShip(words);
+                break;
             case "clear":
                 _log.Clear();
                 reply = null;
@@ -235,6 +241,41 @@ public class DevConsole : MonoBehaviour
     }
 
     /// <summary>임무: mission list / mission start 번호 / mission stop</summary>
+    private string HandleMainQuest(string[] words)
+    {
+        if (words.Length > 2 && words[1] == "stage" && int.TryParse(words[2], out int stage)
+            && stage >= 0 && stage <= (int)FirstShipQuest.Stage.Done)
+        {
+            FirstShipQuest.DevSetStage((FirstShipQuest.Stage)stage);
+            return DevCommands.Ok($"첫 번째 함선 퀘스트를 {(FirstShipQuest.Stage)stage} 단계로 옮겼습니다. (라운지의 라스 항목)");
+        }
+
+        if (words.Length > 1 && words[1] != "status")
+            return DevCommands.Err("사용법: mainquest [status] / mainquest stage <0~6>  (0 연락 전, 1 제안, 2 광물, 3 합금, 4 코어, 5 조립, 6 완료)");
+
+        FirstShipQuestData data = FirstShipQuest.Data;
+        var sb = new StringBuilder($"첫 번째 함선 퀘스트: {FirstShipQuest.Current}");
+        if (data != null)
+        {
+            foreach (FirstShipQuestData.Material m in data.materials)
+                sb.Append($"\n  {OreCatalog.NameOf(m.oreId)} {FirstShipQuest.DeliveredOf(m.oreId)} / {m.amount}");
+            sb.Append($"\n  {data.alloyName} {FirstShipQuest.Alloys} / {data.alloyRequired} · {data.coreName} {(FirstShipQuest.HasCore ? 1 : 0)} / 1 · 통신 기록 {(FirstShipQuest.HasCommsLog ? "있음" : "없음")}");
+        }
+
+        return sb.ToString();
+    }
+
+    private string HandleShip(string[] words)
+    {
+        if (words.Length > 2 && (words[1] == "grant" || words[1] == "switch"))
+        {
+            bool ok = words[1] == "grant" ? PlayerShips.Grant(words[2]) : PlayerShips.Switch(words[2]);
+            return ok ? DevCommands.Ok($"함선: {PlayerShips.CurrentId}") : DevCommands.Err($"'{words[2]}' 함선을 주거나 탈 수 없습니다.");
+        }
+
+        return $"함선: {PlayerShips.CurrentId} (보유: {string.Join(", ", PlayerShips.OwnedIds)})\n사용법: ship grant <id> / ship switch <id>";
+    }
+
     private string HandleMission(string[] words)
     {
         string sub = words.Length > 1 ? words[1] : "list";

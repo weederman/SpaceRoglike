@@ -6064,6 +6064,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2b82c757a706dd44ad77efcf0d513f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  owner: 0
   TurretSocket:
   - {fileID: 3722300202982717705}
   ShellParticles:
@@ -6099,7 +6100,7 @@ MonoBehaviour:
   plasmaGunOffset: 0
   plasmaBeam: {fileID: 400000, guid: 66b50793fa1c780409218a1a1db5b1d8, type: 3}
   plasmaOffset: 0
-  plasmaBeamHeavy: {fileID: 0}
+  plasmaBeamHeavy: {fileID: 400000, guid: a5251bb5b54465f43aebe1ddc2724566, type: 3}
   plasmaBeamHeavyOffset: 0
   lightningGunBeam: {fileID: 0}
   lightingGunBeamOffset: 0

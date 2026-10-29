@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2876e1e6bfa01fc4582d6c3ac23036e9, type: 3}
+  m_Name: ShipCatalog
+  m_EditorClassIdentifier: 
+  defaultShip: specter
+  ships:
+  - id: specter
+    shipClass: "\uCF54\uB974\uBCB3"
+    look:
+      displayName: "CV-07 \uC2A4\uD399\uD130"
+      icon: {fileID: 21300000, guid: 37c7faa38711a6044bf12b84912e0dd5, type: 3}
+      description: "\uC678\uACFD \uD56D\uB85C \uC21C\uCC30\uACFC \uBC00\uC218\uC120
+        \uCD94\uC801\uC6A9 \uACE0\uC18D \uCF54\uB974\uBCB3. \uC2F8\uACE0 \uC815\uBE44\uAC00
+        \uC26C\uC6CC \uBBFC\uAC04 \uBCF4\uC548\xB7\uC6A9\uBCD1\xB7\uD574\uC801\uC5D0\uAC8C\uB3C4
+        \uD37C\uC84C\uB2E4. \uC2AC\uB86F\uC774 \uC801\uC740 \uB300\uC2E0 \uAE30\uB3D9\uC131\uC774
+        \uB192\uB2E4.\n\n\"\uC8FD\uC74C\uC744 \uACA8\uB204\uB294 \uC790\uB294 \uB9CE\uB2E4.
+        \uC8FD\uC74C\uC744 \uB0A8\uAE30\uACE0 \uC0AC\uB77C\uC9C0\uB294 \uC790\uB294
+        \uB4DC\uBB3C\uB2E4.\""
+      model: {fileID: 1152354105411914, guid: cdbec52167efb6a48b63cebb3284c246, type: 3}
+      hullRatio: 1
+      offset: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0}
+    weaponSlots: 2
+    equipmentSlots: 4
+    extraTurretMounts: []
+    hullHp: 1000
+    maxSpeed: 60
+    acceleration: 30
+    shieldBaseHp: 600
+    shieldRechargeDelay: 4
+    shieldRechargePerSecond: 50
+  - id: ironwall
+    shipClass: "\uD504\uB9AC\uAE43"
+    look:
+      displayName: "FF-12 \uC544\uC774\uC5B8\uC6D4"
+      icon: {fileID: 21300000, guid: 37c7faa38711a6044bf12b84912e0dd5, type: 3}
+      description: "\uC804\uC7C1 \uB4A4 \uD56D\uB85C \uBC29\uC5B4\uC6A9\uC73C\uB85C
+        \uB300\uB7C9 \uAC74\uC870\uB41C \uB2E4\uBAA9\uC801 \uD504\uB9AC\uAE43. \uD638\uC704\uC640
+        \uBC29\uC5B4\uC5D0 \uAC15\uD558\uACE0 \uACF5\uACA9\uB825\uACFC \uC0DD\uC874\uB825\uC758
+        \uADE0\uD615\uC774 \uC88B\uB2E4. \uB77C\uC2A4\uC758 \uBE14\uB8E8\uD504\uB9B0\uD2B8\uB85C
+        \uC81C\uC791\uD55C 1\uCC28 \uD2B9\uC218 \uD568\uC120.\n\n\"\uBAA8\uB450\uAC00
+        \uBB3C\uB7EC\uC124 \uB54C, \uB204\uAD70\uAC00\uB294 \uADF8 \uC790\uB9AC\uC5D0
+        \uB0A8\uC544\uC57C \uD55C\uB2E4.\""
+      model: {fileID: 4796092348069271544, guid: 259c1e3dd41e67f4eafc895abcc75e92, type: 3}
+      hullRatio: 1.5
+      offset: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0}
+    weaponSlots: 4
+    equipmentSlots: 6
+    extraTurretMounts:
+    - {x: -11, y: 3, z: -16}
+    - {x: 11, y: 3, z: -16}
+    hullHp: 1800
+    maxSpeed: 52
+    acceleration: 26
+    shieldBaseHp: 900
+    shieldRechargeDelay: 4
+    shieldRechargePerSecond: 70

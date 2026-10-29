@@ -8,8 +8,9 @@ using UnityEngine;
 /// 숫자키 1~9로 슬롯을 고르면 모든 터렛이 그 슬롯의 무기로 바뀌고, 좌클릭하면 모든 터렛이 함께 쏜다.
 /// 무기를 바꾸는 순간 쏘던 터렛은 멈췄다가, 버튼을 누르고 있으면 새 무기로 다시 쏜다.
 /// 슬롯 수는 함선의 터렛 수다(함선 기준 왼쪽 터렛부터 슬롯 1, 2...). 터렛이 늘면 자동으로 다시 센다.
-/// 스토리 cue로 슬롯 순서대로 무기 종류를 바꿀 수 있다:
-///   loadout:무기1,무기2,...   (F3DFXType 이름, 예: loadout:LaserImpulse,Vulcan)
+/// 슬롯의 무기는 무기 id(WeaponStatsTable·TurretItemData의 weaponId)다. 같은 이펙트의 변형 무기(강화 기관포 등)도 id로 구분한다.
+/// 스토리 cue로 슬롯 순서대로 무기를 바꿀 수 있다:
+///   loadout:무기1,무기2,...   (무기 id, 또는 F3DFXType 이름이면 그 종류의 기본형. 예: loadout:LaserImpulse,Vulcan)
 /// CombatHud 프리팹(Assets/Resources/UI/CombatHud.prefab)에 붙어 함께 생성된다.
 /// </summary>
 public class PlayerWeaponSelector : MonoBehaviour
@@ -23,7 +24,7 @@ public class PlayerWeaponSelector : MonoBehaviour
     public event Action OnChanged;
 
     private readonly List<F3DPlayerTurretController> _turrets = new List<F3DPlayerTurretController>();
-    private readonly List<F3DFXType> _weapons = new List<F3DFXType>();
+    private readonly List<string> _weapons = new List<string>();
     private SpaceshipController _ship;
     private float _nextRefresh;
     private int _switchFrame = -10;
@@ -40,7 +41,8 @@ public class PlayerWeaponSelector : MonoBehaviour
         return Instance == null || Time.frameCount - Instance._switchFrame > 1;
     }
 
-    public F3DFXType GetWeapon(int slot)
+    /// <summary>슬롯의 무기 id</summary>
+    public string GetWeapon(int slot)
     {
         return _weapons[slot];
     }
@@ -92,13 +94,18 @@ public class PlayerWeaponSelector : MonoBehaviour
         if (_weapons.Count == 0)
             return;
 
-        F3DFXType weapon = _weapons[SelectedIndex];
+        string weapon = _weapons[SelectedIndex];
+        if (!WeaponStatsTable.TryGetType(weapon, out F3DFXType type))
+            return;
+
         bool changed = false;
         foreach (F3DPlayerTurretController turret in _turrets)
         {
-            if (turret != null && turret.fxController != null && turret.fxController.DefaultFXType != weapon)
+            F3DFXController fx = turret != null ? turret.fxController : null;
+            if (fx != null && (fx.DefaultFXType != type || fx.weaponId != weapon))
             {
-                turret.fxController.DefaultFXType = weapon;
+                fx.DefaultFXType = type;
+                fx.weaponId = weapon;
                 changed = true;
             }
         }
@@ -129,9 +136,9 @@ public class PlayerWeaponSelector : MonoBehaviour
         if (same)
             return;
 
-        // 슬롯은 터렛 수만큼. 새로 생긴 슬롯은 그 터렛이 처음 들고 있던 무기로 채운다
+        // 슬롯은 터렛 수만큼. 새로 생긴 슬롯은 그 터렛이 처음 들고 있던 무기(종류의 기본형)로 채운다
         for (int i = _weapons.Count; i < found.Count; i++)
-            _weapons.Add(found[i].fxController.DefaultFXType);
+            _weapons.Add(WeaponStatsTable.BaseId(found[i].fxController.DefaultFXType));
         if (_weapons.Count > found.Count)
             _weapons.RemoveRange(found.Count, _weapons.Count - found.Count);
 
@@ -148,8 +155,8 @@ public class PlayerWeaponSelector : MonoBehaviour
             ApplyLoadout(cue.Substring(LoadoutPrefix.Length).Split(','));
     }
 
-    /// <summary>슬롯 하나의 무기 종류를 바꾼다 (격납고에서 장착할 때)</summary>
-    public void SetWeapon(int slot, F3DFXType weapon)
+    /// <summary>슬롯 하나의 무기를 바꾼다 (격납고에서 장착할 때)</summary>
+    public void SetWeapon(int slot, string weapon)
     {
         if (slot < 0 || slot >= _weapons.Count)
             return;
@@ -159,17 +166,14 @@ public class PlayerWeaponSelector : MonoBehaviour
         OnChanged?.Invoke();
     }
 
-    /// <summary>슬롯 순서대로 지금 무기 종류 이름 (저장에 쓴다)</summary>
+    /// <summary>슬롯 순서대로 지금 무기 id (저장에 쓴다)</summary>
     public string[] CurrentLoadout()
     {
         RefreshSlots();
-        var names = new string[_weapons.Count];
-        for (int i = 0; i < _weapons.Count; i++)
-            names[i] = _weapons[i].ToString();
-        return names;
+        return _weapons.ToArray();
     }
 
-    /// <summary>슬롯 순서대로 무기 종류를 바꾼다 (F3DFXType 이름)</summary>
+    /// <summary>슬롯 순서대로 무기를 바꾼다 (무기 id 또는 F3DFXType 이름)</summary>
     public void ApplyLoadout(string[] names)
     {
         RefreshSlots();
@@ -177,10 +181,11 @@ public class PlayerWeaponSelector : MonoBehaviour
         for (int i = 0; i < names.Length && i < _weapons.Count; i++)
         {
             string name = names[i].Trim();
-            if (Enum.TryParse(name, out F3DFXType type))
-                _weapons[i] = type;
+            string id = WeaponStatsTable.ResolveId(name);
+            if (id != null)
+                _weapons[i] = id;
             else
-                Debug.LogWarning($"[Story] loadout의 무기 이름 '{name}'을 알 수 없습니다. (F3DFXType 이름을 쓰세요)");
+                Debug.LogWarning($"[Story] loadout의 무기 이름 '{name}'을 알 수 없습니다. (무기 id나 F3DFXType 이름을 쓰세요)");
         }
 
         if (names.Length > _weapons.Count)

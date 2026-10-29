@@ -35,6 +35,12 @@ public class OreCatalog : ScriptableObject
 
     public Ore[] ores = new Ore[0];
 
+    [Header("시장에서 사기 (첫 번째 함선 퀘스트의 \"거래로 확보\")")]
+    [Tooltip("정거장 시장에서 살 때의 값 = 파는 값 × 이 배율")]
+    [Min(1f)] public float buyPriceRatio = 2f;
+    [Tooltip("한 번에 사는 양")]
+    [Min(1)] public int buyBatch = 10;
+
     [Header("광맥 배치")]
     [Tooltip("비콘에서 광맥까지 거리 (최소~최대)")]
     public Vector2 depositDistance = new Vector2(300f, 800f);
@@ -52,6 +58,12 @@ public class OreCatalog : ScriptableObject
     [Min(0f)] public float breakEffectScale = 0.6f;
 
     private static OreCatalog _loaded;
+
+    /// <summary>시장에서 한 개를 사는 값</summary>
+    public int BuyPrice(Ore ore)
+    {
+        return ore != null ? Mathf.CeilToInt(ore.price * buyPriceRatio) : 0;
+    }
 
     public static OreCatalog Load()
     {

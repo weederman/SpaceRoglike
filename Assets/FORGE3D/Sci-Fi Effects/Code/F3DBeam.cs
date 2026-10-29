@@ -168,8 +168,8 @@ namespace FORGE3D
                 HitResolver.Resolve(
                     hitPoint,
                     frameDamage,
-                    WeaponStatsTable.GetShieldMultiplier(fxType),
-                    WeaponStatsTable.GetArmorMultiplier(fxType),
+                    controller != null ? controller.GetShieldMultiplier(fxType) : WeaponStatsTable.GetShieldMultiplier(fxType),
+                    controller != null ? controller.GetArmorMultiplier(fxType) : WeaponStatsTable.GetArmorMultiplier(fxType),
                     fxType,
                     owner);
 

@@ -15,77 +15,210 @@ MonoBehaviour:
   items:
   - id: armor_1
     kind: 0
-    displayName: "\uACBD\uC7A5\uAC11 Mk1"
+    tier: 1
+    displayName: "\uAC15\uD654 \uC7A5\uAC11 I"
     icon: {fileID: 21300000, guid: 7dd9123b0beb10f48bf6fe308bbe62fe, type: 3}
-    price: 1000
+    price: 20000
     forSale: 1
-    description: "\uC120\uCCB4 \uBC14\uAE65\uC5D0 \uB367\uB300\uB294 \uC587\uC740
-      \uBCF5\uD569 \uC7A5\uAC11\uD310. \uAE30\uB3D9\uC131\uC744 \uD06C\uAC8C \uD574\uCE58\uC9C0
-      \uC54A\uC73C\uBA74\uC11C \uC120\uCCB4\uB97C \uC870\uAE08 \uB354 \uBC84\uD2F0\uAC8C
-      \uD55C\uB2E4."
-    hullBonus: 300
-    shieldHp: 0
-    rechargeDelay: 4
-    rechargePerSecond: 0
+    description: "\uC120\uCCB4 \uBC14\uAE65\uC5D0 \uC7A5\uAC11\uD310\uC744 \uB367\uB300
+      \uC120\uCCB4 \uB0B4\uAD6C\uB3C4\uB97C \uB192\uC778\uB2E4."
+    bonusPercent: 10
   - id: armor_2
     kind: 0
-    displayName: "\uAC15\uD654 \uC7A5\uAC11 Mk2"
+    tier: 2
+    displayName: "\uAC15\uD654 \uC7A5\uAC11 II"
     icon: {fileID: 21300000, guid: 7dd9123b0beb10f48bf6fe308bbe62fe, type: 3}
-    price: 3000
+    price: 60000
     forSale: 1
-    description: "\uCDA9\uACA9 \uD761\uC218\uCE35\uC744 \uACB9\uCE5C \uD45C\uC900
-      \uC804\uD22C \uC7A5\uAC11. \uD574\uC801 \uC18C\uD0D5\uC5D0 \uB098\uC11C\uB294
-      \uD568\uC120\uC774 \uAC00\uC7A5 \uB9CE\uC774 \uC4F4\uB2E4."
-    hullBonus: 700
-    shieldHp: 0
-    rechargeDelay: 4
-    rechargePerSecond: 0
+    description: "\uC120\uCCB4 \uBC14\uAE65\uC5D0 \uC7A5\uAC11\uD310\uC744 \uB367\uB300
+      \uC120\uCCB4 \uB0B4\uAD6C\uB3C4\uB97C \uB192\uC778\uB2E4."
+    bonusPercent: 20
   - id: armor_3
     kind: 0
-    displayName: "\uC911\uC7A5\uAC11 Mk3"
+    tier: 3
+    displayName: "\uAC15\uD654 \uC7A5\uAC11 III"
     icon: {fileID: 21300000, guid: 7dd9123b0beb10f48bf6fe308bbe62fe, type: 3}
-    price: 8000
+    price: 150000
     forSale: 1
-    description: "\uAD70\uC6A9 \uADDC\uACA9\uC758 \uB450\uAEBC\uC6B4 \uC7A5\uAC11.
-      \uAD6C\uCD95\uD568\uAE09 \uD654\uB825\uB3C4 \uD55C\uB3D9\uC548 \uBC1B\uC544\uB0B8\uB2E4."
-    hullBonus: 1500
-    shieldHp: 0
-    rechargeDelay: 4
-    rechargePerSecond: 0
+    description: "\uC120\uCCB4 \uBC14\uAE65\uC5D0 \uC7A5\uAC11\uD310\uC744 \uB367\uB300
+      \uC120\uCCB4 \uB0B4\uAD6C\uB3C4\uB97C \uB192\uC778\uB2E4."
+    bonusPercent: 35
+  - id: armor_4
+    kind: 0
+    tier: 4
+    displayName: "\uAC15\uD654 \uC7A5\uAC11 IV"
+    icon: {fileID: 21300000, guid: 7dd9123b0beb10f48bf6fe308bbe62fe, type: 3}
+    price: 350000
+    forSale: 1
+    description: "\uC120\uCCB4 \uBC14\uAE65\uC5D0 \uC7A5\uAC11\uD310\uC744 \uB367\uB300
+      \uC120\uCCB4 \uB0B4\uAD6C\uB3C4\uB97C \uB192\uC778\uB2E4."
+    bonusPercent: 50
   - id: shield_1
     kind: 1
-    displayName: "\uBCF4\uD638\uB9C9 \uBC1C\uC0DD\uAE30 Mk1"
+    tier: 1
+    displayName: "\uBCF4\uD638\uB9C9 \uC99D\uD3ED\uAE30 I"
     icon: {fileID: 21300000, guid: e7ce837574cb7ef48883710e912c3718, type: 3}
-    price: 1500
+    price: 30000
     forSale: 1
-    description: "\uC18C\uD615 \uD568\uC120\uC6A9 \uBCF4\uD638\uB9C9. \uB9DE\uC9C0
-      \uC54A\uB294 \uB3D9\uC548 \uCC9C\uCC9C\uD788 \uB2E4\uC2DC \uCC28\uC624\uB978\uB2E4."
-    hullBonus: 0
-    shieldHp: 300
-    rechargeDelay: 4
-    rechargePerSecond: 30
+    description: "\uBCF4\uD638\uB9C9 \uBC1C\uC0DD \uC7A5\uCE58. \uB2EC\uC544\uC57C
+      \uBCF4\uD638\uB9C9\uC774 \uC0DD\uAE30\uACE0, \uB4F1\uAE09\uC774 \uB192\uC744\uC218\uB85D
+      \uC6A9\uB7C9\uACFC \uC7AC\uCDA9\uC804\uC774 \uB298\uC5B4\uB09C\uB2E4."
+    bonusPercent: 15
   - id: shield_2
     kind: 1
-    displayName: "\uBCF4\uD638\uB9C9 \uBC1C\uC0DD\uAE30 Mk2"
+    tier: 2
+    displayName: "\uBCF4\uD638\uB9C9 \uC99D\uD3ED\uAE30 II"
     icon: {fileID: 21300000, guid: e7ce837574cb7ef48883710e912c3718, type: 3}
-    price: 4500
+    price: 85000
     forSale: 1
-    description: "\uCD9C\uB825\uC744 \uB192\uC778 \uBCF4\uD638\uB9C9. \uB354 \uB9CE\uC774
-      \uB9C9\uACE0 \uB354 \uBE68\uB9AC \uD68C\uBCF5\uD55C\uB2E4."
-    hullBonus: 0
-    shieldHp: 700
-    rechargeDelay: 4
-    rechargePerSecond: 60
+    description: "\uBCF4\uD638\uB9C9 \uBC1C\uC0DD \uC7A5\uCE58. \uB2EC\uC544\uC57C
+      \uBCF4\uD638\uB9C9\uC774 \uC0DD\uAE30\uACE0, \uB4F1\uAE09\uC774 \uB192\uC744\uC218\uB85D
+      \uC6A9\uB7C9\uACFC \uC7AC\uCDA9\uC804\uC774 \uB298\uC5B4\uB09C\uB2E4."
+    bonusPercent: 30
   - id: shield_3
     kind: 1
-    displayName: "\uBCF4\uD638\uB9C9 \uBC1C\uC0DD\uAE30 Mk3"
+    tier: 3
+    displayName: "\uBCF4\uD638\uB9C9 \uC99D\uD3ED\uAE30 III"
     icon: {fileID: 21300000, guid: e7ce837574cb7ef48883710e912c3718, type: 3}
-    price: 12000
+    price: 200000
     forSale: 1
-    description: "\uAD70\uC6A9 \uBCF4\uD638\uB9C9. \uC9E7\uC740 \uD734\uC9C0 \uB4A4
-      \uBE60\uB974\uAC8C \uC7AC\uCDA9\uC804\uB41C\uB2E4."
-    hullBonus: 0
-    shieldHp: 1500
-    rechargeDelay: 3.5
-    rechargePerSecond: 110
+    description: "\uBCF4\uD638\uB9C9 \uBC1C\uC0DD \uC7A5\uCE58. \uB2EC\uC544\uC57C
+      \uBCF4\uD638\uB9C9\uC774 \uC0DD\uAE30\uACE0, \uB4F1\uAE09\uC774 \uB192\uC744\uC218\uB85D
+      \uC6A9\uB7C9\uACFC \uC7AC\uCDA9\uC804\uC774 \uB298\uC5B4\uB09C\uB2E4."
+    bonusPercent: 45
+  - id: shield_4
+    kind: 1
+    tier: 4
+    displayName: "\uBCF4\uD638\uB9C9 \uC99D\uD3ED\uAE30 IV"
+    icon: {fileID: 21300000, guid: e7ce837574cb7ef48883710e912c3718, type: 3}
+    price: 450000
+    forSale: 1
+    description: "\uBCF4\uD638\uB9C9 \uBC1C\uC0DD \uC7A5\uCE58. \uB2EC\uC544\uC57C
+      \uBCF4\uD638\uB9C9\uC774 \uC0DD\uAE30\uACE0, \uB4F1\uAE09\uC774 \uB192\uC744\uC218\uB85D
+      \uC6A9\uB7C9\uACFC \uC7AC\uCDA9\uC804\uC774 \uB298\uC5B4\uB09C\uB2E4."
+    bonusPercent: 65
+  - id: thruster_1
+    kind: 2
+    tier: 1
+    displayName: "\uCD94\uC9C4\uAE30 \uAC1C\uB7C9 I"
+    icon: {fileID: 21300000, guid: 37c7faa38711a6044bf12b84912e0dd5, type: 3}
+    price: 25000
+    forSale: 1
+    description: "\uCD94\uC9C4\uAE30 \uCD9C\uB825\uC744 \uB04C\uC5B4\uC62C\uB824
+      \uAC00\uC18D\uC744 \uB192\uC778\uB2E4."
+    bonusPercent: 10
+  - id: thruster_2
+    kind: 2
+    tier: 2
+    displayName: "\uCD94\uC9C4\uAE30 \uAC1C\uB7C9 II"
+    icon: {fileID: 21300000, guid: 37c7faa38711a6044bf12b84912e0dd5, type: 3}
+    price: 75000
+    forSale: 1
+    description: "\uCD94\uC9C4\uAE30 \uCD9C\uB825\uC744 \uB04C\uC5B4\uC62C\uB824
+      \uAC00\uC18D\uC744 \uB192\uC778\uB2E4."
+    bonusPercent: 20
+  - id: thruster_3
+    kind: 2
+    tier: 3
+    displayName: "\uCD94\uC9C4\uAE30 \uAC1C\uB7C9 III"
+    icon: {fileID: 21300000, guid: 37c7faa38711a6044bf12b84912e0dd5, type: 3}
+    price: 180000
+    forSale: 1
+    description: "\uCD94\uC9C4\uAE30 \uCD9C\uB825\uC744 \uB04C\uC5B4\uC62C\uB824
+      \uAC00\uC18D\uC744 \uB192\uC778\uB2E4."
+    bonusPercent: 30
+  - id: thruster_4
+    kind: 2
+    tier: 4
+    displayName: "\uCD94\uC9C4\uAE30 \uAC1C\uB7C9 IV"
+    icon: {fileID: 21300000, guid: 37c7faa38711a6044bf12b84912e0dd5, type: 3}
+    price: 400000
+    forSale: 1
+    description: "\uCD94\uC9C4\uAE30 \uCD9C\uB825\uC744 \uB04C\uC5B4\uC62C\uB824
+      \uAC00\uC18D\uC744 \uB192\uC778\uB2E4."
+    bonusPercent: 45
+  - id: cargo_1
+    kind: 3
+    tier: 1
+    displayName: "\uD654\uBB3C\uCC3D \uD655\uC7A5 I"
+    icon: {fileID: 21300000, guid: 5e8bbf0b3b493614abc6c463ba85a46a, type: 3}
+    price: 40000
+    forSale: 1
+    description: "\uD654\uBB3C\uCE78 \uAD6C\uD68D\uC744 \uB113\uD600 \uAD11\uC11D\uACFC
+      \uD654\uBB3C\uC744 \uB354 \uC2E3\uB294\uB2E4."
+    bonusPercent: 25
+  - id: cargo_2
+    kind: 3
+    tier: 2
+    displayName: "\uD654\uBB3C\uCC3D \uD655\uC7A5 II"
+    icon: {fileID: 21300000, guid: 5e8bbf0b3b493614abc6c463ba85a46a, type: 3}
+    price: 100000
+    forSale: 1
+    description: "\uD654\uBB3C\uCE78 \uAD6C\uD68D\uC744 \uB113\uD600 \uAD11\uC11D\uACFC
+      \uD654\uBB3C\uC744 \uB354 \uC2E3\uB294\uB2E4."
+    bonusPercent: 50
+  - id: cargo_3
+    kind: 3
+    tier: 3
+    displayName: "\uD654\uBB3C\uCC3D \uD655\uC7A5 III"
+    icon: {fileID: 21300000, guid: 5e8bbf0b3b493614abc6c463ba85a46a, type: 3}
+    price: 220000
+    forSale: 1
+    description: "\uD654\uBB3C\uCE78 \uAD6C\uD68D\uC744 \uB113\uD600 \uAD11\uC11D\uACFC
+      \uD654\uBB3C\uC744 \uB354 \uC2E3\uB294\uB2E4."
+    bonusPercent: 75
+  - id: cargo_4
+    kind: 3
+    tier: 4
+    displayName: "\uD654\uBB3C\uCC3D \uD655\uC7A5 IV"
+    icon: {fileID: 21300000, guid: 5e8bbf0b3b493614abc6c463ba85a46a, type: 3}
+    price: 500000
+    forSale: 1
+    description: "\uD654\uBB3C\uCE78 \uAD6C\uD68D\uC744 \uB113\uD600 \uAD11\uC11D\uACFC
+      \uD654\uBB3C\uC744 \uB354 \uC2E3\uB294\uB2E4."
+    bonusPercent: 100
+  - id: mining_1
+    kind: 4
+    tier: 1
+    displayName: "\uCC44\uAD74 \uC7A5\uBE44 \uAC1C\uB7C9 I"
+    icon: {fileID: 21300000, guid: d59646037ab90d544b36716b5f97a3ca, type: 3}
+    price: 35000
+    forSale: 1
+    description: "\uCC44\uAD74 \uB808\uC774\uC800 \uCD9C\uB825\uC744 \uB192\uC5EC
+      \uAD11\uC11D\uC744 \uB354 \uBE68\uB9AC \uCE94\uB2E4."
+    bonusPercent: 20
+  - id: mining_2
+    kind: 4
+    tier: 2
+    displayName: "\uCC44\uAD74 \uC7A5\uBE44 \uAC1C\uB7C9 II"
+    icon: {fileID: 21300000, guid: d59646037ab90d544b36716b5f97a3ca, type: 3}
+    price: 90000
+    forSale: 1
+    description: "\uCC44\uAD74 \uB808\uC774\uC800 \uCD9C\uB825\uC744 \uB192\uC5EC
+      \uAD11\uC11D\uC744 \uB354 \uBE68\uB9AC \uCE94\uB2E4."
+    bonusPercent: 35
+  - id: mining_3
+    kind: 4
+    tier: 3
+    displayName: "\uCC44\uAD74 \uC7A5\uBE44 \uAC1C\uB7C9 III"
+    icon: {fileID: 21300000, guid: d59646037ab90d544b36716b5f97a3ca, type: 3}
+    price: 200000
+    forSale: 1
+    description: "\uCC44\uAD74 \uB808\uC774\uC800 \uCD9C\uB825\uC744 \uB192\uC5EC
+      \uAD11\uC11D\uC744 \uB354 \uBE68\uB9AC \uCE94\uB2E4."
+    bonusPercent: 50
+  - id: mining_4
+    kind: 4
+    tier: 4
+    displayName: "\uCC44\uAD74 \uC7A5\uBE44 \uAC1C\uB7C9 IV"
+    icon: {fileID: 21300000, guid: d59646037ab90d544b36716b5f97a3ca, type: 3}
+    price: 450000
+    forSale: 1
+    description: "\uCC44\uAD74 \uB808\uC774\uC800 \uCD9C\uB825\uC744 \uB192\uC5EC
+      \uAD11\uC11D\uC744 \uB354 \uBE68\uB9AC \uCE94\uB2E4."
+    bonusPercent: 70
   sellRatio: 0.5
+  equipmentSlots: 4
+  shieldBaseHp: 600
+  shieldRechargeDelay: 4
+  shieldRechargePerSecond: 50

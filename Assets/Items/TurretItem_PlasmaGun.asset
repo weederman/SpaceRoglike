@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74f5d40fdc9142c4dbc1e2114ca377e8, type: 3}
   m_Name: TurretItem_PlasmaGun
   m_EditorClassIdentifier: 
-  displayName: Plasma Gun
+  weaponId: plasma_gun
+  displayName: "\uD50C\uB77C\uC2A4\uB9C8 \uAC74"
   icon: {fileID: 21300000, guid: 61e3573dd27454042ad0c4ccc52921f4, type: 3}
   turretPrefab: {fileID: 6509607899620335586, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
   weaponType: 6
-  price: 150
-  forSale: 1
-  description: "\uD50C\uB77C\uC988\uB9C8 \uD0C4\uC744 \uBE60\uB974\uAC8C \uC5F0\uC0AC\uD558\uB294
-    \uD3EC."
+  price: 150000
+  forSale: 0
+  description: "\uD50C\uB77C\uC2A4\uB9C8 \uD0C4\uC744 \uBE60\uB974\uAC8C \uC3D8\uB294
+    \uC61B \uBB34\uAE30. \uB354\uB294 \uD314\uC9C0 \uC54A\uB294\uB2E4."
