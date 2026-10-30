@@ -105,31 +105,30 @@ public class CameraController : MonoBehaviour
     /// <summary>함선에서 카메라까지 (둘러보기 각도 포함)</summary>
     private Vector3 Offset()
     {
-        if (_orbitYaw == 0f && _orbitPitch == 0f)
-            return new Vector3(0f, height, -distance);
+        // 기본 카메라 거리와 높이를 유지하면서 Y축 회전만 적용
+        Vector3 baseOffset = new Vector3(0f, height, -distance);
 
-        float radius = Mathf.Sqrt(height * height + distance * distance);
-        float pitch = Mathf.Clamp(Mathf.Atan2(height, distance) * Mathf.Rad2Deg + _orbitPitch, orbitPitchRange.x, orbitPitchRange.y)
-                      * Mathf.Deg2Rad;
-        return Quaternion.Euler(0f, _orbitYaw, 0f) * new Vector3(0f, radius * Mathf.Sin(pitch), -radius * Mathf.Cos(pitch));
+        return Quaternion.Euler(0f, _orbitYaw, 0f) * baseOffset;
     }
 
     private void HandleOrbit()
     {
-        if (!_orbitEnabled)
-            return;
+        // 우클릭을 누르고 있는 동안에만 회전
+        bool held = Input.GetMouseButton(1);
 
-        bool held = Input.GetMouseButton(0) || Input.GetMouseButton(1);
         if (!held)
         {
             _dragging = false;
             return;
         }
 
-        // UI(정거장 창·사이드바) 위에서 누른 것은 끌기로 보지 않는다
-        if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+        // 우클릭을 처음 누른 순간
+        if (Input.GetMouseButtonDown(1))
         {
-            _dragging = EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject();
+            // UI 위에서 시작한 드래그는 무시
+            _dragging = EventSystem.current == null ||
+                        !EventSystem.current.IsPointerOverGameObject();
+
             _lastMouse = Input.mousePosition;
             return;
         }
@@ -139,11 +138,9 @@ public class CameraController : MonoBehaviour
 
         Vector3 delta = Input.mousePosition - _lastMouse;
         _lastMouse = Input.mousePosition;
-        _orbitYaw += delta.x * orbitSensitivity;
 
-        // 기본 각도 + 더한 값이 범위를 넘지 않게 더하는 값 자체를 묶는다
-        float basePitch = Mathf.Atan2(height, distance) * Mathf.Rad2Deg;
-        _orbitPitch = Mathf.Clamp(_orbitPitch - delta.y * orbitSensitivity, orbitPitchRange.x - basePitch, orbitPitchRange.y - basePitch);
+        // 마우스 좌우 이동으로만 수평 회전
+        _orbitYaw += delta.x * orbitSensitivity;
     }
 
     private void LateUpdate()
