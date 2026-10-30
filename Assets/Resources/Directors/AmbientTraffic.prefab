@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3944428800763183342
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 46070703648452094}
+  - component: {fileID: 5191744352203417124}
+  m_Layer: 0
+  m_Name: AmbientTraffic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &46070703648452094
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3944428800763183342}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5191744352203417124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3944428800763183342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28df85923361d4147aa94653b8784057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _warpPrefab: {fileID: 184734, guid: f84d57d8fee5f714e86b7e77e277838f, type: 3}
+  _tutorialQuestId: frontier_gold
+  _retargetInterval: 2
+  _allyClass: patrol_corvette
+  _allyCount: 3
+  _patrolClearance: {x: 250, y: 600}
+  _patrolStepDegrees: 20
+  _patrolSpeed: 30
+  _allyEngageRange: 1200
+  _allyLeashDistance: 2000
+  _freighterPrefab: {fileID: 1138232089211346111, guid: 5970403605f7c7e4abc763e9bf5cfff1, type: 3}
+  _freighter:
+    maxHp: 600
+    speed: 22
+    turnDegreesPerSecond: 20
+    dockChance: 0.5
+    dockClearance: 60
+    fadeSeconds: 4
+    departSeconds: 8
+    warpDistance: 400
+    warpDashSeconds: 1.4
+  _maxFreighters: 2
+  _freighterInterval: {x: 20, y: 45}
+  _freighterSpawnClearance: 1300
+  _freighterWaypointClearance: {x: 300, y: 700}
+  _stationRaid:
+    count: {x: 2, y: 3}
+    classes:
+    - light_fighter
+    - interceptor
+    interval: {x: 120, y: 240}
+  _stationRaidFirstDelay: {x: 45, y: 90}
+  _stationRaidClearance: 1400
+  _beltLevels:
+  - count: {x: 1, y: 2}
+    classes:
+    - light_fighter
+    interval: {x: 90, y: 150}
+  - count: {x: 2, y: 3}
+    classes:
+    - light_fighter
+    - interceptor
+    interval: {x: 80, y: 140}
+  - count: {x: 2, y: 3}
+    classes:
+    - light_fighter
+    - interceptor
+    - missile_ship
+    interval: {x: 70, y: 120}
+  - count: {x: 3, y: 4}
+    classes:
+    - interceptor
+    - missile_ship
+    - destroyer
+    interval: {x: 60, y: 110}
+  - count: {x: 3, y: 5}
+    classes:
+    - interceptor
+    - missile_ship
+    - destroyer
+    - commander
+    interval: {x: 60, y: 100}
+  _beltFirstDelay: {x: 8, y: 15}
+  _beltSpawnDistance: {x: 550, y: 750}
+  _minSpawnDistanceFromPlayer: 500
+  _pirateSpacing: 60

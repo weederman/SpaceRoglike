@@ -10,7 +10,7 @@
 - 에디터 자동화: Unity MCP (`execute_code`, `manage_editor`, `refresh_unity`, `read_console` 등)
 
 ## 폴더 구조
-- `Assets/Scripts/` — `Title`(타이틀 메뉴·시작 방식), `Settings`(그래픽·오디오 설정), `Controllers`(함선·카메라·입력 잠금), `Turret`, `Enemy`, `Health`, `Economy`, `Environment`, `Mission`, `Ships`(함선 카탈로그·보유), `MainQuest`(메인 스토리 퀘스트), `Story`, `UI`, `DevMode`
+- `Assets/Scripts/` — `Title`(타이틀 메뉴·시작 방식), `Settings`(그래픽·오디오 설정), `Controllers`(함선·카메라·입력 잠금), `Turret`, `Enemy`, `Health`, `Economy`, `Environment`, `Mission`, `Ships`(함선 카탈로그·보유), `MainQuest`(메인 스토리 퀘스트), `Traffic`(주변 NPC·해적), `Story`, `UI`, `DevMode`
 - `Assets/Resources/` — 런타임에 코드로 불러오는 것만: `Story/*.json`(대사), `UI/`(스토리·HUD·정거장 UI 프리팹), `Directors/`(연출 담당), `Missions/`(임무 데이터·Director·적 함종), `Shop/`(무기·장비·광석 카탈로그), `Ships/`(함선 카탈로그), `MainQuest/`(메인 퀘스트 정의), `WeaponStatsTable.asset`
 - `Assets/Prefabs/` — `Effects`, `Projectiles`, `Ships`, `Turrets`, `UI`
 - `Assets/Scenes/TitleScene.unity` — 타이틀(새 게임/이어 하기/설정/종료, `TitleMenu`), `Assets/Scenes/MainScene.unity` — 게임 씬(예전 SampleScene). 시작 방식은 `GameLaunch`가 넘긴다. MainScene을 바로 Play하면 개발 설정(에디터에서 이어 하기, `dev.skipPrologue`)을 따른다
@@ -22,7 +22,9 @@
 - **장비 효과는 `PlayerEquipment`에서만** 적용한다(선체·보호막·가속은 `Apply`, 화물칸·채굴 속도는 `Bonus`로 읽어 감). 장비 칸 수·기본 성능은 지금 함선(`PlayerShips.Current`, `ShipCatalog`)의 값이다.
 - **함선은 `PlayerShips`로만 바꾼다**(`Grant`/`Switch`). 무기는 함선마다 따로 기억하고 장비는 공유한다. 메인 퀘스트 진행은 `FirstShipQuest`(저장 포함), 해금·보상은 cue(`ship_grant:`, `equip:`)로 부른다.
 - **개발자 모드(`DevTuning`)는 런타임 값만 덮어쓴다.** 에셋과 프리팹은 절대 수정하지 않는다.
-- **피해 처리**: `IDamageable` + `HitResolver`, 체력/쉴드는 `HullHealth`/`ShieldHealth`의 이벤트로 알린다.
+- **피해 처리**: `IDamageable` + `HitResolver`, 체력/쉴드는 `HullHealth`/`ShieldHealth`의 이벤트로 알린다. 편은 `WeaponOwner`(Player/Enemy/Ally)와 `FriendlyShip`으로 가른다(아군 NPC 탄은 해적에게만 맞는다).
+- **주변 교통**: `AmbientTraffic`(`Resources/Directors/AmbientTraffic.prefab`)이 지역에 따라 경비선(`AllyShip`)·화물선(`NpcFreighter`)·해적을 띄운다. 함종은 `Missions/EnemyShips`(아군 함종 포함, `SpawnAlly`), 편 표시 원(`ShipMarker`)의 색·굵기도 그 에셋의 Markers 값이다.
+- **셰이더 시간**: 셰이더 `_Time`은 씬 로드부터 센다. 셰이더에 시각을 넘길 때는 `Time.time`이 아니라 `Time.timeSinceLevelLoad`를 쓴다(타이틀을 거치면 어긋난다).
 - **스토리 파이프라인**: JSON → `StoryDatabase` → `StoryPlayer` → `NarrationBar`. 연출은 대사의 `cue`로 호출하고 장면별 Director가 처리한다.
   - Director는 cue를 큐에 쌓아 한 번에 하나씩 실행한다. **건너뛰기(Esc) 시에는 중간 연출을 생략하고 "끝난 뒤의 최종 상태"로 바로 이동**해야 한다.
   - 장면 Director 프리팹은 `Resources/Directors/Cue/`에 두면 `StoryPlayer`가 자동 생성한다.

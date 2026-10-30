@@ -7,7 +7,9 @@ using FORGE3D;
 public enum WeaponOwner
 {
     Player,
-    Enemy
+    Enemy,
+    /// <summary>플레이어 편 NPC 함선 (정거장 경비선 등). 해적에게만 피해를 준다.</summary>
+    Ally
 }
 
 /// <summary>

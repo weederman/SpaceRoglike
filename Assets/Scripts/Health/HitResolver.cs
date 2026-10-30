@@ -59,6 +59,11 @@ public static class HitResolver
             && hit.collider.GetComponentInParent<SpaceshipController>() == null && !FriendlyShip.Is(hit.collider))
             return;
 
+        // 아군 NPC의 무기는 적에게만 피해를 준다 (플레이어 함선·아군 함선은 맞지 않는다)
+        if (owner == WeaponOwner.Ally && hit.collider != null
+            && (hit.collider.GetComponentInParent<SpaceshipController>() != null || FriendlyShip.Is(hit.collider)))
+            return;
+
         IDamageable target = Resolve(hit, damage, shieldMultiplier, armorMultiplier);
         if (target != null)
             OnHit?.Invoke(target, weapon, owner);

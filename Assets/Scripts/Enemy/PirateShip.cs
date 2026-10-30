@@ -77,6 +77,9 @@ public class PirateShip : MonoBehaviour
     /// <summary>Raid에서 노리는 목표 (사라졌으면 플레이어)</summary>
     public Transform RaidTarget => _raidTarget != null ? _raidTarget : _player;
 
+    /// <summary>지금 있는 해적선 전부 (아군 NPC가 노릴 적을 고를 때)</summary>
+    public static readonly List<PirateShip> All = new List<PirateShip>();
+
     // 전투 중인 해적선들 (숨을 암석이 겹치지 않게, 서로 밀어내기 위해)
     private static readonly List<PirateShip> Fighting = new List<PirateShip>();
     private static readonly List<AsteroidField.Rock> RockBuffer = new List<AsteroidField.Rock>();
@@ -124,6 +127,7 @@ public class PirateShip : MonoBehaviour
 
         ShipMovementBase.ConfigureBody(_rb);
         LimitArrivalSound();
+        ShipMarker.Attach(gameObject, ShipMarker.Side.Hostile); // 해적 표시: 붉은 원
     }
 
     /// <summary>
@@ -143,10 +147,19 @@ public class PirateShip : MonoBehaviour
             _lastArrivalSoundAt = Time.time;
     }
 
+    private void OnEnable()
+    {
+        All.Add(this);
+    }
+
     private void OnDisable()
     {
+        All.Remove(this);
         Fighting.Remove(this);
     }
+
+    /// <summary>격파되지 않았고 워프로 떠나는 중도 아닌지 (아군이 노릴 만한 적인지)</summary>
+    public bool IsHostileTarget => Hull != null && Hull.IsActive && Current != Mode.Warp;
 
     /// <summary>대기 위치로 다가가 멈춘다. snap이면 다가가는 과정 없이 바로 그 자리에 둔다(건너뛰기).</summary>
     public void Hold(Vector3 point, bool snap)

@@ -239,7 +239,7 @@ namespace ProceduralForceField
 
             _propertyBlock.SetFloat(
                 HitTimeId,
-                Time.time
+                Time.timeSinceLevelLoad // shader _Time.y counts from scene load (Time.time drifts after TitleScene)
             );
 
             _propertyBlock.SetFloat(

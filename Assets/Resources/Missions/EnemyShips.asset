@@ -231,3 +231,42 @@ MonoBehaviour:
       warpVanishDistance: 480
       warpDashSeconds: 1.2
       raidLeadAngle: 15
+  - id: patrol_corvette
+    displayName: "\uC815\uAC70\uC7A5 \uACBD\uBE44\uC120"
+    model: {fileID: 7706704133163136415, guid: 1b9c9bd520ad54747a98d7222069677a, type: 3}
+    modelRotation: {x: 0, y: 0, z: 0}
+    modelLengthRatio: 1
+    scale: 2
+    shieldHp: 400
+    hullHp: 300
+    weapon: 0
+    damage: 40
+    tuning:
+      approachSmoothTime: 2.5
+      approachMaxSpeed: 120
+      fightAcceleration: 30
+      fireRange: 260
+      fireInterval: 2.5
+      separation: 90
+      lurkDistance: {x: 170, y: 300}
+      lurkMaxSpeed: 26
+      lurkWander: 18
+      lurkDefendRange: 150
+      attackDistance: 170
+      attackMaxSpeed: 50
+      fleeMaxSpeed: 40
+      fleeAcceleration: 30
+      fleeGiveUpDistance: 650
+      warpTurnSeconds: 1
+      warpMaxSeconds: 5
+      warpVanishDistance: 420
+      warpDashSeconds: 1.2
+      raidLeadAngle: 25
+  _markers:
+    friendly: {r: 0.25, g: 1, b: 0.35, a: 0.85}
+    hostile: {r: 1, g: 0.25, b: 0.2, a: 0.85}
+    radiusRatio: 1.1
+    minRadius: 8
+    width: 1.2
+    heightOffset: -2
+    segments: 48

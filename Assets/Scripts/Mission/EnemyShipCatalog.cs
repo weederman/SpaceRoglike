@@ -4,11 +4,12 @@ using FORGE3D;
 using UnityEngine;
 
 /// <summary>
-/// 임무에 나오는 적 함종 목록(단일 출처). 위치: Assets/Resources/Missions/EnemyShips.asset
-/// 함종마다 겉모습 모델·크기·체력·무기·공격력·행동 수치(PirateShip.Tuning)를 정하고, Spawn으로 만든다.
+/// 임무·주변 교통(AmbientTraffic)에 나오는 함종 목록(단일 출처). 위치: Assets/Resources/Missions/EnemyShips.asset
+/// 함종마다 겉모습 모델·크기·체력·무기·공격력·행동 수치(PirateShip.Tuning)를 정하고, Spawn(해적)·SpawnAlly(아군 NPC)로 만든다.
 /// 모든 함종은 기본 적 프리팹(EnEmy)을 바탕으로 한다 — 판정(쉴드·선체 충돌체)·터렛·체력바는 그대로 두고,
 /// 크기를 배율로 키우고 원래 선체 메시를 숨긴 뒤 함종 모델을 같은 자리에 붙인다(PlayerShipAppearance와 같은 방식).
 /// 공격력은 전역 WeaponStatsTable이 아니라 여기 값을 터렛에 런타임으로 준다(일반 적은 그대로 표를 쓴다).
+/// 함선 아래에 그리는 편 표시 원(ShipMarker)의 색·굵기도 여기서 정한다.
 /// </summary>
 [CreateAssetMenu(fileName = "EnemyShips", menuName = "SpaceRoglike/Enemy Ship Catalog")]
 public class EnemyShipCatalog : ScriptableObject
@@ -48,6 +49,11 @@ public class EnemyShipCatalog : ScriptableObject
     [SerializeField] private GameObject _basePrefab;
     [SerializeField] private List<ShipClass> _classes = new List<ShipClass>();
 
+    [Header("편 표시 원 (ShipMarker)")]
+    [SerializeField] private ShipMarker.Settings _markers = new ShipMarker.Settings();
+
+    public ShipMarker.Settings Markers => _markers;
+
     private static EnemyShipCatalog _loaded;
 
     public static EnemyShipCatalog Load()
@@ -71,6 +77,39 @@ public class EnemyShipCatalog : ScriptableObject
     /// <summary>그 함종의 적 함선을 만든다. PirateShip이 붙은 채로 돌려주며, 상태(Raid 등)는 부르는 쪽이 정한다.</summary>
     public PirateShip Spawn(string id, Vector3 position, Quaternion rotation, Transform player, GameObject warpPrefab)
     {
+        ShipClass shipClass = Build(id, position, rotation, WeaponOwner.Enemy, out GameObject go);
+        if (shipClass == null)
+            return null;
+
+        var pirate = go.AddComponent<PirateShip>();
+        pirate.Init(shipClass.tuning, player, warpPrefab);
+        DevTuning.ApplyToEnemy(go); // 개발자 모드로 바꿔 둔 적 체력 등 (런타임만)
+        return pirate;
+    }
+
+    /// <summary>
+    /// 그 함종을 플레이어 편 NPC 함선으로 만든다 (아군 표시 FriendlyShip, 아군 무기). AllyShip이 붙은 채로 돌려주며,
+    /// 순찰할 정거장은 부르는 쪽이 정한다(AllyShip.Patrol). 아군이라 격파 보상(EnemyKillReward)은 뗀다.
+    /// </summary>
+    public AllyShip SpawnAlly(string id, Vector3 position, Quaternion rotation)
+    {
+        ShipClass shipClass = Build(id, position, rotation, WeaponOwner.Ally, out GameObject go);
+        if (shipClass == null)
+            return null;
+
+        go.AddComponent<FriendlyShip>();
+        foreach (EnemyKillReward reward in go.GetComponentsInChildren<EnemyKillReward>(true))
+            Destroy(reward);
+
+        var ally = go.AddComponent<AllyShip>();
+        ally.Init(shipClass.tuning);
+        return ally;
+    }
+
+    /// <summary>바탕 프리팹으로 함선을 만들고 함종의 크기·모델·체력·무기를 입힌다. 함종이 없으면 null.</summary>
+    private ShipClass Build(string id, Vector3 position, Quaternion rotation, WeaponOwner owner, out GameObject go)
+    {
+        go = null;
         ShipClass shipClass = Find(id);
         if (shipClass == null || _basePrefab == null)
         {
@@ -78,7 +117,7 @@ public class EnemyShipCatalog : ScriptableObject
             return null;
         }
 
-        GameObject go = Instantiate(_basePrefab, position, rotation);
+        go = Instantiate(_basePrefab, position, rotation);
         go.name = shipClass.displayName;
         go.transform.localScale = _basePrefab.transform.localScale * shipClass.scale;
 
@@ -94,15 +133,12 @@ public class EnemyShipCatalog : ScriptableObject
 
         foreach (F3DFXController fx in go.GetComponentsInChildren<F3DFXController>(true))
         {
-            fx.owner = WeaponOwner.Enemy;
+            fx.owner = owner;
             fx.DefaultFXType = shipClass.weapon;
             fx.damageOverride = shipClass.damage;
         }
 
-        var pirate = go.AddComponent<PirateShip>();
-        pirate.Init(shipClass.tuning, player, warpPrefab);
-        DevTuning.ApplyToEnemy(go); // 개발자 모드로 바꿔 둔 적 체력 등 (런타임만)
-        return pirate;
+        return shipClass;
     }
 
     private static void ApplyModel(GameObject ship, ShipClass shipClass)
