@@ -9,6 +9,7 @@ using UnityEngine;
 ///  - PlayMusic(이름) / StopMusic(): 배경음악 하나를 서서히 바꿔 튼다
 /// 스토리 JSON의 cue로도 쓸 수 있다:  sfx:이름 / bgm:이름 / bgm_stop
 /// (건너뛰기 중에는 효과음은 내지 않고, 배경음악은 최종 상태대로 맞춘다)
+/// 음량 설정(GameSettings): 배경음악은 음악, 소리는 SoundTable의 종류(효과음/인터페이스)대로 믹서 그룹에 보낸다.
 /// 처음 쓸 때 자동으로 생긴다(씬에 둘 필요 없음).
 /// </summary>
 public class GameAudio : MonoBehaviour
@@ -19,6 +20,7 @@ public class GameAudio : MonoBehaviour
 
     private SoundTable _table;
     private AudioSource _sfx;
+    private AudioSource _ui;
     private AudioSource _music;
     private readonly Dictionary<object, AudioSource> _loops = new Dictionary<object, AudioSource>();
     private readonly Dictionary<SoundTable.Entry, AudioClip> _boosted = new Dictionary<SoundTable.Entry, AudioClip>();
@@ -36,7 +38,7 @@ public class GameAudio : MonoBehaviour
         GameAudio a = Instance;
         SoundTable.Entry e = a != null ? a.Find(soundName) : null;
         if (e != null)
-            a._sfx.PlayOneShot(a.ClipFor(e), Mathf.Min(1f, e.volume));
+            (e.channel == VolumeChannel.Ui ? a._ui : a._sfx).PlayOneShot(a.ClipFor(e), Mathf.Min(1f, e.volume));
     }
 
     public static void StartLoop(string soundName, object owner)
@@ -51,6 +53,8 @@ public class GameAudio : MonoBehaviour
             source = a.CreateSource("Loop", true);
             a._loops[owner] = source;
         }
+
+        GameSettings.Route(source, e.channel == VolumeChannel.Ui ? VolumeChannel.Ui : VolumeChannel.Sfx);
 
         AudioClip clip = a.ClipFor(e);
         if (source.isPlaying && source.clip == clip)
@@ -69,6 +73,22 @@ public class GameAudio : MonoBehaviour
         _instance._loops.Remove(owner);
         if (source != null)
             Destroy(source);
+    }
+
+    /// <summary>반복음과 스토리 배경음악을 모두 멈춘다 (타이틀로 돌아갈 때: 주인이 사라져도 반복음이 남지 않게)</summary>
+    public static void StopAll()
+    {
+        if (_instance == null)
+            return;
+
+        foreach (AudioSource source in _instance._loops.Values)
+        {
+            if (source != null)
+                Destroy(source);
+        }
+
+        _instance._loops.Clear();
+        StopMusic(0.2f);
     }
 
     public static void PlayMusic(string musicName, float fadeSeconds = DefaultMusicFade)
@@ -131,7 +151,13 @@ public class GameAudio : MonoBehaviour
             Debug.LogWarning($"[GameAudio] Assets/Resources/{SoundTable.ResourcePath}.asset을 찾지 못해 소리를 내지 않습니다.");
 
         _sfx = CreateSource("Sfx", false);
+        _ui = CreateSource("Ui", false);
         _music = CreateSource("Music", true);
+
+        // 음량 설정의 종류별로 믹서 그룹에 보낸다 (GameSettings)
+        GameSettings.Route(_sfx, VolumeChannel.Sfx);
+        GameSettings.Route(_ui, VolumeChannel.Ui);
+        GameSettings.Route(_music, VolumeChannel.Music);
 
         // 소리 파일이 "미리 불러오기" 꺼짐으로 되어 있어 처음 재생이 빠질 수 있으므로 시작할 때 불러 둔다
         if (_table != null)

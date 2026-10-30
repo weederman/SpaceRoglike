@@ -56,6 +56,20 @@ public static class GameLaunch
         SaveSystem.Clear();
     }
 
+    /// <summary>
+    /// 게임을 그만두고 타이틀 화면으로 돌아간다 (일시 정지 메뉴). 저장하지 않으므로 마지막 저장 이후의 진행은 사라진다.
+    /// 진행 중인 임무와 반복음을 정리하고, 멈춰 둔 시간을 되돌린다.
+    /// </summary>
+    public static void ReturnToTitle()
+    {
+        MissionDirector.Abort();
+        GameAudio.StopAll();
+        PlayerHud.Hidden = false;
+        Time.timeScale = 1f;
+        Current = Mode.Direct;
+        SceneManager.LoadScene(TitleSceneName);
+    }
+
     public static void Quit()
     {
 #if UNITY_EDITOR

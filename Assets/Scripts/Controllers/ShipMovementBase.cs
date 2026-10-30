@@ -48,6 +48,7 @@ public abstract class ShipMovementBase : MonoBehaviour
             engineAudio.loop = true;
             engineAudio.playOnAwake = false;
             engineAudio.volume = 0f;
+            GameSettings.Route(engineAudio, VolumeChannel.Sfx); // 음량 설정: 효과음
         }
     }
 

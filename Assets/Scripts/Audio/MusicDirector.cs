@@ -56,6 +56,7 @@ public class MusicDirector : MonoBehaviour
             source.loop = false;
             source.spatialBlend = 0f;
             source.volume = 0f;
+            GameSettings.Route(source, VolumeChannel.Music); // 음량 설정: 음악
             _sources[i] = source;
         }
     }

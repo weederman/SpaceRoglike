@@ -7,8 +7,10 @@ using UnityEngine.TextCore.LowLevel;
 /// <summary>
 /// SCI-FI UI Pack의 폰트(Play, Aldrich)에는 한글이 없어서, TMP 텍스트에 한글 폰트를 대체(fallback)로 붙여 준다.
 /// 한글 폰트는 이 순서로 찾는다.
-///  1) Assets/Resources/Fonts/KoreanFallback (TMP_FontAsset) — 직접 만든 한글 폰트 에셋이 있으면 최우선.
-///  2) 실행 중인 PC에 설치된 한글 폰트(맑은 고딕 등)를 파일에서 읽어 동적으로 만든다. 폰트 파일을 게임에 넣지 않으므로 임시 방편이다.
+///  1) Assets/Resources/Fonts/KoreanFallback (TMP_FontAsset, Noto Sans KR · OFL, 원본 Assets/Fonts/NotoSansKR) — 게임에 들어가는 한글 폰트.
+///     TMP Settings의 전체 대체 폰트(Fallback Font Assets)로도 등록되어 있어, 에디터 화면(Play 전)과 이 함수를 거치지 않은 텍스트에서도 한글이 보인다.
+///     프로젝트에서 쓰는 한글은 미리 담아 두었고(4096 아틀라스), 새 글자는 실행 중에 동적으로 추가된다.
+///  2) (예비) 실행 중인 PC에 설치된 한글 폰트(맑은 고딕 등)를 파일에서 읽어 동적으로 만든다.
 /// 팩의 폰트 에셋 자체는 수정하지 않고, 복제본에 대체 폰트를 붙여서 쓴다.
 /// </summary>
 public static class GameFonts

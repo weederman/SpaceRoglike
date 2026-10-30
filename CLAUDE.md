@@ -10,7 +10,7 @@
 - 에디터 자동화: Unity MCP (`execute_code`, `manage_editor`, `refresh_unity`, `read_console` 등)
 
 ## 폴더 구조
-- `Assets/Scripts/` — `Title`(타이틀 메뉴·시작 방식), `Controllers`(함선·카메라·입력 잠금), `Turret`, `Enemy`, `Health`, `Economy`, `Environment`, `Mission`, `Ships`(함선 카탈로그·보유), `MainQuest`(메인 스토리 퀘스트), `Story`, `UI`, `DevMode`
+- `Assets/Scripts/` — `Title`(타이틀 메뉴·시작 방식), `Settings`(그래픽·오디오 설정), `Controllers`(함선·카메라·입력 잠금), `Turret`, `Enemy`, `Health`, `Economy`, `Environment`, `Mission`, `Ships`(함선 카탈로그·보유), `MainQuest`(메인 스토리 퀘스트), `Story`, `UI`, `DevMode`
 - `Assets/Resources/` — 런타임에 코드로 불러오는 것만: `Story/*.json`(대사), `UI/`(스토리·HUD·정거장 UI 프리팹), `Directors/`(연출 담당), `Missions/`(임무 데이터·Director·적 함종), `Shop/`(무기·장비·광석 카탈로그), `Ships/`(함선 카탈로그), `MainQuest/`(메인 퀘스트 정의), `WeaponStatsTable.asset`
 - `Assets/Prefabs/` — `Effects`, `Projectiles`, `Ships`, `Turrets`, `UI`
 - `Assets/Scenes/TitleScene.unity` — 타이틀(새 게임/이어 하기/설정/종료, `TitleMenu`), `Assets/Scenes/MainScene.unity` — 게임 씬(예전 SampleScene). 시작 방식은 `GameLaunch`가 넘긴다. MainScene을 바로 Play하면 개발 설정(에디터에서 이어 하기, `dev.skipPrologue`)을 따른다
@@ -28,6 +28,7 @@
   - 장면 Director 프리팹은 `Resources/Directors/Cue/`에 두면 `StoryPlayer`가 자동 생성한다.
   - 시퀀스는 `then`으로 이어 붙인다(이어지는 동안 `IsPlaying`이 유지되어 조작 잠금이 풀리지 않는다).
   - 대사·선택지의 `{player}`는 새 게임에서 입력한 플레이어 이름으로 바뀌고, 화자 `hero`의 이름 칸도 그 이름이 된다(`PlayerProfile`).
+- **소리는 종류별 믹서 그룹으로 보낸다**: 새 AudioSource는 `GameSettings.Route(source, VolumeChannel.Sfx/Music/Ui)`(또는 프리팹의 Output을 `Resources/Audio/GameMixer`의 그룹으로)로 연결해야 음량 설정을 따른다. SoundTable 소리는 항목의 `channel`대로 GameAudio가 보낸다. 설정 값은 PlayerPrefs(`GameSettings`), 데이터는 `Resources/Settings/SettingsConfig`.
 - **조작 잠금은 `GameInputLock`(소유자 기반)으로만** 건다. 직접 `enabled = false` 등으로 막지 않는다.
 - 스토리 UI는 시간 정지 중에도 동작해야 하므로 **unscaled time**을 쓴다.
 - 텔레포트/큰 이동 뒤에는 `CameraController.SnapToTarget()`을 호출한다. (씬에 둔 카메라 위치는 런타임에 `CameraController`가 덮어쓴다)
@@ -39,7 +40,7 @@
 4. **씬/프리팹 누수 방지**: 작업 후 `git status`로 의도하지 않은 `TitleScene.unity`·`MainScene.unity` 변경이 없는지 확인한다. 테스트 중 생긴 씬 변경은 저장하지 않는다. `Assets/Screenshots`가 생겼으면 지운다. 씬 수정은 사용자가 요청했을 때만 한다.
 5. **JSON 대사를 고친 뒤에는 `refresh_unity` 후 Play** 한다 (안 하면 이전 데이터로 실행된다).
 6. **Unity MCP `execute_code`는 같은 코드가 여러 번 실행될 수 있다** → 생성/설정 코드는 멱등하게(이미 있으면 건너뜀) 작성한다.
-7. **한글 폰트**: SCI-FI UI Pack 폰트에는 한글이 없다. 한글을 쓰는 TMP는 `GameFonts`의 대체 폰트를 거친다. 새 한글 UI를 만들면 한글이 정상 표시되는지 확인한다.
+7. **한글 폰트**: SCI-FI UI Pack 폰트에는 한글이 없다. 한글은 `Resources/Fonts/KoreanFallback`(Noto Sans KR, OFL)이 TMP 전체 대체 폰트로 채운다(에디터에서도 보임). 새 글자는 실행 중 동적으로 추가되어 이 에셋이 바뀐다. 좁은 칸의 말줄임(Ellipsis) 텍스트는 줄 높이에 주의. 새 한글 UI를 만들면 한글이 정상 표시되는지 확인한다.
 8. **UI 문자열에 `&gt;` 같은 HTML 엔티티를 쓰지 않는다** (TMP 리치텍스트에서 그대로 출력됨). `>`를 그대로 쓴다.
 9. **풀링/키네마틱**: Kinematic Rigidbody에는 `velocity`를 대입하지 않는다 (`isKinematic` 확인).
 10. 사용자와 대화는 한국어로 한다.

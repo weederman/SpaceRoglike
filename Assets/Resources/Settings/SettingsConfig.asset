@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 925db9d18dfd7b44c8854898c08c0a95, type: 3}
+  m_Name: SettingsConfig
+  m_EditorClassIdentifier: 
+  mixer: {fileID: 24100000, guid: 8cc1c0d615df93241bf712125a73a70a, type: 2}
+  channels:
+  - channel: 0
+    group: {fileID: 0}
+    parameter: 
+    defaultVolume: 1
+  - channel: 1
+    group: {fileID: 4621839468864779912, guid: 8cc1c0d615df93241bf712125a73a70a, type: 2}
+    parameter: MusicVolume
+    defaultVolume: 1
+  - channel: 2
+    group: {fileID: 2260450898622984580, guid: 8cc1c0d615df93241bf712125a73a70a, type: 2}
+    parameter: SfxVolume
+    defaultVolume: 1
+  - channel: 3
+    group: {fileID: 108577102897116725, guid: 8cc1c0d615df93241bf712125a73a70a, type: 2}
+    parameter: UiVolume
+    defaultVolume: 1
+  resolutions:
+  - width: 1280
+    height: 720
+    aspect: 16:9
+    note: 
+  - width: 1600
+    height: 900
+    aspect: 16:9
+    note: 
+  - width: 1920
+    height: 1080
+    aspect: 16:9
+    note: Full HD
+  - width: 1280
+    height: 800
+    aspect: 16:10
+    note: 
+  - width: 1680
+    height: 1050
+    aspect: 16:10
+    note: 
+  - width: 1920
+    height: 1200
+    aspect: 16:10
+    note: 
+  defaultFullscreen: 1

@@ -16,36 +16,48 @@ MonoBehaviour:
   - name: dialogue_click
     clip: {fileID: 8300000, guid: 57318817f5b76014dbfdd04f2cf7e0e3, type: 3}
     volume: 6
+    channel: 3
   - name: quest_accept
     clip: {fileID: 8300000, guid: a3ada1aa14a58894da22561456c995cc, type: 3}
     volume: 0.8
+    channel: 3
   - name: alarm
     clip: {fileID: 8300000, guid: d990d23e56f0efa4086f496abeb9b257, type: 3}
     volume: 0.45
+    channel: 2
   - name: whiteout
     clip: {fileID: 8300000, guid: bfadf5e706bf2d340836338b49eb1545, type: 3}
     volume: 0.9
+    channel: 2
   - name: inwarp
     clip: {fileID: 8300000, guid: d6fb0b1602e070a43a65e4e254623028, type: 3}
     volume: 0.25
+    channel: 2
   - name: warp_start
     clip: {fileID: 8300000, guid: a71d207082a317743a319403c125677b, type: 3}
     volume: 0.8
+    channel: 2
   - name: warp_end
     clip: {fileID: 8300000, guid: f971d0d060a362e4e90af07c56e37d2f, type: 3}
     volume: 0.8
+    channel: 2
   - name: mining_start
     clip: {fileID: 8300000, guid: efa34f6c791b62249aea6d9dbfbd1087, type: 3}
     volume: 0.5
+    channel: 2
   - name: mining_loop
     clip: {fileID: 8300000, guid: 959e88d28b35e2c419016ab8ee0d9e9d, type: 3}
     volume: 0.35
+    channel: 2
   - name: mining_stop
     clip: {fileID: 8300000, guid: 650a66a33ed959c4aa39de2afb9fdbb5, type: 3}
     volume: 0.5
+    channel: 2
   - name: tavern
     clip: {fileID: 8300000, guid: a3cbfe1e21bb06345b576fb7bea8f1cf, type: 3}
     volume: 0.22
+    channel: 1
   - name: ship_explosion
     clip: {fileID: 8300000, guid: 75c2520332d47c543ab6ecbed510a94f, type: 3}
     volume: 0.9
+    channel: 2

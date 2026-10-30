@@ -7,7 +7,7 @@ using UnityEngine.UI;
 ///  - 새 게임: 저장이 있으면 "기존 저장이 지워집니다" 확인 창을 띄운 뒤 메인 씬으로 간다(GameLaunch.StartNewGame).
 ///    저장은 메인 씬에서 이름을 정할 때 지운다.
 ///  - 이어 하기: 저장이 없으면 꺼져 있다. 누르면 저장한 정거장 안에서 시작한다(GameLaunch.ContinueGame).
-///  - 설정: 아직 기능이 없어 꺼 둔다.
+///  - 설정: 설정 창(SettingsWindow)을 띄운다.
 ///  - 게임 종료: 게임을 끈다(에디터에서는 Play를 멈춘다).
 /// 확인 창이 떠 있으면 Esc로 닫는다. UI는 TitleScene의 Canvas에 놓인 SCI-FI UI Pack 버튼·팝업이다.
 /// </summary>
@@ -31,12 +31,12 @@ public class TitleMenu : MonoBehaviour
 
         _newGame.onClick.AddListener(HandleNewGame);
         _continue.onClick.AddListener(GameLaunch.ContinueGame);
+        _settings.onClick.AddListener(() => SettingsWindow.Open());
         _quit.onClick.AddListener(GameLaunch.Quit);
         _confirmYes.onClick.AddListener(GameLaunch.StartNewGame);
         _confirmNo.onClick.AddListener(() => _confirmPopup.SetActive(false));
 
         SetAvailable(_continue, SaveSystem.HasSave);
-        SetAvailable(_settings, false); // 아직 설정 기능이 없다
         _confirmPopup.SetActive(false);
     }
 

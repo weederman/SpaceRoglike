@@ -1,55 +1,53 @@
 # 작업 인수인계
 - 날짜: 2026-10-30
 - 브랜치: sehui
-- 기준 커밋: d9fced5 라스 퀘스트 추가 수정 (커밋 안 된 변경 없음)
+- 기준 커밋: 778d28c 타이틀 화면, 사용자 이름 입력 기능 구현 (그 뒤 작업은 커밋 안 됨, 아래 4장)
 
 ## 1. 목표
-SpaceRoglike의 튜토리얼 이후 "반복 임무 + 정거장 경제 + 메인 스토리" 루프를 만들고 있다.
-반복 임무 12개, 경제·무기·장비, 함선 시스템, **메인 스토리 ① 첫 번째 함선 해금 퀘스트(라스)**까지 구현·검증을 마쳤다.
-다음은 사용자가 요청할 때 메인 스토리 ② 최종 함선 → 보스 볼테르 → 엔딩(`docs/game-design.md` 4장)이다.
+게임의 바깥 흐름(타이틀 → 새 게임/이어 하기 → 게임 → 일시 정지·설정 → 타이틀)을 갖추는 중이다.
+타이틀·이름 입력은 커밋했고, 이어서 설정(그래픽·오디오) 시스템과 설정 화면, 게임 중 Esc 일시 정지 메뉴, 에디터에서도 보이는 한글 폰트를 만들었다(미커밋).
+그 뒤로는 handoff 이전 계획(전투 밸런스 확인, 메인 스토리 ②)으로 돌아간다.
 
 ## 2. 완료한 것
-- **임무 시스템** (`Scripts/Mission/`): 공통 `MissionData`/`MissionDirector`, `EnemyShipCatalog`. 호송 1-x, 해적 소탕 2-x, 채굴 3-x, 운송 4-x (`docs/missions.md`).
-- **경제·무기·장비** (`docs/game-design.md` 7장): 시작 자금 10,000, 무기 id 체계, 장비 5종×4등급, 장비 칸, 광석 구매(시장가×2, 10개씩).
-- **함선 시스템**: `Scripts/Ships/ShipCatalog`(`Resources/Ships/ShipCatalog.asset`) + `PlayerShips`. 스펙터(무기 2·장비 4) / 아이언월(무기 4·장비 6).
-- **첫 번째 함선 퀘스트**: `Scripts/MainQuest/FirstShipQuest`·`FirstShipQuestData`, 대사 `Story/MainFirstShip.json`, 임무 `SalvageMissionDirector`(1-4)·`InterceptMissionDirector`(1-5). 흐름은 `docs/game-design.md` 8장.
-- **이번 세션 (2026-10-30)**
-  - 아이언월 모델을 `Prefabs/Ships/Ironwall_Model.prefab`(Scifi_Ship_Cruiser-FBX)로 교체. 뒤쪽 터렛 자리 `extraTurretMounts`를 (±30, 9, -25)로 조정(크루저 갑판에 파묻히던 문제).
-  - **희귀 결정(`rare_crystal`)**: `OreCatalog`에 광맥 없는 별개 아이템으로 추가(시장가 400, 구매 800). 라스 퀘스트 세 번째 재료가 희귀 광석 → 희귀 결정 30개로 바뀜.
-  - **희귀 부품 보상**: `MissionData.rarePartChance/Amount/Pool` + `MissionDirector.RollRarePart`(Succeed에서 굴림) + `CargoHold.Grant`(한도 무시 지급). 중급 8개 중 4개 40% 1~3개, 상급 4개 70% 3~6개.
-  - 광물 납품·최종 조립이 **어느 정거장에서나** 가능(모항 제한 폐지). 라운지 문구·대사 수정.
-- **Play 검증 완료**: 연락(자금 100만 자동) → 구매 → 재료 납품 → 잔해 수색 → 수송선 요격(지휘함 통신 기록 분기 포함) → 비모항 조립 → 아이언월 지급. 콘솔 에러 없음.
+- **씬 분리**(사용자 작업): `Scenes/TitleScene.unity`(타이틀), `Scenes/MainScene.unity`(예전 SampleScene). 빌드 순서 Title 0, Main 1.
+- **타이틀·시작 방식**(커밋됨): `Scripts/Title/GameLaunch`(NewGame/Continue/Direct, ReturnToTitle), `TitleMenu`(새 게임 확인 창·이어 하기·설정·종료).
+- **이름 입력**(커밋됨): `UI/NameEntryView` + `Resources/UI/NameEntry.prefab`, `Story/PlayerProfile`(hero 화자 이름, 대사의 `{player}` 치환, 저장 `playerName`). 프롤로그가 검은 화면에서 이름을 받은 뒤 시작.
+- **저장·재시작 버그 수정**(커밋됨): 출항할 때도 저장(`SaveSystem.HandleUndocked`), 패배 후 '다시 시작'은 마지막 저장에서 이어 함(`ContinueOnNextLoad`), 씬 재로드 때 무기 슬롯·화물칸 초기화(`PlayerWeaponSelector`, `CargoHold`). 프롤로그 시작을 `sceneLoaded`로(타이틀 거쳐도 시작).
+- **설정 시스템**(미커밋): `Scripts/Settings/GameSettings`(PlayerPrefs, 음량 4종·해상도·전체 화면), `SettingsConfig` + `Resources/Settings/SettingsConfig.asset`(믹서·채널·해상도 목록), 오디오 믹서 `Resources/Audio/GameMixer.mixer`(Music/SFX/UI 그룹, 노출 파라미터 MusicVolume/SfxVolume/UiVolume).
+  - 소리 연결: GameAudio(효과음·UI·음악 소스, SoundTable `channel`), MusicDirector, 엔진(`ShipMovementBase`), 적 등장음(`PirateShip`), 프리팹 Output(EnEmy, Player, FORGE3D `Misc/AudioSource.prefab`).
+- **설정 화면**(미커밋): `Settings/SettingsWindow` + `Resources/UI/SettingsWindow.prefab`(정거장 창과 같은 구성, 그래픽 탭: 해상도 ◀▶·전체 화면 스위치 / 오디오 탭: 슬라이더 4개). 타이틀 '설정' 버튼 연결.
+- **일시 정지 메뉴**(미커밋): `UI/PauseMenu` + `Resources/UI/PauseMenu.prefab`. MainScene에서 Esc → 계속하기/설정/타이틀로(확인 창). 열려 있으면 timeScale 0·조작 잠금. `GameAudio.StopAll` 추가.
+- **한글 폰트**(미커밋): `Assets/Fonts/NotoSansKR/`(ttf + OFL.txt), TMP 폰트 `Resources/Fonts/KoreanFallback.asset`(2048 아틀라스, 914자 선적재, Dynamic), `TextMesh Pro/Resources/TMP Settings.asset`의 전체 대체 폰트로 등록. `GameFonts`가 이것을 먼저 씀.
+- `CLAUDE.md`: 씬 이름, `Title`·`Settings` 폴더, `{player}`, 소리 라우팅 규칙, 한글 폰트 규칙(7번) 반영.
 
 ## 3. 결정 사항
-- **첫 번째 함선 = 아이언월 유지**, 모델은 크루저 프리팹. 나중에 새 모델을 정하면 `ShipCatalog` 아이언월 `look.model`에 프리팹만 갈아 끼운다(크기는 `hullRatio` 1.5로 선체 판정에 맞춰 자동). 검토한 대안: 에스코트 모델(프롤로그 첫 함선과 비슷해서 제외), K4_Green(임시였음).
-- **희귀 결정은 희귀 광석과 별개 아이템** (사용자 결정). 얻는 길은 임무 보상(희귀 부품) 또는 거래소 구매(비싸게). 버린 대안: 희귀 광석 재사용.
-- **희귀 부품 보상은 화물칸 한도를 넘어도 지급**(`Grant`). 버린 대안: 한도 안에서만 `Add` — 채굴 임무 직후 칸이 차 있으면 보상을 잃는다. 대신 `CargoHold.Ratio`는 1로 막았다.
-- **납품·조립은 어느 정거장이나** (사용자 결정). 거래소 구매 방식(시장가×2, 10개씩)은 유지.
-- **운송**: 받은 정거장 출발, 도착지 무작위, 화물은 화물칸 한도 공유, 진행 중 임무는 저장 안 함, 4-2는 선체 50% 미만 즉시 실패.
-- **기본 보호막 없음 유지**, **무기 가격 1000배 유지, 장비 가격은 기획 단위**, 메인 임무는 `OnBoard=false`.
+- **음량은 오디오 믹서 그룹 + 전체는 AudioListener.volume.** 전체를 믹서 Master로 걸면 그룹에 연결 안 된 소리가 빠지므로 리스너로 건다. 버린 대안: 소스마다 코드로 음량 곱하기(FORGE3D 풀 소리 등 놓치는 곳이 생김).
+- **믹서는 에디터 내부 API(리플렉션)로 생성**했고 그룹 보기(View)도 직접 만들었다. 믹서 SetFloat는 Start 전에는 무시되므로 `GameSettings.Applier`가 첫 씬 Start에서 적용한다.
+- **음량 종류: 전체·음악·효과음·인터페이스**(사용자 결정). 대사 넘김·퀘스트 수락만 인터페이스, 나머지는 효과음.
+- **해상도: 16:9(1280×720, 1600×900, 1920×1080 Full HD) / 16:10(1280×800, 1680×1050, 1920×1200) + 전체 화면/창 모드**(사용자 결정). 모니터(`Screen.currentResolution`)보다 큰 것은 숨김. 전체 화면은 FullScreenWindow. 처음 실행은 현재 화면 유지. 버린 대안: 세 개만 고정 전체 화면.
+- **설정 값은 바꾸는 즉시 적용·저장**(확인 버튼 없음). 해상도 드롭다운은 UI 팩 Dropdown/Switch 라벨이 레거시 Text라 한글 폰트가 안 붙어 ◀▶ + TMP 라벨로 대체.
+- **일시 정지 Esc 충돌 방지는 '지난 프레임 상태'로 판단**(같은 프레임에 지도·창이 Esc로 닫히며 메뉴까지 열리는 것 방지). 스토리·지도·정거장 창·설정 창·조작 잠금·워프·timeScale 0이면 열지 않음. 정거장 안이라도 창이 없으면 열림.
+- **한글 폰트는 Noto Sans KR(OFL) 번들 + TMP 전체 대체 폰트**(사용자 결정). 버린 대안: 맑은 고딕 번들(라이선스상 배포 불가), UI 팩 폰트 에셋에 fallback 추가(팩 수정 금지 규칙). 4096 아틀라스는 33MB라 2048(44pt)로 축소.
+- **KoreanFallback 줄 높이를 줄여 둠**(ascent 1.0 / descent -0.25 / line 1.25, Noto 원래 1.16/-0.29/1.45). 원래 값이면 Ellipsis 텍스트가 좁은 칸에서 통째로 사라질 수 있음.
+- (이전) 새 게임 시 저장은 이름을 확정할 때 지움(이름 입력 중 종료하면 저장 유지). 이름 2~10자. 출항 저장과 도킹 저장 둘 다 유지.
 
 ## 4. 현재 상태·주의
-- **게임 반영 금지 유지**: `docs/game-design.md` 4장(최종 함선·보스·엔딩)은 사용자가 말하기 전에는 구현하지 않는다.
-- **알려진 문제**
-  - 잔해 수색·수송선 요격의 전투 밸런스(적 수·체력·제한 시간)는 실제 전투로 확인하지 못했다. 수색은 배를 세워 둔 채 해적 3척에게 파괴됐고(스펙터 선체 1,000), 요격은 지휘함·수송선을 코드로 격파해 흐름만 봤다.
-  - 임무를 실제로 클리어한 결과 화면에서 희귀 부품 줄이 뜨는 것은 못 봤다(`RollRarePart`를 직접 호출해 20회 중 13회 지급만 확인).
-  - 희귀 결정 아이콘은 희귀 광석 것을 임시로 쓴다. 아이언월 아이콘은 스펙터 것. 무기 아이콘은 하얀 임시 그림. 빔 무기는 마우스를 뗄 때 사라진다(F3D 원래 동작).
-  - 진행 중 임무(운송·메인 퀘스트 임무 포함)는 저장하지 않는다. 메인 임무 도중 종료하면 임무는 처음부터, 모은 특수 합금은 남는다.
-  - 희귀 부품 확률·개수, 희귀 결정 가격은 임시값 (`docs/game-design.md` 8.4).
-- **이 기기에만 있는 것**: 기획 문서 원본(그림 포함)은 이전 기기의 `Downloads/425a3c47-…_ExportBlock-…/`에만 있다. 텍스트는 `docs/design-source.md`에 복사해 두었다. 이번 작업에는 영향 없음.
-- **열려 있는 씬**: 사용자가 비교용으로 `SciFi_Ship_Escort-FBX`·`Scifi_Ship_Cruiser-FBX`를 SampleScene에 임시 배치해 두었다(저장 안 됨). 저장하지 말고 필요 없으면 제거.
-- **테스트 함정**
-  - 도킹하면 `save.json`(`%USERPROFILE%/AppData/LocalLow/DefaultCompany/SpaceRoglike/`)이 자동 생긴다. 테스트 뒤 지운다(지금은 없음). 저장에서 시작하려면 에디터 메뉴 "SpaceRoglike/저장/에디터에서 이어 하기"를 켜고 끝나면 끈다.
-  - Play 직후 저장 불러오기가 몇 프레임 걸린다(`SaveSystem.IsLoading`). 자금이 100만을 넘으면 라스 첫 연락이 자동 재생된다.
-  - 테스트로 프롤로그를 건너뛰려면 `PlayerPrefs` `dev.skipPrologue`=1 후 되돌린다(0). `Assets/Screenshots`는 지운다.
-  - 선택지에서 멈춘 대사는 `StoryPlayer.Skip()`이 넘기지 못한다(선택지까지만 감). 코드로 진행하려면 리플렉션으로 `_choicePicked`를 지정한다. control 시퀀스는 Skip 금지.
-  - 워프: `StarSystemWarp.WarpTo(목적지)`로 비콘까지 가고 도착에 약 30초 걸린다. 임무 목적지는 Director의 `_destination`(리플렉션).
-  - Unity MCP `execute_code`는 같은 코드가 두 번 실행될 수 있다(자금 지급이 두 배가 됨). `AssetDatabase.DeleteAsset`은 막힌다. 파일 삭제는 셸/PowerShell로 파일과 `.meta`를 함께 지운다. `git rm`은 쓰지 않는다. 이 환경의 Bash에서는 `python3`이 안 된다(Edit 도구 사용).
-  - 사용자가 Play 중일 수 있다. Play를 멈추기 전에 묻는다.
+- **커밋 안 된 변경**: 설정 시스템·설정 화면·일시 정지 메뉴·한글 폰트 전체(약 30개 파일, 위 2장의 "미커밋"). 커밋은 사용자가 한다.
+- **확인 못 한 것**: 실제 해상도 변경(에디터 Game 창은 안 바뀜, 빌드에서 확인 필요), 실제 Esc 키 입력(코드로 Open/Close만 호출해 확인), 음량 슬라이더 소리를 귀로 듣는 것.
+- **이 기기에만 있는 것**: 테스트 도킹으로 생긴 `save.json`(2026-10-30 18:12, `%USERPROFILE%/AppData/LocalLow/DefaultCompany/SpaceRoglike/`)이 남아 있다(삭제 권한 막힘). 테스트 데이터라 지워도 된다. `PlayerPrefs` `dev.skipPrologue`=1, 설정 PlayerPrefs(`settings.*`)는 테스트 후 지움.
+- **함정**
+  - 새 AudioSource는 `GameSettings.Route` 또는 프리팹 Output 그룹을 지정하지 않으면 음량 설정(전체 제외)을 따르지 않는다.
+  - `KoreanFallback.asset`은 Dynamic이라 새 한글이 처음 나올 때마다 파일이 바뀐다(커밋 diff에 나옴). 아틀라스 여유 약 450자.
+  - TMP 3.0.7은 에디터에서 다중 아틀라스 추가 시 오류(`SetupNewAtlasTexture` NullReference) → 다중 아틀라스 끔.
+  - 메인 씬을 바로 Play하면 Direct 모드(개발 설정 따름: `dev.skipPrologue`, 메뉴 '에디터에서 이어 하기'). 새 게임·이어 하기 흐름은 TitleScene에서 Play해야 확인된다.
+  - `RuntimeInitializeOnLoadMethod(AfterSceneLoad)`는 처음 씬(TitleScene)에서만 한 번 돈다. 메인 씬에서 매번 할 일은 `sceneLoaded`로 건다.
+  - FORGE3D 프리팹을 스크립트로 읽기만 해도 Unity가 직렬화 버전을 올려 다시 쓸 수 있다(예: Explosion_006). 의도 안 한 변경은 `git checkout`으로 되돌린다(Unity가 파일을 잡고 있으면 `AssetDatabase.ReleaseCachedFileHandles()` 후).
+  - Unity MCP `execute_code`는 두 번 실행되거나 타임아웃 후에도 실행된다. 상태를 바꾸는 코드는 멱등하게.
+- (이전 handoff에서 이어지는 미확인) 잔해 수색·수송선 요격 전투 밸런스, 희귀 부품 결과 창 표시.
 
 ## 5. 다음 단계
-1. **전투 밸런스를 실제 조작으로 확인** (사용자가 직접 또는 함께): 수송선 요격(`Intercept_1_5.asset` 제한 150초·호위 구성)과 잔해 수색(`Salvage_1_4.asset`)을 아이언월/스펙터로 직접 싸워 본다. 끝 기준: 적 수·체력·시간이 적당하다고 사용자가 판단. 조정은 해당 임무 에셋과 Director 프리팹 값으로 한다(`WeaponStatsTable` 건드리지 않음).
-2. **희귀 부품 결과 화면 확인**: 중급 임무(예: 채굴 3-2)를 실제로 클리어해 결과 창에 "희귀 부품: 희귀 결정 ×N" 줄이 뜨는지, 화물칸이 가득 찬 상태에서도 받는지 본다.
-3. **사용자에게 질문** (`docs/game-design.md` 8.4 남은 항목): 새로 쓴 대사(자세히 듣기, 보류·돈 부족 응답, 출발 무전, 조립 나레이션), 희귀 부품 확률·개수·희귀 결정 가격 확정.
-4. **(사용자가 요청하면) 최종 함선 퀘스트**: 3,000,000 CR + 완료 임무 50회 → 완료 임무 수 저장·카운트가 먼저 필요. 브레이크포인트 함선(6/8)을 `ShipCatalog`에 추가.
-5. **(필요하면) 희귀 결정·아이언월 전용 아이콘, 진행 중 임무 저장, 새 함선 모델 교체**.
+1. **빌드로 설정 확인**: Windows 빌드에서 설정 창으로 해상도 6종·전체 화면/창 모드를 바꿔 실제 창 크기가 바뀌는지, 재실행 시 유지되는지 확인(`GameSettings.ApplyScreen`). 끝 기준: 각 해상도로 바뀌고 다시 켜도 같은 값.
+2. **Esc 일시 정지 직접 확인**: MainScene(TitleScene에서 이어 하기)에서 자유 비행·정거장 안(창 없음)·지도 열림·스토리 재생 중에 Esc를 눌러 열림/안 열림이 2장 규칙대로인지 확인(`PauseMenu.IsEscapeBusy`). 끝 기준: 지도·창을 Esc로 닫을 때 메뉴가 같이 열리지 않음.
+3. **커밋 후 전투 밸런스 확인**(이전 handoff 1번): 잔해 수색(`Missions/Main/Salvage_1_4.asset`)·수송선 요격(`Intercept_1_5.asset`)을 스펙터/아이언월로 직접 싸워 적 수·체력·제한 시간 조정. 조정은 임무 에셋·Director 프리팹 값으로(`WeaponStatsTable` 건드리지 않음). 끝 기준: 사용자가 적당하다고 판단.
+4. **희귀 부품 결과 화면 확인**(이전 2번): 중급 임무 클리어 시 결과 창에 "희귀 부품" 줄이 뜨는지, 화물칸이 가득 차도 받는지.
+5. **(사용자가 요청하면) 메인 스토리 ② 최종 함선**: 완료 임무 수 저장·카운트 → 브레이크포인트(무기 6/장비 8)를 `ShipCatalog`에 추가(`docs/game-design.md` 4장).

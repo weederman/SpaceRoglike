@@ -17,6 +17,8 @@ public class SoundTable : ScriptableObject
         public AudioClip clip;
         [Tooltip("음량 배율. 1보다 크면 소리를 키운 복사본을 만들어 쓴다 (원래 아주 작게 녹음된 소리용, 압축 없이 불러오는 소리만).")]
         [Range(0f, 8f)] public float volume = 1f;
+        [Tooltip("음량 설정의 종류: 효과음(Sfx) 또는 인터페이스(Ui). 배경음악(bgm:)으로 틀면 이 값과 상관없이 음악이다")]
+        public VolumeChannel channel = VolumeChannel.Sfx;
     }
 
     [SerializeField] private Entry[] _entries = new Entry[0];

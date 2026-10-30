@@ -133,6 +133,7 @@ public class PirateShip : MonoBehaviour
     private void LimitArrivalSound()
     {
         AudioSource arrival = GetComponentInChildren<AudioSource>();
+        GameSettings.Route(arrival, VolumeChannel.Sfx); // 음량 설정: 효과음
         if (arrival == null || !arrival.isPlaying)
             return;
 
