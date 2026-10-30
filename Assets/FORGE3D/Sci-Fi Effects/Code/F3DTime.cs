@@ -43,6 +43,15 @@ namespace FORGE3D
 
             public void Tick()
             {
+                // [추가] 타이머를 건 오브젝트가 파괴됐으면(예: 함선과 함께 파괴된 머즐 이펙트의 F3DDespawn) 부르지 않고 지운다.
+                // 그대로 부르면 타이머가 돌 때마다 예외가 나고, 같은 프레임의 다른 타이머까지 멈춘다.
+                if (isActive && callBack.Target is UnityEngine.Object owner && owner == null)
+                {
+                    isActive = false;
+                    F3DTime.time.RemoveTimer(id);
+                    return;
+                }
+
                 last += Time.deltaTime;
 
                 if (isActive && last >= rate)

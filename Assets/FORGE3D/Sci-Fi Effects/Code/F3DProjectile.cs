@@ -94,6 +94,10 @@ namespace FORGE3D
             {
                 if (!isFXSpawned)
                 {
+                    // [추가] 착탄 연출을 먼저 처리한 것으로 표시한다. 연출(이펙트·소리)에서 예외가 나도
+                    // 다음 프레임에는 아래에서 탄을 반드시 풀로 돌려보낸다 (예외가 나면 탄이 그 자리에 영원히 남던 문제).
+                    isFXSpawned = true;
+
                     // 발사 주체(controller)가 있으면 그쪽으로, 없으면 기존처럼 싱글톤으로 폴백
                     F3DFXController fx = controller != null ? controller : F3DFXController.instance;
 
@@ -135,8 +139,6 @@ namespace FORGE3D
                             );
                             break;
                     }
-
-                    isFXSpawned = true;
                 }
 
                 // =========================================

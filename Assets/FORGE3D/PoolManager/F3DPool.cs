@@ -154,7 +154,18 @@ namespace FORGE3D
                 }
             }
             return pos;
-        } 
+        }
+
+        // [추가] 풀의 오브젝트는 Despawn 뒤에도 마지막 부모(포탑 소켓 등) 밑에 남는다(needSort 꺼짐).
+        // 그 부모가 파괴되면 오브젝트도 같이 파괴되어 목록에 죽은 참조로 남고, 개수(poolLengthCurrent)에서는 빠지지 않는다.
+        // 꺼낼 때마다 죽은 참조를 목록에서 빼고 그만큼 개수를 줄여, 예외 없이 새로 만들 수 있게 한다.
+        void ReleaseDead(Transform template, int curPos)
+        {
+            int dead = readyObjects[template].RemoveAll(t => t == null)
+                       + occupiedObjects[template].RemoveAll(t => t == null);
+            if (dead > 0)
+                poolLengthCurrent[curPos] = Mathf.Max(0, poolLengthCurrent[curPos] - dead);
+        }
 
         /// <summary>
         /// This function spawns audiosource somewhere with it's clip
@@ -169,6 +180,7 @@ namespace FORGE3D
             Transform tempTransform;
             int i;
             int curPos = GetTemplatePosition(obj);
+            ReleaseDead(templates[curPos], curPos); // [추가]
             for (i = 0; i < readyObjects[templates[curPos]].Count; i++)
             {
                 if (!readyObjects[templates[curPos]][i].gameObject.activeSelf)
@@ -238,6 +250,7 @@ namespace FORGE3D
             Transform tempTransform; 
             int i;
             int curPos = GetTemplatePosition(obj);
+            ReleaseDead(obj, curPos); // [추가]
             for (i = 0; i < readyObjects[obj].Count; i++)
             {
                 // [추가] 풀에 있어야 할 오브젝트가 외부에서 Destroy()되어 죽은 참조로 남아있는 경우
@@ -306,6 +319,7 @@ namespace FORGE3D
             Transform tempTransform; 
             int i;
             int curPos = GetTemplatePosition(obj);
+            ReleaseDead(obj, curPos); // [추가]
 
             for (i = 0; i < readyObjects[obj].Count; i++)
             {
@@ -378,6 +392,7 @@ namespace FORGE3D
             Transform tempTransform; 
             int i;
             int curPos = GetTemplatePosition(obj);
+            ReleaseDead(obj, curPos); // [추가]
             for (i = 0; i < readyObjects[obj].Count; i++)
             {
                 // [추가] 풀에 있어야 할 오브젝트가 외부에서 Destroy()되어 죽은 참조로 남아있는 경우

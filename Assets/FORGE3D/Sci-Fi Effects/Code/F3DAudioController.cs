@@ -8,6 +8,12 @@ namespace FORGE3D
         // Singleton instance 
         public static F3DAudioController instance;
 
+        // [추가] 풀이 가득 차면 SpawnAudio가 null을 돌려준다. 그때는 그 소리만 건너뛴다(예외가 나면 발사·착탄 처리까지 멈춘다).
+        static AudioSource SourceOf(Transform spawned)
+        {
+            return spawned != null ? spawned.GetComponent<AudioSource>() : null;
+        }
+
         // Audio timers
         float timer_01, timer_02;
         public Transform audioSource;
@@ -88,8 +94,7 @@ namespace FORGE3D
             {
                 // Spawn audio source prefab from pool
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, vulcanShot, pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, vulcanShot, pos, null));
 
                 if (aSrc != null)
                 {
@@ -113,8 +118,8 @@ namespace FORGE3D
             {
                 // Spawn random hit audio prefab from pool for specific weapon type
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
-                        vulcanHit[Random.Range(0, vulcanHit.Length)], pos, null).gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
+                        vulcanHit[Random.Range(0, vulcanHit.Length)], pos, null));
                 if (aSrc != null)
                 {
                     aSrc.pitch = Random.Range(0.95f, 1f);
@@ -134,8 +139,7 @@ namespace FORGE3D
             if (timer_01 >= soloGunDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, soloGunShot, pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, soloGunShot, pos, null));
 
                 if (aSrc != null)
                 {
@@ -157,9 +161,8 @@ namespace FORGE3D
             if (timer_02 >= soloGunHitDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
-                        soloGunHit[Random.Range(0, soloGunHit.Length)], pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
+                        soloGunHit[Random.Range(0, soloGunHit.Length)], pos, null));
                 if (aSrc != null)
                 {
                     aSrc.pitch = Random.Range(0.95f, 1f);
@@ -179,8 +182,7 @@ namespace FORGE3D
             if (timer_01 >= sniperDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, sniperShot, pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, sniperShot, pos, null));
 
                 if (aSrc != null)
                 {
@@ -202,8 +204,8 @@ namespace FORGE3D
             if (timer_02 >= sniperHitDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
-                        sniperHit[Random.Range(0, sniperHit.Length)], pos, null).gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
+                        sniperHit[Random.Range(0, sniperHit.Length)], pos, null));
                 if (aSrc != null)
                 {
                     aSrc.pitch = Random.Range(0.9f, 1f);
@@ -223,8 +225,7 @@ namespace FORGE3D
             if (timer_01 >= shotGunDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, shotGunShot, pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, shotGunShot, pos, null));
 
                 if (aSrc != null)
                 {
@@ -246,9 +247,8 @@ namespace FORGE3D
             if (timer_02 >= shotGunHitDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
-                        shotGunHit[Random.Range(0, shotGunHit.Length)], pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
+                        shotGunHit[Random.Range(0, shotGunHit.Length)], pos, null));
                 if (aSrc != null)
                 {
                     aSrc.pitch = Random.Range(0.9f, 1f);
@@ -268,8 +268,7 @@ namespace FORGE3D
             if (timer_01 >= seekerDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, seekerShot, pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, seekerShot, pos, null));
 
                 if (aSrc != null)
                 {
@@ -291,8 +290,8 @@ namespace FORGE3D
             if (timer_02 >= seekerHitDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
-                        seekerHit[Random.Range(0, seekerHit.Length)], pos, null).gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
+                        seekerHit[Random.Range(0, seekerHit.Length)], pos, null));
                 if (aSrc != null)
                 {
                     aSrc.pitch = Random.Range(0.8f, 1f);
@@ -312,8 +311,7 @@ namespace FORGE3D
             if (timer_01 >= railgunDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, railgunShot, pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, railgunShot, pos, null));
 
                 if (aSrc != null)
                 {
@@ -335,9 +333,8 @@ namespace FORGE3D
             if (timer_02 >= railgunHitDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
-                        railgunHit[Random.Range(0, railgunHit.Length)], pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
+                        railgunHit[Random.Range(0, railgunHit.Length)], pos, null));
                 if (aSrc != null)
                 {
                     aSrc.pitch = Random.Range(0.8f, 1f);
@@ -357,8 +354,7 @@ namespace FORGE3D
             if (timer_01 >= plasmagunDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmagunShot, pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmagunShot, pos, null));
 
                 if (aSrc != null)
                 {
@@ -380,9 +376,8 @@ namespace FORGE3D
             if (timer_02 >= plasmagunHitDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
-                        plasmagunHit[Random.Range(0, plasmagunHit.Length)], pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
+                        plasmagunHit[Random.Range(0, plasmagunHit.Length)], pos, null));
 
                 if (aSrc != null)
                 {
@@ -401,11 +396,9 @@ namespace FORGE3D
         public void PlasmaBeamLoop(Vector3 pos, Transform loopParent)
         {
             AudioSource aOpen =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamOpen, pos, null)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamOpen, pos, null));
             AudioSource aLoop =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamLoop, pos, loopParent)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamLoop, pos, loopParent));
 
 
             if (aOpen != null && aLoop != null)
@@ -428,8 +421,7 @@ namespace FORGE3D
         public void PlasmaBeamClose(Vector3 pos)
         {
             AudioSource aClose =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamClose, pos, null)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamClose, pos, null));
 
             if (aClose != null)
             {
@@ -445,11 +437,9 @@ namespace FORGE3D
         public void PlasmaBeamHeavyLoop(Vector3 pos, Transform loopParent)
         {
             AudioSource aOpen =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamHeavyOpen, pos, null)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamHeavyOpen, pos, null));
             AudioSource aLoop =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamHeavyLoop, pos, loopParent)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamHeavyLoop, pos, loopParent));
 
 
             if (aOpen != null && aLoop != null)
@@ -473,8 +463,7 @@ namespace FORGE3D
         public void PlasmaBeamHeavyClose(Vector3 pos)
         {
             AudioSource aClose =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamHeavyClose, pos, null)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, plasmabeamHeavyClose, pos, null));
 
             if (aClose != null)
             {
@@ -490,11 +479,9 @@ namespace FORGE3D
         public void LightningGunLoop(Vector3 pos, Transform loopParent)
         {
             AudioSource aOpen =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, lightningGunOpen, pos, null)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, lightningGunOpen, pos, null));
             AudioSource aLoop =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, lightningGunLoop, pos, loopParent.parent)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, lightningGunLoop, pos, loopParent.parent));
 
 
             if (aOpen != null && aLoop != null)
@@ -518,8 +505,7 @@ namespace FORGE3D
         public void LightningGunClose(Vector3 pos)
         {
             AudioSource aClose =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, lightningGunClose, pos, null)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, lightningGunClose, pos, null));
 
             if (aClose != null)
             {
@@ -535,11 +521,9 @@ namespace FORGE3D
         public void FlameGunLoop(Vector3 pos, Transform loopParent)
         {
             AudioSource aOpen =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, flameGunOpen, pos, null)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, flameGunOpen, pos, null));
             AudioSource aLoop =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, flameGunLoop, pos, loopParent.parent)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, flameGunLoop, pos, loopParent.parent));
 
 
             if (aOpen != null && aLoop != null)
@@ -563,8 +547,7 @@ namespace FORGE3D
         public void FlameGunClose(Vector3 pos)
         {
             AudioSource aClose =
-                F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, flameGunClose, pos, null)
-                    .gameObject.GetComponent<AudioSource>();
+                SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, flameGunClose, pos, null));
 
             if (aClose != null)
             {
@@ -582,8 +565,7 @@ namespace FORGE3D
             if (timer_01 >= laserImpulseDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, laserImpulseShot, pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource, laserImpulseShot, pos, null));
 
                 if (aSrc != null)
                 {
@@ -604,9 +586,8 @@ namespace FORGE3D
             if (timer_02 >= laserImpulseHitDelay)
             {
                 AudioSource aSrc =
-                    F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
-                        laserImpulseHit[Random.Range(0, plasmagunHit.Length)], pos, null)
-                        .gameObject.GetComponent<AudioSource>();
+                    SourceOf(F3DPoolManager.Pools["GeneratedPool"].SpawnAudio(audioSource,
+                        laserImpulseHit[Random.Range(0, plasmagunHit.Length)], pos, null));
 
                 if (aSrc != null)
                 {

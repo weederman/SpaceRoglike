@@ -26,6 +26,17 @@ namespace FORGE3D
         // Singleton instance
         public static F3DFXController instance;
 
+        // [추가] 풀이 가득 차면 Spawn이 null을 돌려준다. 그때는 그 발사만 건너뛴다(예외가 나면 반복 발사 타이머까지 멈춘다).
+        static GameObject SpawnedObject(Transform spawned)
+        {
+            return spawned != null ? spawned.gameObject : null;
+        }
+
+        static T ComponentOf<T>(Transform spawned) where T : Component
+        {
+            return spawned != null ? spawned.GetComponent<T>() : null;
+        }
+
         // [추가] 이 컨트롤러를 쓰는 쪽(플레이어/적). 발사체·빔 프리팹은 둘이 공유하므로,
         // 데미지는 WeaponStatsTable에서 (무기 종류, 쏜 쪽)으로 찾는다.
         [Header("Damage")] public WeaponOwner owner = WeaponOwner.Player;
@@ -289,6 +300,15 @@ namespace FORGE3D
             trackedShot();
         }
 
+        // [추가] 함선이 격파되거나 꺼지면 반복 발사 타이머를 지운다.
+        // 그대로 두면 파괴된 터렛으로 계속 쏘려다 타이머가 돌 때마다 예외가 난다.
+        private void OnDisable()
+        {
+            if (timerID != -1 && F3DTime.time != null)
+                F3DTime.time.RemoveTimer(timerID);
+            timerID = -1;
+        }
+
         // Stop firing
         public void Stop()
         {
@@ -330,10 +350,11 @@ namespace FORGE3D
             // Spawn muzzle flash and projectile with the rotation offset at current socket position
             F3DPoolManager.Pools["GeneratedPool"].Spawn(vulcanMuzzle, TurretSocket[curSocket].position,
                 TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-            var newGO =
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(vulcanProjectile,
+            var newGO = SpawnedObject(F3DPoolManager.Pools["GeneratedPool"].Spawn(vulcanProjectile,
                     TurretSocket[curSocket].position + TurretSocket[curSocket].forward,
-                    offset * TurretSocket[curSocket].rotation, null).gameObject;
+                    offset * TurretSocket[curSocket].rotation, null));
+            if (newGO == null)
+                return; // [추가] 풀이 가득 차면 이번 발사는 건너뛴다
 
             var proj = newGO.gameObject.GetComponent<F3DProjectile>();
             if (proj)
@@ -368,10 +389,11 @@ namespace FORGE3D
             var offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
             F3DPoolManager.Pools["GeneratedPool"].Spawn(soloGunMuzzle, TurretSocket[curSocket].position,
                 TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-            var newGO =
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(soloGunProjectile,
+            var newGO = SpawnedObject(F3DPoolManager.Pools["GeneratedPool"].Spawn(soloGunProjectile,
                     TurretSocket[curSocket].position + TurretSocket[curSocket].forward,
-                    offset * TurretSocket[curSocket].rotation, null).gameObject;
+                    offset * TurretSocket[curSocket].rotation, null));
+            if (newGO == null)
+                return; // [추가] 풀이 가득 차면 이번 발사는 건너뛴다
             var proj = newGO.GetComponent<F3DProjectile>();
             if (proj)
             {
@@ -397,9 +419,10 @@ namespace FORGE3D
 
             F3DPoolManager.Pools["GeneratedPool"].Spawn(sniperMuzzle, TurretSocket[curSocket].position,
                 TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-            var newGO =
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(sniperBeam, TurretSocket[curSocket].position,
-                    offset * TurretSocket[curSocket].rotation, null).gameObject;
+            var newGO = SpawnedObject(F3DPoolManager.Pools["GeneratedPool"].Spawn(sniperBeam, TurretSocket[curSocket].position,
+                    offset * TurretSocket[curSocket].rotation, null));
+            if (newGO == null)
+                return; // [추가] 풀이 가득 차면 이번 발사는 건너뛴다
             var beam = newGO.GetComponent<F3DBeam>();
             if (beam)
             {
@@ -440,9 +463,10 @@ namespace FORGE3D
             var offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
             F3DPoolManager.Pools["GeneratedPool"].Spawn(seekerMuzzle, TurretSocket[curSocket].position,
                 TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-            var newGO =
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(seekerProjectile, TurretSocket[curSocket].position,
-                    offset * TurretSocket[curSocket].rotation, null).gameObject;
+            var newGO = SpawnedObject(F3DPoolManager.Pools["GeneratedPool"].Spawn(seekerProjectile, TurretSocket[curSocket].position,
+                    offset * TurretSocket[curSocket].rotation, null));
+            if (newGO == null)
+                return; // [추가] 풀이 가득 차면 이번 발사는 건너뛴다
             var proj = newGO.GetComponent<F3DProjectile>();
             if (proj)
             {
@@ -467,9 +491,10 @@ namespace FORGE3D
             var offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
             F3DPoolManager.Pools["GeneratedPool"].Spawn(railgunMuzzle, TurretSocket[curSocket].position,
                 TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-            var newGO =
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(railgunBeam, TurretSocket[curSocket].position,
-                    offset * TurretSocket[curSocket].rotation, null).gameObject;
+            var newGO = SpawnedObject(F3DPoolManager.Pools["GeneratedPool"].Spawn(railgunBeam, TurretSocket[curSocket].position,
+                    offset * TurretSocket[curSocket].rotation, null));
+            if (newGO == null)
+                return; // [추가] 풀이 가득 차면 이번 발사는 건너뛴다
             var beam = newGO.GetComponent<F3DBeam>();
             if (beam)
             {
@@ -496,9 +521,10 @@ namespace FORGE3D
             var offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
             F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmagunMuzzle, TurretSocket[curSocket].position,
                 TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-            var newGo =
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmagunProjectile, TurretSocket[curSocket].position,
-                    offset * TurretSocket[curSocket].rotation, null).gameObject;
+            var newGo = SpawnedObject(F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmagunProjectile, TurretSocket[curSocket].position,
+                    offset * TurretSocket[curSocket].rotation, null));
+            if (newGo == null)
+                return; // [추가] 풀이 가득 차면 이번 발사는 건너뛴다
             var proj = newGo.GetComponent<F3DProjectile>();
             if (proj)
             {
@@ -522,9 +548,9 @@ namespace FORGE3D
         {
             for (var i = 0; i < TurretSocket.Length; i++)
             {
-                var beam = F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmaBeam, TurretSocket[i].position,
+                var beam = ComponentOf<F3DBeam>(F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmaBeam, TurretSocket[i].position,
                     TurretSocket[i].rotation,
-                    TurretSocket[i]).GetComponent<F3DBeam>();
+                    TurretSocket[i]));
                 // [추가] 피해를 이 터렛 기준(무기 id·쏜 쪽)으로 계산하고 자기 함선은 맞히지 않도록
                 if (beam)
                     beam.controller = this;
@@ -538,9 +564,9 @@ namespace FORGE3D
         {
             for (var i = 0; i < TurretSocket.Length; i++)
             {
-                var beam = F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmaBeamHeavy, TurretSocket[i].position,
+                var beam = ComponentOf<F3DBeam>(F3DPoolManager.Pools["GeneratedPool"].Spawn(plasmaBeamHeavy, TurretSocket[i].position,
                     TurretSocket[i].rotation,
-                    TurretSocket[i]).GetComponent<F3DBeam>();
+                    TurretSocket[i]));
                 // [추가] 피해를 이 터렛 기준(무기 id·쏜 쪽)으로 계산하고 자기 함선은 맞히지 않도록
                 if (beam)
                     beam.controller = this;
@@ -568,9 +594,10 @@ namespace FORGE3D
         // 같은 방식으로 F3DProjectile을 스폰한다.
         private void FlameRed()
         {
-            var newGo =
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(flameRed, TurretSocket[curSocket].position,
-                    TurretSocket[curSocket].rotation, null).gameObject;
+            var newGo = SpawnedObject(F3DPoolManager.Pools["GeneratedPool"].Spawn(flameRed, TurretSocket[curSocket].position,
+                    TurretSocket[curSocket].rotation, null));
+            if (newGo == null)
+                return; // [추가] 풀이 가득 차면 이번 발사는 건너뛴다
             var proj = newGo.GetComponent<F3DProjectile>();
             if (proj)
             {
@@ -596,9 +623,10 @@ namespace FORGE3D
             var offset = Quaternion.Euler(UnityEngine.Random.onUnitSphere);
             F3DPoolManager.Pools["GeneratedPool"].Spawn(laserImpulseMuzzle, TurretSocket[curSocket].position,
                 TurretSocket[curSocket].rotation, TurretSocket[curSocket]);
-            var newGO =
-                F3DPoolManager.Pools["GeneratedPool"].Spawn(laserImpulseProjectile, TurretSocket[curSocket].position,
-                    offset * TurretSocket[curSocket].rotation, null).gameObject;
+            var newGO = SpawnedObject(F3DPoolManager.Pools["GeneratedPool"].Spawn(laserImpulseProjectile, TurretSocket[curSocket].position,
+                    offset * TurretSocket[curSocket].rotation, null));
+            if (newGO == null)
+                return; // [추가] 풀이 가득 차면 이번 발사는 건너뛴다
             var proj = newGO.GetComponent<F3DProjectile>();
             if (proj)
             {
