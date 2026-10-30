@@ -11,7 +11,7 @@ using UnityEngine;
 /// 슬롯의 무기는 무기 id(WeaponStatsTable·TurretItemData의 weaponId)다. 같은 이펙트의 변형 무기(강화 기관포 등)도 id로 구분한다.
 /// 스토리 cue로 슬롯 순서대로 무기를 바꿀 수 있다:
 ///   loadout:무기1,무기2,...   (무기 id, 또는 F3DFXType 이름이면 그 종류의 기본형. 예: loadout:LaserImpulse,Vulcan)
-/// CombatHud 프리팹(Assets/Resources/UI/CombatHud.prefab)에 붙어 함께 생성된다.
+/// CombatHud 프리팹(Assets/Resources/UI/CombatHud.prefab)에 붙어 함께 생성된다(씬을 다시 불러와도 남는다. 그때 무장은 비운다).
 /// </summary>
 public class PlayerWeaponSelector : MonoBehaviour
 {
@@ -50,13 +50,26 @@ public class PlayerWeaponSelector : MonoBehaviour
     {
         Instance = this;
         StoryPlayer.OnCue += HandleCue;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += HandleSceneLoaded;
     }
 
     private void OnDestroy()
     {
         StoryPlayer.OnCue -= HandleCue;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= HandleSceneLoaded;
         if (Instance == this)
             Instance = null;
+    }
+
+    // 패배 후 재시작: 이 컴포넌트는 씬을 다시 불러와도 남으므로(CombatHud) 지난 판의 무장을 버린다.
+    // 새 함선의 터렛이 처음 들고 있던 무기로 다시 채우고, 이어 하기면 SaveSystem이 저장한 무장을 다시 단다.
+    private void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        _ship = null;
+        _turrets.Clear();
+        _weapons.Clear();
+        _nextRefresh = 0f;
+        OnChanged?.Invoke();
     }
 
     private void Update()

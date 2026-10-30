@@ -503,7 +503,7 @@ public class StoryPlayer : MonoBehaviour
     {
         var texts = new List<string>(line.choices.Length);
         foreach (StoryChoice choice in line.choices)
-            texts.Add(choice.text ?? "");
+            texts.Add(PlayerProfile.Format(choice.text ?? ""));
 
         _choiceCount = texts.Count;
         _choiceHighlight = 0;
@@ -611,6 +611,8 @@ public class StoryPlayer : MonoBehaviour
             if (StoryDatabase.TryGetSpeaker(line.speaker, out StorySpeaker speaker))
             {
                 speakerName = string.IsNullOrEmpty(speaker.name) ? speaker.id : speaker.name;
+                if (speaker.id == PlayerProfile.HeroSpeakerId)
+                    speakerName = PlayerProfile.DisplayName; // 새 게임에서 입력한 플레이어 이름
                 rightSide = speaker.IsRight;
 
                 if (!string.IsNullOrEmpty(speaker.color) && !ColorUtility.TryParseHtmlString(speaker.color, out color))
@@ -623,7 +625,7 @@ public class StoryPlayer : MonoBehaviour
             }
         }
 
-        _bar.Show(speakerName, color, line.text, rightSide);
+        _bar.Show(speakerName, color, PlayerProfile.Format(line.text), rightSide); // {player} → 플레이어 이름
         GameAudio.Play(LineSound);
     }
 

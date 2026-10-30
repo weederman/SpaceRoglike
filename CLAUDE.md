@@ -10,10 +10,10 @@
 - 에디터 자동화: Unity MCP (`execute_code`, `manage_editor`, `refresh_unity`, `read_console` 등)
 
 ## 폴더 구조
-- `Assets/Scripts/` — `Controllers`(함선·카메라·입력 잠금), `Turret`, `Enemy`, `Health`, `Economy`, `Environment`, `Mission`, `Ships`(함선 카탈로그·보유), `MainQuest`(메인 스토리 퀘스트), `Story`, `UI`, `DevMode`
+- `Assets/Scripts/` — `Title`(타이틀 메뉴·시작 방식), `Controllers`(함선·카메라·입력 잠금), `Turret`, `Enemy`, `Health`, `Economy`, `Environment`, `Mission`, `Ships`(함선 카탈로그·보유), `MainQuest`(메인 스토리 퀘스트), `Story`, `UI`, `DevMode`
 - `Assets/Resources/` — 런타임에 코드로 불러오는 것만: `Story/*.json`(대사), `UI/`(스토리·HUD·정거장 UI 프리팹), `Directors/`(연출 담당), `Missions/`(임무 데이터·Director·적 함종), `Shop/`(무기·장비·광석 카탈로그), `Ships/`(함선 카탈로그), `MainQuest/`(메인 퀘스트 정의), `WeaponStatsTable.asset`
 - `Assets/Prefabs/` — `Effects`, `Projectiles`, `Ships`, `Turrets`, `UI`
-- `Assets/Scenes/SampleScene.unity` — 메인 씬
+- `Assets/Scenes/TitleScene.unity` — 타이틀(새 게임/이어 하기/설정/종료, `TitleMenu`), `Assets/Scenes/MainScene.unity` — 게임 씬(예전 SampleScene). 시작 방식은 `GameLaunch`가 넘긴다. MainScene을 바로 Play하면 개발 설정(에디터에서 이어 하기, `dev.skipPrologue`)을 따른다
 - `docs/handoff.md` — 진행 중 작업 인수인계
 
 ## 아키텍처 원칙
@@ -27,6 +27,7 @@
   - Director는 cue를 큐에 쌓아 한 번에 하나씩 실행한다. **건너뛰기(Esc) 시에는 중간 연출을 생략하고 "끝난 뒤의 최종 상태"로 바로 이동**해야 한다.
   - 장면 Director 프리팹은 `Resources/Directors/Cue/`에 두면 `StoryPlayer`가 자동 생성한다.
   - 시퀀스는 `then`으로 이어 붙인다(이어지는 동안 `IsPlaying`이 유지되어 조작 잠금이 풀리지 않는다).
+  - 대사·선택지의 `{player}`는 새 게임에서 입력한 플레이어 이름으로 바뀌고, 화자 `hero`의 이름 칸도 그 이름이 된다(`PlayerProfile`).
 - **조작 잠금은 `GameInputLock`(소유자 기반)으로만** 건다. 직접 `enabled = false` 등으로 막지 않는다.
 - 스토리 UI는 시간 정지 중에도 동작해야 하므로 **unscaled time**을 쓴다.
 - 텔레포트/큰 이동 뒤에는 `CameraController.SnapToTarget()`을 호출한다. (씬에 둔 카메라 위치는 런타임에 `CameraController`가 덮어쓴다)
@@ -35,7 +36,7 @@
 1. **커밋은 사용자가 한다.** `git commit`/`push`는 요청받기 전에는 하지 않는다. 커밋 목록과 메시지를 제안만 한다.
 2. **끝났다고 말하기 전에 Play 모드에서 직접 확인**한다 (화면 확인 + 콘솔 에러 확인). 컴파일 성공만으로 완료라고 하지 않는다.
 3. **UI는 SCI-FI UI Pack Pro 프리팹을 기반으로** 만든다. 임시 코드 UI를 새로 만들지 않는다. `Assets/SCI-FI UI Pack Pro` 안의 사용자 변경은 임포트 작업이므로 건드리지 않는다.
-4. **씬/프리팹 누수 방지**: 작업 후 `git status`로 의도하지 않은 `SampleScene.unity` 변경이 없는지 확인한다. 테스트 중 생긴 씬 변경은 저장하지 않는다. `Assets/Screenshots`가 생겼으면 지운다. 씬 수정은 사용자가 요청했을 때만 한다.
+4. **씬/프리팹 누수 방지**: 작업 후 `git status`로 의도하지 않은 `TitleScene.unity`·`MainScene.unity` 변경이 없는지 확인한다. 테스트 중 생긴 씬 변경은 저장하지 않는다. `Assets/Screenshots`가 생겼으면 지운다. 씬 수정은 사용자가 요청했을 때만 한다.
 5. **JSON 대사를 고친 뒤에는 `refresh_unity` 후 Play** 한다 (안 하면 이전 데이터로 실행된다).
 6. **Unity MCP `execute_code`는 같은 코드가 여러 번 실행될 수 있다** → 생성/설정 코드는 멱등하게(이미 있으면 건너뜀) 작성한다.
 7. **한글 폰트**: SCI-FI UI Pack 폰트에는 한글이 없다. 한글을 쓰는 TMP는 `GameFonts`의 대체 폰트를 거친다. 새 한글 UI를 만들면 한글이 정상 표시되는지 확인한다.

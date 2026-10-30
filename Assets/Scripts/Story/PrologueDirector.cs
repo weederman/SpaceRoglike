@@ -176,14 +176,29 @@ public class PrologueDirector : MonoBehaviour
 
     // ── 시작 ──────────────────────────────────────────
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    // 타이틀(TitleScene)에서 메인 씬으로 넘어올 때도 시작해야 하므로, 처음 한 번만 도는 AfterSceneLoad가 아니라 씬을 불러올 때마다 본다.
+    // sceneLoaded는 씬 오브젝트의 Awake 뒤, Start 전에 오므로 EnterStage가 첫 화면 전에 끝난다.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void RegisterSceneHook()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= HandleSceneLoaded;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    private static void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        Bootstrap();
+    }
+
     private static void Bootstrap()
     {
-        if (_started)
+        // 한 번 플레이한 프롤로그는 패배 후 다시 시작해도 다시 하지 않는다. 타이틀에서 '새 게임'을 고르면 다시 한다.
+        if (_started && !GameLaunch.NeedsName)
             return;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        if (PlayerPrefs.GetInt(SkipPrefKey, 0) == 1)
+        // 개발용 건너뛰기는 메인 씬을 바로 Play했을 때만 (타이틀에서 '새 게임'이면 항상 프롤로그)
+        if (PlayerPrefs.GetInt(SkipPrefKey, 0) == 1 && GameLaunch.Current == GameLaunch.Mode.Direct)
             return;
 #endif
 
@@ -408,6 +423,15 @@ public class PrologueDirector : MonoBehaviour
     {
         // 씬의 다른 오브젝트들이 첫 프레임을 지나도록 한 프레임 기다린다
         yield return null;
+
+        // 새 게임: 프롤로그 전에 검은 화면 위에서 플레이어 이름을 받는다 (그동안 워프 엔진음은 멈추고, 터널 시간은 이름을 정한 뒤부터 잰다)
+        if (GameLaunch.NeedsName)
+        {
+            GameAudio.StopLoop(_inWarpLoop);
+            yield return NameEntryView.Ask();
+            GameAudio.StartLoop(InWarpSound, _inWarpLoop);
+            _warpStart = Time.time;
+        }
 
         StoryPlayer.OnCue += HandleCue;
         StoryPlayer.OnSequenceEnded += HandleEnded;

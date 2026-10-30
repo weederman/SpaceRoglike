@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 항상 보이는 플레이어 HUD (SCI-FI UI Pack 기반): 왼쪽 위 크레딧, 오른쪽 위 선체·쉴드 게이지(ShipHealthBar).
-/// 플레이어 선체가 파괴되면(HullHealth.OnBroken) 게임을 멈추고 패배 창을 띄우며, '다시 시작'을 누르면 씬을 다시 불러온다.
+/// 플레이어 선체가 파괴되면(HullHealth.OnBroken) 게임을 멈추고 패배 창을 띄우며, '다시 시작'을 누르면 씬을 다시 불러와 마지막 저장에서 이어 한다.
 /// 정거장 안에서도 보인다(정거장 화면보다 위, 전투 HUD보다 아래). 프롤로그처럼 연출이 화면을 쓰는 동안은 Hidden으로 숨긴다.
 /// 게임 씬(플레이어 함선이 있는 씬)을 불러올 때마다 자동으로 생긴다. 프리팹: Assets/Resources/UI/PlayerHud.prefab
 /// </summary>
@@ -116,6 +116,7 @@ public class PlayerHud : MonoBehaviour
     private void Restart()
     {
         Time.timeScale = 1f;
+        SaveSystem.ContinueOnNextLoad(); // 마지막 저장(정거장 출항·도킹 때)에서 이어 한다
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

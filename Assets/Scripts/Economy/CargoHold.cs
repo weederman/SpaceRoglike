@@ -10,7 +10,8 @@ using UnityEngine;
 /// 한도는 기본값(_capacity) × (1 + 화물창 확장 장비의 %, PlayerEquipment).
 /// 튜토리얼 정산 cue:
 ///   cargo_sell:가격     실린 광석을 종류와 상관없이 단위당 가격으로 모두 팔아 크레딧에 더한다 (예: cargo_sell:20)
-/// CombatHud 프리팹(Assets/Resources/UI/CombatHud.prefab)에 붙어 함께 생성된다. 저장(SaveSystem)에 함께 남는다.
+/// CombatHud 프리팹(Assets/Resources/UI/CombatHud.prefab)에 붙어 함께 생성된다(씬을 다시 불러와도 남는다). 저장(SaveSystem)에 함께 남는다.
+/// 씬을 다시 불러오면(패배 후 재시작) 비운다. 이어 하기면 SaveSystem이 다시 채운다.
 /// </summary>
 public class CargoHold : MonoBehaviour
 {
@@ -47,13 +48,24 @@ public class CargoHold : MonoBehaviour
     {
         Instance = this;
         StoryPlayer.OnCue += HandleCue;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += HandleSceneLoaded;
     }
 
     private void OnDestroy()
     {
         StoryPlayer.OnCue -= HandleCue;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= HandleSceneLoaded;
         if (Instance == this)
             Instance = null;
+    }
+
+    // 패배 후 재시작: 지난 판의 광석·임무 화물을 비운다
+    private void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        _ores.Clear();
+        MissionCargo = 0;
+        MissionCargoName = null;
+        OnChanged?.Invoke();
     }
 
     public float Amount(string oreId)

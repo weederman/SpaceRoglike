@@ -190,7 +190,7 @@
 ## 7. 반영 결과 (2026-10-30)
 
 ### 7.1 경제
-- 시작 자금 10,000 CR (`SampleScene`의 `CreditWallet._startCredits`). 튜토리얼 정산 2,500 CR + 광석 대금(`TutorialReturn.json`), 격납고 장면에서 강화 장갑 I 지급·장착(`TutorialHangar.json`의 `equip:armor_1`).
+- 시작 자금 10,000 CR (`MainScene`의 `CreditWallet._startCredits`). 튜토리얼 정산 2,500 CR + 광석 대금(`TutorialReturn.json`), 격납고 장면에서 강화 장갑 I 지급·장착(`TutorialHangar.json`의 `equip:armor_1`).
 - 미션 보수: 2.4 표의 기본 보수 ([missions.md](missions.md) "보수"). 1-1 화물선 50% 미만 감소는 절반(6,000) 유지.
 - 재판매 50% (무기·장비 공통). 기본 기관포도 이제 10,000 CR에 팔고, 되팔면 5,000 CR.
 

@@ -9,9 +9,11 @@ using UnityEngine.SceneManagement;
 /// 저장하는 때:
 ///  - 우주정거장에 도킹했을 때 (StationDocking). 대사가 진행 중이면 대사가 끝난 뒤 그때도 도킹해 있으면 저장한다
 ///    (예: 튜토리얼 귀환 도킹 → 정산 대사가 끝난 뒤 저장).
+///  - 우주정거장에서 출항할 때 (임무 출발로 나갈 때 포함). 정거장 안에서 한 일(판매·구매·장착, 라스 연락 등)이 남고,
+///    다시 시작하면 그 정거장 안에서 시작한다. 대사가 진행 중이면 저장하지 않는다.
 ///  - 임무를 수락했을 때. 스토리 도중이면 지금 장면 다음 장면(then)부터 이어 가도록 표시해 둔다
 ///    (예: 술집에서 임무 수락 → 다시 시작하면 격납고 장면부터).
-/// 저장 내용: 도킹한 정거장, 크레딧, 진행 중인 임무와 완료한 목표, 장착 무기, 격납고 보관 무기, 장갑·쉴드 장비, 화물칸 광석, 이어 갈 스토리 장면.
+/// 저장 내용: 플레이어 이름, 도킹한 정거장, 크레딧, 진행 중인 임무와 완료한 목표, 장착 무기, 격납고 보관 무기, 장갑·쉴드 장비, 화물칸 광석, 이어 갈 스토리 장면.
 /// 게임을 켜거나 씬을 다시 불러올 때(패배 후 재시작) 저장이 있으면 프롤로그 없이 저장한 정거장 안에 도킹한 채(StationDocking) 시작하고,
 /// 이어 갈 장면이 있으면 그 장면부터 재생한다.
 /// 저장 파일: Application.persistentDataPath/save.json (개발자 모드: save / save clear)
@@ -53,6 +55,8 @@ public class SaveSystem : MonoBehaviour
         public FirstShipQuest.SaveState firstShip = new FirstShipQuest.SaveState();
         [Tooltip("다시 시작하면 재생할 스토리 시퀀스 (없으면 자유 플레이)")]
         public string resumeSequence;
+        [Tooltip("플레이어 이름 (새 게임에서 입력, 예전 저장은 비어 있음)")]
+        public string playerName;
     }
 
     private static SaveSystem _instance;
@@ -68,17 +72,34 @@ public class SaveSystem : MonoBehaviour
     /// <summary>이어 하기로 저장을 불러오는 중인지 (이 동안은 저장·퀘스트 연락을 하지 않는다)</summary>
     public static bool IsLoading => _instance != null && _instance._loading;
 
-    /// <summary>게임을 시작할 때 저장을 불러와 이어 하는지 (에디터에서는 메뉴로 켰을 때만)</summary>
+    /// <summary>
+    /// 게임 씬을 시작할 때 저장을 불러와 이어 하는지.
+    ///  - 패배 후 '다시 시작'(ContinueOnNextLoad)이면 저장이 있을 때 이어 한다.
+    ///  - 타이틀에서 '이어 하기'면 이어 하고, '새 게임'이면 이어 하지 않는다 (GameLaunch).
+    ///  - 메인 씬을 바로 Play했으면(개발용) 에디터에서는 메뉴로 켰을 때만, 빌드에서는 저장이 있으면 이어 한다.
+    /// </summary>
     public static bool WillContinue
     {
         get
         {
+            if (_continueOnNextLoad || GameLaunch.Current == GameLaunch.Mode.Continue)
+                return HasSave;
+            if (GameLaunch.Current == GameLaunch.Mode.NewGame)
+                return false;
 #if UNITY_EDITOR
             if (!UnityEditor.EditorPrefs.GetBool(ContinueInEditorPrefKey, false))
                 return false;
 #endif
             return HasSave;
         }
+    }
+
+    private static bool _continueOnNextLoad;
+
+    /// <summary>다음에 게임 씬을 불러올 때 저장에서 이어 한다 (패배 후 다시 시작). 한 번만 적용된다.</summary>
+    public static void ContinueOnNextLoad()
+    {
+        _continueOnNextLoad = true;
     }
 
     // ── 시작 ──────────────────────────────────────────
@@ -94,6 +115,7 @@ public class SaveSystem : MonoBehaviour
     private static void ResetStatics()
     {
         _instance = null;
+        _continueOnNextLoad = false;
     }
 
     private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -109,7 +131,9 @@ public class SaveSystem : MonoBehaviour
             _instance = go.AddComponent<SaveSystem>();
         }
 
-        if (!WillContinue)
+        bool resume = WillContinue;
+        _continueOnNextLoad = false;
+        if (!resume)
             return;
 
         SaveData data = Read();
@@ -133,12 +157,14 @@ public class SaveSystem : MonoBehaviour
     private void OnEnable()
     {
         StationZone.AnyEntered += HandleDocked;
+        StationZone.AnyExited += HandleUndocked;
         StoryPlayer.OnCue += HandleCue;
     }
 
     private void OnDisable()
     {
         StationZone.AnyEntered -= HandleDocked;
+        StationZone.AnyExited -= HandleUndocked;
         StoryPlayer.OnCue -= HandleCue;
     }
 
@@ -147,6 +173,17 @@ public class SaveSystem : MonoBehaviour
     private void HandleDocked(StationZone zone)
     {
         _pendingDockSave = true;
+    }
+
+    private void HandleUndocked(StationZone zone)
+    {
+        // 정거장 안에서 한 일(광석 판매로 라스 연락, 장비 구매·장착 등)을 남긴다. 다시 시작하면 이 정거장 안에서 시작한다.
+        // 대사가 진행 중이면(튜토리얼·임무 출발 연출) 대사 쪽이 저장 시점을 정하므로 여기서는 저장하지 않는다.
+        _pendingDockSave = false;
+        if (_loading || StoryPlayer.IsPlaying)
+            return;
+
+        Save(null, zone);
     }
 
     private void HandleCue(string cue)
@@ -175,17 +212,21 @@ public class SaveSystem : MonoBehaviour
             Save(null);
     }
 
-    /// <summary>지금 상태를 저장한다. resumeSequence: 다시 시작하면 재생할 스토리 시퀀스 (없으면 자유 플레이)</summary>
-    public static void Save(string resumeSequence)
+    /// <summary>
+    /// 지금 상태를 저장한다. resumeSequence: 다시 시작하면 재생할 스토리 시퀀스 (없으면 자유 플레이).
+    /// station: 다시 시작할 정거장 (없으면 지금 도킹한 정거장, 그것도 없으면 모항)
+    /// </summary>
+    public static void Save(string resumeSequence, StationZone station = null)
     {
         var data = new SaveData
         {
             version = Version,
             savedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
             resumeSequence = resumeSequence,
+            playerName = PlayerProfile.Name,
         };
 
-        StationZone zone = StationZone.Current;
+        StationZone zone = station != null ? station : StationZone.Current;
         if (zone == null && StarSystem.Instance != null)
             zone = StationZone.Home; // 정거장 밖에서 저장하면(개발자 모드 등) 모항으로
         data.station = zone != null ? zone.StationIndex : -1;
@@ -297,6 +338,8 @@ public class SaveSystem : MonoBehaviour
 
         if (CreditWallet.Instance != null)
             CreditWallet.Instance.SetAmount(data.credits);
+        if (!string.IsNullOrEmpty(data.playerName))
+            PlayerProfile.Name = data.playerName;
 
         // 함선이 먼저다 (터렛 수 = 무기 슬롯 수, 장비 칸 수)
         PlayerShips.Restore(data.ship, data.ships, data.shipLoadouts);
