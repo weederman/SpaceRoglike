@@ -14,6 +14,12 @@ using UnityEngine;
 /// </summary>
 public class StarSystem : MonoBehaviour
 {
+    /// <summary>
+    /// 정거장 충돌체의 레이어 (Ignore Raycast). 함선 몸통만 막고, 무기 Raycast는 HitResolver가 이 레이어를 건너뛰어 탄은 지나간다.
+    /// 키네마틱인 화물선은 막히지 않아 그대로 정거장 안으로 들어가 사라진다.
+    /// </summary>
+    public const int StationLayer = 2;
+
     private const string PrefabPath = "Directors/StarSystem";
     private const float AreaCheckInterval = 0.25f;
 
@@ -72,6 +78,9 @@ public class StarSystem : MonoBehaviour
     [SerializeField] private GameObject _stationModel;
     [Tooltip("정거장 모델 배율 (프리팹 크기 × 이 값)")]
     [SerializeField, Min(0.01f)] private float _stationModelScale = 20f;
+    [Tooltip("정거장 선체 모양(위에서 본 모양)에 넣는 높이 범위 (함선 평면 기준 아래, 위). 이 범위의 선체만 함선을 막고 도킹 거리를 잰다. " +
+             "카메라보다 높이 솟은 부분은 화면에 보이지 않으므로 빼야 보이지 않는 벽이 생기지 않는다")]
+    [SerializeField] private Vector2 _stationHullBand = new Vector2(-250f, 150f);
 
     [Header("비콘 지역")]
     [SerializeField] private WarpBeacon _beaconPrefab;
@@ -199,11 +208,15 @@ public class StarSystem : MonoBehaviour
             }
 
             if (zone != null)
+            {
+                zone.HullBand = _stationHullBand;
                 zone.Model = model;
+                zone.BuildHullColliders(StationLayer);
+            }
         }
     }
 
-    /// <summary>정거장 모델을 함선이 다니는 높이에 놓는다 (프리팹 크기 × 배율, 판정 없음). 모델이 없으면 null.</summary>
+    /// <summary>정거장 모델을 함선이 다니는 높이에 놓는다 (프리팹 크기 × 배율, 모델 자체의 판정은 없앤다). 모델이 없으면 null.</summary>
     private Transform CreateStationModel(Transform station, float yaw)
     {
         if (_stationModel == null)
@@ -215,7 +228,7 @@ public class StarSystem : MonoBehaviour
         model.transform.localScale = _stationModel.transform.localScale * _stationModelScale;
         model.transform.position = new Vector3(station.position.x, Origin.y, station.position.z);
 
-        // 장식용이라 충돌 판정은 없다 (도킹은 StationDocking이 거리로 판정한다)
+        // 모델의 판정은 지운다. 함선을 막는 판정은 StationZone.BuildHullColliders가 위에서 본 선체 모양으로 따로 만든다.
         foreach (Collider c in model.GetComponentsInChildren<Collider>(true))
             Destroy(c);
 

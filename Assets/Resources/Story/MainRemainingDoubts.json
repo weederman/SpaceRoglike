@@ -1,0 +1,124 @@
+{
+  "quests": [
+    {
+      "id": "remaining_doubts",
+      "title": "남겨진 의문",
+      "objectives": [
+        { "id": "call", "text": "라스와 통신하여 사건의 배후에 관한 이야기를 듣는다." }
+      ]
+    }
+  ],
+  "sequences": [
+    {
+      "id": "remaining_doubts_call",
+      "then": "ending_temp",
+      "lines": [
+        { "cue": "bg:off", "delay": 1.5 },
+        { "cue": "quest_accept:remaining_doubts", "text": "[수신 통신 — 라스]" },
+        { "speaker": "ras_radio", "text": "하하! 드디어 완성했구만!" },
+        { "speaker": "ras_radio", "text": "FF-12 아이언월이라… 꽤 근사한 함선이지?" },
+        { "speaker": "ras_radio", "text": "처음 네가 이곳에 왔을 때를 생각하면 정말 많이 성장했어." },
+        { "speaker": "ras_radio", "text": "물론 설계도만 있다고 완성할 수 있는 물건은 아니지만, 결국 네가 직접 여기까지 해낸 거야." },
+        {
+          "speaker": "ras_radio",
+          "text": "축하한다. 이제 웬만한 녀석들과 맞붙어도 쉽게 밀리지는 않겠어.",
+          "choices": [
+            { "id": "thanks",   "text": "네 도움이 없었다면 불가능했을 거야.",   "next": "c1_thanks" },
+            { "id": "proper",   "text": "이제야 제대로 된 함선을 갖게 됐군.",     "next": "c1_proper" },
+            { "id": "business", "text": "칭찬은 됐고, 무슨 일로 연락한 거지?",   "next": "c1_business" }
+          ]
+        },
+
+        { "id": "c1_thanks", "speaker": "ras_radio", "text": "하하! 그 정도는 당연히 해줘야지." },
+        { "speaker": "ras_radio", "text": "좋은 함선은 혼자 만드는 게 아니거든. 서로 필요한 걸 주고받는 법이지." },
+        { "speaker": "ras_radio", "text": "아무튼 마음에 든다니 다행이야.", "next": "past" },
+
+        { "id": "c1_proper", "speaker": "ras_radio", "text": "그렇지? 이제 어디 가서 함부로 무시당할 일은 없겠어." },
+        { "speaker": "ras_radio", "text": "다만 함선이 좋아졌다고 너무 자신만만해지지는 마. 우주에는 네 함선보다 훨씬 무서운 것들이 많으니까.", "next": "past" },
+
+        { "id": "c1_business", "speaker": "ras_radio", "text": "하하! 여전하구만. 그래, 본론으로 들어가자고.", "next": "past" },
+
+        { "id": "past", "speaker": "ras_radio", "text": "사실 네가 함선을 완성하면 꼭 이야기하고 싶은 게 있었거든." },
+        { "speaker": "ras_radio", "text": "네가 처음 이곳에 도착했을 때 겪었던 일 말이야." },
+        { "speaker": "ras_radio", "text": "워프 도중 갑자기 폭풍을 만났고, 함선은 고장 났지. 구조 신호를 보내려던 순간에는 크롬웰 순찰대가 나타났고." },
+        { "speaker": "ras_radio", "text": "솔직히 말하면 처음에는 운이 정말 나빴다고 생각했어." },
+        { "speaker": "ras_radio", "text": "그런데 말이지… 최근에 몇 가지 정보를 확인했거든." },
+        {
+          "speaker": "ras_radio",
+          "text": "그 사건, 아무래도 우연이 아닌 것 같아.",
+          "choices": [
+            { "id": "info",    "text": "무슨 정보를 확인했는데?",                 "next": "c2_info" },
+            { "id": "target",  "text": "크롬웰이 처음부터 우리를 노렸다는 건가?",  "next": "c2_target" },
+            { "id": "why_now", "text": "이제 와서 그 이야기를 꺼내는 이유가 뭐지?", "next": "c2_why_now" }
+          ]
+        },
+
+        { "id": "c2_info", "speaker": "ras_radio", "text": "아직 확실한 건 아니야. 하지만 네가 겪었던 사건과 비슷한 사례가 몇 건 더 있었어." },
+        { "speaker": "ras_radio", "text": "특정 항로에서 워프 장치가 갑자기 고장 나거나, 구조 신호가 제대로 전달되지 않은 사건들이지." },
+        { "speaker": "ras_radio", "text": "그리고 그 주변에는 이상할 정도로 크롬웰의 군사 시설과 순찰대가 많이 배치되어 있었어.", "next": "clues" },
+
+        { "id": "c2_target", "speaker": "ras_radio", "text": "그럴 가능성도 있지." },
+        { "speaker": "ras_radio", "text": "하지만 네 함선이 왜 표적이 되었는지, 크롬웰이 정확히 무엇을 노렸는지는 아직 몰라." },
+        { "speaker": "ras_radio", "text": "지금은 의심스러운 정황만 있을 뿐이야.", "next": "clues" },
+
+        { "id": "c2_why_now", "speaker": "ras_radio", "text": "처음에는 나도 단순한 사고라고 생각했어." },
+        { "speaker": "ras_radio", "text": "그런데 최근에 입수한 정보들을 맞춰보니 이상한 부분이 한두 가지가 아니더라고." },
+        { "speaker": "ras_radio", "text": "네가 지금까지 살아남고, 어느 정도 기반까지 마련했으니 이제는 이 문제를 파고들어도 괜찮겠다고 생각했지.", "next": "clues" },
+
+        { "id": "clues", "speaker": "ras_radio", "text": "네가 겪은 워프 사고와 순찰대의 출현 시점, 그리고 구조 신호가 제대로 전달되지 않았다는 점까지." },
+        { "speaker": "ras_radio", "text": "서로 관계없는 사건이라고 보기에는 너무 절묘하게 맞아떨어져." },
+        { "speaker": "ras_radio", "text": "누군가 네 함선의 항로를 알고 있었거나, 적어도 그곳에서 무슨 일이 벌어질지 예상하고 있었을 가능성이 있어." },
+        {
+          "speaker": "ras_radio",
+          "text": "그리고 그런 일을 벌일 수 있는 녀석이라면 꽤 높은 곳에 있을 거야.",
+          "choices": [
+            { "id": "find",    "text": "배후를 찾을 수 있겠어?",                        "next": "c3_find" },
+            { "id": "planned", "text": "그렇다면 지금까지 내가 겪은 일도 전부 계획된 거였나?", "next": "c3_planned" },
+            { "id": "no_war",  "text": "크롬웰과 정면으로 맞설 생각은 없어.",            "next": "c3_no_war" }
+          ]
+        },
+
+        { "id": "c3_find", "speaker": "ras_radio", "text": "장담은 못 하겠어. 그래도 내가 가진 정보원들을 이용하면 실마리 정도는 찾을 수 있겠지." },
+        { "speaker": "ras_radio", "text": "시간은 좀 걸리겠지만 말이야.", "next": "proposal" },
+
+        { "id": "c3_planned", "speaker": "ras_radio", "text": "아직 그렇게 단정할 수는 없어." },
+        { "speaker": "ras_radio", "text": "하지만 누군가 처음부터 널 노렸다면, 지금까지 네가 살아남은 것도 그들의 계획에서 벗어난 일이었을지 모르지." },
+        { "speaker": "ras_radio", "text": "어쩌면 그쪽에서도 네가 여기까지 올 줄은 몰랐을 거야.", "next": "proposal" },
+
+        { "id": "c3_no_war", "speaker": "ras_radio", "text": "나도 네게 무턱대고 전쟁을 벌이라고 할 생각은 없어." },
+        { "speaker": "ras_radio", "text": "상대가 누군지도 모르는 상황에서 움직이는 건 자살행위나 다름없으니까." },
+        { "speaker": "ras_radio", "text": "우선은 누가 무슨 일을 꾸몄는지부터 알아내야 해.", "next": "proposal" },
+
+        { "id": "proposal", "speaker": "ras_radio", "text": "당장 알아낼 수 있다고 장담할 수는 없어." },
+        { "speaker": "ras_radio", "text": "하지만 조사해 볼 가치는 충분하지." },
+        { "speaker": "ras_radio", "text": "네가 겪은 일에 누군가 책임이 있다면, 적어도 그 이유 정도는 알아야 하지 않겠어?" },
+        { "speaker": "ras_radio", "text": "내가 아는 정보원들을 통해 뒷조사를 시작해 볼게." },
+        { "speaker": "ras_radio", "text": "다만 시간이 좀 걸릴 거야. 이번에는 평범한 해적 몇 명을 뒤쫓는 일이 아니거든." },
+        { "speaker": "ras_radio", "text": "그리고 한 가지 부탁이 있어." },
+        { "speaker": "ras_radio", "text": "당분간 돈을 좀 모아둬." },
+        { "speaker": "ras_radio", "text": "앞으로 무슨 일이 벌어질지는 모르겠지만, 준비된 자금이 많을수록 선택할 수 있는 길도 많아지니까." },
+        {
+          "speaker": "ras_radio",
+          "text": "네가 지금까지 모아온 돈을 허투루 쓰지는 말라고.",
+          "choices": [
+            { "id": "ready",    "text": "알겠어. 준비해 두지.",          "next": "c4_ready" },
+            { "id": "trouble",  "text": "또 무슨 골치 아픈 일을 시키려고?", "next": "c4_trouble" },
+            { "id": "call_me",  "text": "정보를 찾으면 바로 연락해.",      "next": "c4_call_me" }
+          ]
+        },
+
+        { "id": "c4_ready", "speaker": "ras_radio", "text": "좋아. 역시 이야기가 빠르다니까.", "next": "farewell" },
+
+        { "id": "c4_trouble", "speaker": "ras_radio", "text": "하하! 아직 아무것도 부탁하지 않았어." },
+        { "speaker": "ras_radio", "text": "뭐, 다음에 연락할 때는 조금 귀찮은 일이 생길지도 모르겠지만.", "next": "farewell" },
+
+        { "id": "c4_call_me", "speaker": "ras_radio", "text": "물론이지. 쓸 만한 정보가 들어오는 대로 연락할게.", "next": "farewell" },
+
+        { "id": "farewell", "speaker": "ras_radio", "text": "그때까지는 무리하지 말고, 함선이나 잘 관리해 둬." },
+        { "speaker": "ras_radio", "text": "이번에는 우리가 먼저 움직일 차례니까." },
+        { "speaker": "ras_radio", "text": "그럼 연락할게!" },
+        { "cue": "quest_done:remaining_doubts:call", "text": "[통신 종료]" }
+      ]
+    }
+  ]
+}

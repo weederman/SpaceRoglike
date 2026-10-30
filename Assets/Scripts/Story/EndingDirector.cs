@@ -5,8 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 임시 엔딩 연출 담당. 첫 번째 함선 조립 대사(first_ship_assembly)에 then으로 이어지는 "ending_temp" 시퀀스의 cue를 받는다.
-/// 그 앞 줄(bg:off)에서 통신창(대사 바·ShipUpgrade 배경)이 천천히 사라진 뒤:
+/// 임시 엔딩 연출 담당. 아이언월 조립 대사(first_ship_assembly) → 라스의 통신(remaining_doubts_call, 퀘스트 「남겨진 의문」)에
+/// then으로 이어지는 "ending_temp" 시퀀스의 cue를 받는다. 그 첫 줄에서 통신창(대사 바)이 천천히 사라진 뒤:
 ///
 ///  ending_fly       화면을 잠깐 어둡게 바꾸고, 함선(아이언월)이 푸른 엔진 빛을 뿜으며 별이 가득한 우주를 옆으로 가로지르는 장면을 보여준다.
 ///                   정거장 화면·HUD는 숨긴다. 함선은 이 뒤로도 계속 앞으로 나아간다.

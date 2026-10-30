@@ -317,7 +317,7 @@ public class FirstShipQuest : MonoBehaviour
         return reason == null;
     }
 
-    /// <summary>최종 조립: 대사 → 함선 지급(대사의 ship_grant cue, 건너뛰어도 끝나면 지급) → 임시 엔딩(대사에 then으로 이어짐, EndingDirector) → 퀘스트 완료</summary>
+    /// <summary>최종 조립: 대사 → 함선 지급(대사의 ship_grant cue, 건너뛰어도 끝나면 지급) → 라스의 통신 「남겨진 의문」 → 임시 엔딩(대사에 then으로 이어짐, EndingDirector) → 퀘스트 완료</summary>
     public static bool Assemble(StationZone zone)
     {
         if (!CanAssemble(zone, out _))

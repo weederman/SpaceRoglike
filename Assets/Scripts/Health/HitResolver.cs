@@ -29,6 +29,10 @@ public static class HitResolver
             if (ignoreRoot != null && candidate.collider.transform.IsChildOf(ignoreRoot))
                 continue;
 
+            // 정거장 충돌체는 함선 몸통만 막고 탄은 통과시킨다
+            if (candidate.collider.gameObject.layer == StarSystem.StationLayer)
+                continue;
+
             if (candidate.distance < closest)
             {
                 closest = candidate.distance;

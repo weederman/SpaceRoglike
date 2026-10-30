@@ -75,6 +75,23 @@ public class StationZone : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 위에서 본 선체 모양(Footprint)에 넣는 높이 범위 (모델 높이 = 함선 평면 기준 아래, 위). 이 범위에 걸친 삼각형만 칠한다.
+    /// 바꾸면 선체 모양을 다시 만든다. StarSystem이 Model보다 먼저 채운다.
+    /// </summary>
+    public Vector2 HullBand
+    {
+        get => _hullBand;
+        set
+        {
+            _hullBand = value;
+            _hullDistance = null;
+            _footprintFailed = false;
+        }
+    }
+
+    private Vector2 _hullBand = new Vector2(float.NegativeInfinity, float.PositiveInfinity);
+
     /// <summary>정거장 입구 쪽 (모델 앞쪽, 수평). 출항한 함선이 이쪽 바깥에 나온다.</summary>
     public Vector3 EntranceDirection
     {
@@ -189,6 +206,9 @@ public class StationZone : MonoBehaviour
         var solid = new bool[_footprintW * _footprintH];
 
         bool any = false;
+        float bottom = _model.position.y + _hullBand.x;
+        float top = _model.position.y + _hullBand.y;
+        var heights = new List<float>();
         foreach (MeshFilter filter in _model.GetComponentsInChildren<MeshFilter>(true))
         {
             Mesh mesh = filter.sharedMesh;
@@ -198,15 +218,24 @@ public class StationZone : MonoBehaviour
             Matrix4x4 toWorld = filter.transform.localToWorldMatrix;
             Vector3[] vertices = mesh.vertices;
             var flat = new Vector2[vertices.Length];
+            heights.Clear();
             for (int i = 0; i < vertices.Length; i++)
             {
                 Vector3 w = toWorld.MultiplyPoint3x4(vertices[i]);
                 flat[i] = new Vector2((w.x - _footprintOrigin.x) / FootprintCell, (w.z - _footprintOrigin.y) / FootprintCell);
+                heights.Add(w.y);
             }
 
             int[] triangles = mesh.triangles;
             for (int i = 0; i + 2 < triangles.Length; i += 3)
+            {
+                // 높이 범위에 걸친 삼각형만 (카메라 위로 솟은 부분, 아주 깊은 아래쪽은 뺀다)
+                float y0 = heights[triangles[i]], y1 = heights[triangles[i + 1]], y2 = heights[triangles[i + 2]];
+                if (Mathf.Min(y0, Mathf.Min(y1, y2)) > top || Mathf.Max(y0, Mathf.Max(y1, y2)) < bottom)
+                    continue;
+
                 FillTriangle(solid, flat[triangles[i]], flat[triangles[i + 1]], flat[triangles[i + 2]]);
+            }
             any = true;
         }
 
@@ -308,6 +337,74 @@ public class StationZone : MonoBehaviour
         }
 
         return d;
+    }
+
+    /// <summary>
+    /// 위에서 내려다본 선체 모양(Footprint) 그대로 함선을 막는 충돌체를 만든다: 선체 칸을 직사각형으로 묶어 상자(BoxCollider)로 놓는다.
+    /// 상자는 HullBand 높이 범위만큼 (함선이 다니는 평면을 덮는다).
+    /// 도킹 거리(DistanceToHull)도 같은 모양으로 재므로, 충돌체에 닿은 함선은 함선 크기만큼 떨어진 거리에서 입항할 수 있다.
+    /// </summary>
+    public void BuildHullColliders(int layer)
+    {
+        Transform old = transform.Find(HullColliderName);
+        if (old != null)
+            Destroy(old.gameObject);
+        if (_model == null || !EnsureFootprint())
+            return;
+
+        var root = new GameObject(HullColliderName) { layer = layer };
+        root.transform.SetParent(transform, false);
+        root.transform.SetPositionAndRotation(new Vector3(0f, _model.position.y, 0f), Quaternion.identity);
+
+        float bandBottom = float.IsInfinity(_hullBand.x) ? -200f : _hullBand.x;
+        float bandTop = float.IsInfinity(_hullBand.y) ? 200f : _hullBand.y;
+        float height = bandTop - bandBottom;
+        float centerY = (bandTop + bandBottom) * 0.5f;
+
+        int w = _footprintW, h = _footprintH;
+        var used = new bool[w * h];
+        for (int z = 0; z < h; z++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                if (used[z * w + x] || _hullDistance[z * w + x] > 0f)
+                    continue;
+
+                // 가로로 이어진 선체 칸만큼 늘리고, 그 폭 그대로 아래 줄로 늘릴 수 있는 만큼 늘린다
+                int x1 = x;
+                while (x1 + 1 < w && !used[z * w + x1 + 1] && _hullDistance[z * w + x1 + 1] <= 0f)
+                    x1++;
+
+                int z1 = z;
+                while (z1 + 1 < h && RowSolid(used, z1 + 1, x, x1))
+                    z1++;
+
+                for (int zz = z; zz <= z1; zz++)
+                    for (int xx = x; xx <= x1; xx++)
+                        used[zz * w + xx] = true;
+
+                var box = root.AddComponent<BoxCollider>();
+                box.size = new Vector3((x1 - x + 1) * FootprintCell, height, (z1 - z + 1) * FootprintCell);
+                Vector3 local = root.transform.InverseTransformPoint(new Vector3(
+                    _footprintOrigin.x + (x + x1 + 1) * 0.5f * FootprintCell, 0f,
+                    _footprintOrigin.y + (z + z1 + 1) * 0.5f * FootprintCell));
+                box.center = new Vector3(local.x, centerY, local.z);
+            }
+        }
+    }
+
+    private const string HullColliderName = "HullCollider";
+
+    private bool RowSolid(bool[] used, int z, int x0, int x1)
+    {
+        for (int x = x0; x <= x1; x++)
+        {
+            int i = z * _footprintW + x;
+            if (used[i] || _hullDistance[i] > 0f)
+                return false;
+        }
+
+        return true;
     }
 
     /// <summary>center에서 direction 쪽으로 나가며 마지막으로 선체가 있는 곳까지의 거리 (없으면 boxExtent)</summary>

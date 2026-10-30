@@ -20,7 +20,8 @@ public class StationDocking : MonoBehaviour
     public static bool IsDocked => Instance != null && (Instance._docked != null || Instance._busy);
 
     [Header("도킹")]
-    [Tooltip("정거장 선체(위에서 내려다본 실제 모양)에서 이 거리(XZ) 안으로 들어오면 입항할 수 있다")]
+    [Tooltip("정거장 선체(위에서 내려다본 실제 모양)에서 이 거리(XZ) 안으로 들어오면 입항할 수 있다. " +
+             "선체에 충돌체가 있어 함선 중심은 선체에 닿지 못하므로, 함선 크기(ShipReach)를 더해서 잰다")]
     [SerializeField, Min(0f)] private float _dockRange = 1f;
     [Tooltip("입항·출항 키")]
     [SerializeField] private KeyCode _dockKey = KeyCode.F;
@@ -44,6 +45,8 @@ public class StationDocking : MonoBehaviour
     private InfiniteSpaceGrid _grid;
 
     private StationZone _docked;
+    private float _reach;
+    private float _reachMeasuredAt = float.NegativeInfinity;
     private bool _busy;
 
     // ── 시작 ──────────────────────────────────────────
@@ -100,7 +103,7 @@ public class StationDocking : MonoBehaviour
         StationZone near = NearestStation(out float distance);
 
         // 호송 중이나 소탕 교전 중에는 정거장 곁에서 싸워도 입항하지 않는다
-        bool canDock = near != null && distance <= _dockRange
+        bool canDock = near != null && distance <= _dockRange + ShipReach()
                        && !StoryPlayer.IsPlaying && !StarSystemWarp.IsWarping && !MissionDirector.BlocksTravel
                        && !GameInputLock.IsLockedExcept(this);
         _view.ShowPrompt(canDock ? $"{_dockKey}   입항 · {near.DisplayName}" : null);
@@ -113,6 +116,30 @@ public class StationDocking : MonoBehaviour
     {
         // Shift+F는 개발자 창
         return Input.GetKeyDown(_dockKey) && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift);
+    }
+
+    /// <summary>함선 중심에서 선체 판정 끝까지의 수평 거리 (가장 긴 쪽). 정거장 충돌체에 닿은 채로도 입항할 수 있게, 출항할 때 선체에 겹치지 않게.</summary>
+    private float ShipReach()
+    {
+        // 함선이 바뀔 때만 달라지므로 가끔만 다시 잰다
+        if (Time.unscaledTime < _reachMeasuredAt + 0.5f)
+            return _reach;
+
+        _reachMeasuredAt = Time.unscaledTime;
+        float reach = 0f;
+        foreach (Collider c in _ship.GetComponentsInChildren<Collider>())
+        {
+            if (!c.enabled || c.isTrigger)
+                continue;
+
+            Bounds b = c.bounds;
+            Vector3 p = _ship.transform.position;
+            reach = Mathf.Max(reach, Mathf.Abs(b.max.x - p.x), Mathf.Abs(b.min.x - p.x),
+                Mathf.Abs(b.max.z - p.z), Mathf.Abs(b.min.z - p.z));
+        }
+
+        _reach = reach;
+        return reach;
     }
 
     /// <summary>함선에서 가장 가까운 정거장과, 그 정거장 선체(위에서 내려다본 실제 모양)까지의 수평 거리</summary>
@@ -223,7 +250,8 @@ public class StationDocking : MonoBehaviour
         Vector3 dir = zone.EntranceDirection;
 
         float y = StarSystem.Instance != null ? StarSystem.Instance.Origin.y : _ship.transform.position.y;
-        Vector3 pos = zone.PointOutside(dir, _dockRange + _undockClearance, y);
+        _reachMeasuredAt = float.NegativeInfinity; // 격납고에서 함선을 바꿨을 수 있다
+        Vector3 pos = zone.PointOutside(dir, _dockRange + ShipReach() + _undockClearance, y);
         Quaternion rot = Quaternion.LookRotation(dir);
         _ship.transform.SetPositionAndRotation(pos, rot);
         _rb.position = pos;

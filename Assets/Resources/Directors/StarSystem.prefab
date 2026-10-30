@@ -271,7 +271,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4890ec50b8b6e4c4fadc920431a7ea02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _dockRange: 0.1
+  _dockRange: 30
   _dockKey: 102
   _fadeSeconds: 0.4
   _interiorXZ: {x: 0, y: -100000}

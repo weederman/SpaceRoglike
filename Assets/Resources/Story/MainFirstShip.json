@@ -215,14 +215,14 @@
     },
     {
       "id": "first_ship_assembly",
-      "then": "ending_temp",
+      "then": "remaining_doubts_call",
       "lines": [
         { "cue": "bg:ShipUpgrade", "text": "격납고에 들어서자 라스가 설계도와 부품 목록을 펼쳐 놓고 기다리고 있다." },
         { "speaker": "ras", "text": "모든 재료가 모였군. 이 정도면 설계도에 적힌 사양대로 제작할 수 있겠어." },
         { "speaker": "ras", "text": "솔직히 말해서, 자네가 여기까지 올 줄은 예상하지 못했어. 돈을 모으는 것과 실제로 함선을 완성하는 건 전혀 다른 일이니까." },
         { "speaker": "ras", "text": "이제 마지막 조립만 남았어. 제작이 끝나면 새 함선은 자네 소유가 될 거야." },
         { "speaker": "ras", "text": "다만 기억해 둬. 좋은 함선을 얻었다고 모든 문제가 해결되는 건 아니야. 오히려 지금부터 자네를 노리는 상대가 더 많아질 수도 있지." },
-        { "cue": "ship_grant:ironwall", "text": "[제작 완료] 정비사들이 물러서자, 붉은 발광부를 단 프리깃 한 척이 격납고 조명 아래 모습을 드러낸다." },
+        { "cue": "ship_grant:ironwall;quest_done:first_ship_build:assemble", "text": "[제작 완료] 정비사들이 물러서자, 붉은 발광부를 단 프리깃 한 척이 격납고 조명 아래 모습을 드러낸다." },
         { "speaker": "ras", "text": "완성됐어. 자네의 새 함선이야." },
         { "speaker": "ras", "text": "이제 그 배로 어디까지 갈 수 있을지 직접 확인해 봐." }
       ]
