@@ -1,0 +1,25 @@
+{
+  "sequences": [
+    {
+      "id": "ending_temp",
+      "lines": [
+        { "cue": "bg:off", "delay": 1.6 },
+        { "cue": "ending_fly",      "waitFor": "ending_fly_done" },
+        { "cue": "ending_pullback", "waitFor": "ending_pullback_done" },
+        { "cue": "ending_black",    "waitFor": "ending_black_done" },
+        { "cue": "ending_title",    "waitFor": "ending_closed" }
+      ]
+    },
+    {
+      "id": "ending_temp_text",
+      "lines": [
+        { "id": "title",  "text": "새로운 항로" },
+        { "id": "body1",  "text": "모든 항해에는 끝이 있다." },
+        { "id": "body2",  "text": "그러나 모든 의문이 끝나는 것은 아니다." },
+        { "id": "body3",  "text": "이야기는 계속됩니다." },
+        { "id": "footer", "text": "MAIN STORY — TO BE CONTINUED" },
+        { "id": "hint",   "text": "아무 키나 눌러 계속" }
+      ]
+    }
+  ]
+}

@@ -61,3 +61,7 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 75c2520332d47c543ab6ecbed510a94f, type: 3}
     volume: 0.45
     channel: 2
+  - name: ending_flyby
+    clip: {fileID: 8300000, guid: 44acc3cabe7429b4080f085b29e0f6ba, type: 3}
+    volume: 0.6
+    channel: 2

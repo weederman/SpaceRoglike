@@ -90,7 +90,7 @@ public class StationDocking : MonoBehaviour
         if (_docked != null)
         {
             // 정거장 화면의 창이 모두 닫혀 있을 때만 출항
-            bool canUndock = !_view.AnyWindowOpen && !StoryPlayer.IsPlaying;
+            bool canUndock = !_view.AnyWindowOpen && !StoryPlayer.IsPlaying && !GameInputLock.IsLockedExcept(this);
             _view.ShowPrompt(canUndock ? $"{_dockKey}   출항" : null);
             if (canUndock && (DockKeyPressed() || _view.ConsumePromptClick()))
                 Undock();
