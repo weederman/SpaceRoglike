@@ -44,7 +44,7 @@
 6. **Unity MCP `execute_code`는 같은 코드가 여러 번 실행될 수 있다** → 생성/설정 코드는 멱등하게(이미 있으면 건너뜀) 작성한다.
 7. **한글 폰트**: SCI-FI UI Pack 폰트에는 한글이 없다. 한글은 `Resources/Fonts/KoreanFallback`(Noto Sans KR, OFL)이 TMP 전체 대체 폰트로 채운다(에디터에서도 보임). 새 글자는 실행 중 동적으로 추가되어 이 에셋이 바뀐다. 좁은 칸의 말줄임(Ellipsis) 텍스트는 줄 높이에 주의. 새 한글 UI를 만들면 한글이 정상 표시되는지 확인한다.
 8. **UI 문자열에 `&gt;` 같은 HTML 엔티티를 쓰지 않는다** (TMP 리치텍스트에서 그대로 출력됨). `>`를 그대로 쓴다.
-9. **풀링/키네마틱**: Kinematic Rigidbody에는 `velocity`를 대입하지 않는다 (`isKinematic` 확인).
+9. **풀링/키네마틱**: Kinematic Rigidbody에는 `velocity`를 대입하지 않는다 (`isKinematic` 확인). FORGE3D 풀에서 꺼낸 오브젝트는 직접 `Destroy`하지 않고 `Despawn`으로 돌려보낸다(풀 오브젝트는 Despawn 뒤에도 마지막 부모 밑에 남아, 부모를 파괴하면 같이 사라진다). 풀의 `Spawn`/`SpawnAudio`는 가득 차면 `null`을 돌려주므로 결과를 쓰기 전에 검사한다.
 10. 사용자와 대화는 한국어로 한다.
 11. **컴파일 요청 전에 Unity 창을 앞으로** 가져온다(백그라운드면 컴파일이 멈춘다). Play 전에 새 코드가 반영됐는지 확인한다.
 12. 테스트 코드에서 **control 시퀀스 중에는 `StoryPlayer.Skip()`을 쓰지 않고** `StoryPlayer.Signal`로 진행한다 (Skip은 그 시퀀스를 통째로 빨리 감는다).
