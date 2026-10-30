@@ -898,7 +898,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridSize: 50
-  gridCount: 20
+  gridCount: 50
   lineHeight: 0.01
   lineWidth: 1
   target: {fileID: 251114454}
