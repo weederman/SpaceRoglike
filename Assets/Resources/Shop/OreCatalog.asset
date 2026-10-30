@@ -56,6 +56,19 @@ MonoBehaviour:
     depositsPerLevel: 0000000000000000020000000200000003000000
     amount: {x: 25, y: 35}
     size: 90
+  - id: rare_crystal
+    displayName: "\uD76C\uADC0 \uACB0\uC815"
+    icon: {fileID: 21300000, guid: 6448b82046e9dd542ab37ce629da1cf1, type: 3}
+    price: 400
+    description: "\uC911\uAE09\xB7\uC0C1\uAE09 \uC784\uBB34\uC758 \uBCF4\uC0C1(\uD76C\uADC0
+      \uBD80\uD488)\uC73C\uB85C \uB098\uC624\uB294 \uACB0\uC815\uCCB4. \uAD11\uB9E5\uC5D0\uC11C\uB294
+      \uCE98 \uC218 \uC5C6\uACE0 \uAC70\uB798\uC18C\uC5D0\uC11C\uB3C4 \uC544\uC8FC
+      \uBE44\uC2F8\uAC8C \uD310\uB2E4. \uACE0\uC131\uB2A5 \uD568\uC120 \uC81C\uC791\uC5D0
+      \uC4F0\uC778\uB2E4."
+    looks: []
+    depositsPerLevel: 0000000000000000000000000000000000000000
+    amount: {x: 1, y: 1}
+    size: 90
   buyPriceRatio: 2
   buyBatch: 10
   depositDistance: {x: 300, y: 800}

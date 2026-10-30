@@ -309,8 +309,28 @@ public abstract class MissionDirector : MonoBehaviour
         if (data.extraRewards != null)
             lines.AddRange(data.extraRewards.Where(r => !string.IsNullOrEmpty(r)));
 
+        string rarePart = RollRarePart(data);
+        if (rarePart != null)
+            lines.Add(rarePart);
+
         Hud.ShowResult(true, "임무 완료", string.Join("\n", lines));
         yield return Finish();
+    }
+
+    /// <summary>희귀 부품 보상을 굴려 화물칸에 넣는다. 받았으면 결과 화면에 쓸 한 줄, 못 받았으면 null.</summary>
+    private static string RollRarePart(MissionData data)
+    {
+        if (data.rarePartChance <= 0f || data.rarePartPool == null || data.rarePartPool.Length == 0
+            || CargoHold.Instance == null || Random.value > data.rarePartChance)
+            return null;
+
+        string id = data.rarePartPool[Random.Range(0, data.rarePartPool.Length)];
+        int amount = Random.Range(data.rarePartAmount.x, Mathf.Max(data.rarePartAmount.x, data.rarePartAmount.y) + 1);
+        if (string.IsNullOrEmpty(id) || amount <= 0)
+            return null;
+
+        CargoHold.Instance.Grant(id, amount);
+        return $"희귀 부품: {OreCatalog.NameOf(id)} ×{amount}";
     }
 
     /// <summary>실패: 결과 표시 → 적 후퇴 → 끝.</summary>

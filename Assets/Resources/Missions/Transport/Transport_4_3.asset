@@ -22,6 +22,10 @@ MonoBehaviour:
   reward: 50000
   extraRewards:
   - "\uD76C\uADC0 \uBAA8\uB4C8"
+  rarePartChance: 0.7
+  rarePartAmount: {x: 3, y: 6}
+  rarePartPool:
+  - rare_crystal
   acceptSequence: mission_transport_4_3_accept
   successSequence: mission_transport_4_3_success
   cargoName: "\uAD70\uC6A9 \uC7A5\uBE44 \uC0C1\uC790"

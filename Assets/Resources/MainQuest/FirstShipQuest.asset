@@ -20,7 +20,7 @@ MonoBehaviour:
     amount: 200
   - oreId: titanium
     amount: 100
-  - oreId: rare
+  - oreId: rare_crystal
     amount: 30
   alloyName: "\uD2B9\uC218 \uD569\uAE08"
   alloyRequired: 10

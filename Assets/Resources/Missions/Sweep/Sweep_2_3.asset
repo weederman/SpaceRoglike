@@ -21,6 +21,10 @@ MonoBehaviour:
   reward: 45000
   extraRewards:
   - "\uD604\uC0C1\uAE08"
+  rarePartChance: 0.7
+  rarePartAmount: {x: 3, y: 6}
+  rarePartPool:
+  - rare_crystal
   acceptSequence: mission_sweep_2_3_accept
   successSequence: mission_sweep_2_3_success
   beaconLevels: {x: 4, y: 5}

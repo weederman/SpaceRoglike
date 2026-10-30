@@ -20,8 +20,11 @@ MonoBehaviour:
     \uC815\uAC70\uC7A5\uC5D0 \uB0A9\uD488\uD558\uB77C \xB7 \uCC44\uAD74 \uC911 \uD574\uC801
     \uC21C\uCC30\uB300 \uC8FC\uC758"
   reward: 20000
-  extraRewards:
-  - "\uD76C\uADC0 \uBD80\uD488 1\uAC1C"
+  extraRewards: []
+  rarePartChance: 0.4
+  rarePartAmount: {x: 1, y: 3}
+  rarePartPool:
+  - rare_crystal
   acceptSequence: 
   successSequence: 
   oreId: rare

@@ -25,7 +25,7 @@ public class FirstShipQuestData : ScriptableObject
     [Min(0)] public int blueprintPrice = 1000000;
     public string blueprintName = "1차 특수 함선 블루프린트";
 
-    [Header("3. 선체부터 준비해 (모항의 라스에게 납품, 여러 번 나눠 낼 수 있다)")]
+    [Header("3. 선체부터 준비해 (라스에게 납품, 여러 번 나눠 낼 수 있다)")]
     public Material[] materials = new Material[0];
 
     [Header("4. 버려진 화물 / 5. 흔적을 쫓아서")]

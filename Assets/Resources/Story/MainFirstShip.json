@@ -7,7 +7,7 @@
         { "id": "iron",     "text": "철광석 200개를 라스에게 납품한다." },
         { "id": "titanium", "text": "티타늄 광석 100개를 라스에게 납품한다." },
         { "id": "rare",     "text": "희귀 결정 30개를 라스에게 납품한다." },
-        { "id": "deliver",  "text": "모항의 라스에게 재료 납품을 마친다." }
+        { "id": "deliver",  "text": "라스에게 재료 납품을 마친다." }
       ]
     },
     {
@@ -29,7 +29,7 @@
       "id": "first_ship_build",
       "title": "새로운 함선",
       "objectives": [
-        { "id": "assemble", "text": "모항의 라스에게 가서 최종 조립을 마친다." }
+        { "id": "assemble", "text": "라스에게 가서 최종 조립을 마친다." }
       ]
     }
   ],
@@ -210,7 +210,7 @@
     {
       "id": "first_ship_build_brief",
       "lines": [
-        { "cue": "quest_accept:first_ship_build", "speaker": "ras_radio", "text": "재료는 다 모였어. 모항으로 와. 조립을 시작하지." }
+        { "cue": "quest_accept:first_ship_build", "speaker": "ras_radio", "text": "재료는 다 모였어. 정거장으로 와. 조립을 시작하지." }
       ]
     },
     {

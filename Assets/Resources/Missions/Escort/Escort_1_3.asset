@@ -21,6 +21,10 @@ MonoBehaviour:
   reward: 35000
   extraRewards:
   - "\uC131\uACC4 \uBC29\uC704\uAD70 \uD3C9\uD310 \uC0C1\uC2B9"
+  rarePartChance: 0.7
+  rarePartAmount: {x: 3, y: 6}
+  rarePartPool:
+  - rare_crystal
   acceptSequence: mission_escort_1_3_accept
   successSequence: mission_escort_1_3_success
   freighterHp: 8000

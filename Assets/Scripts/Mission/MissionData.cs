@@ -23,6 +23,14 @@ public abstract class MissionData : ScriptableObject
     [Tooltip("돈이 아닌 보상 (평판·우대권 등). 아직 시스템이 없어 결과 화면에 표시만 한다")]
     public string[] extraRewards = new string[0];
 
+    [Header("희귀 부품 (중급·상급 임무의 무작위 보상)")]
+    [Tooltip("성공했을 때 희귀 부품을 받을 확률 (0이면 없음)")]
+    [Range(0f, 1f)] public float rarePartChance;
+    [Tooltip("받는 개수 (최소~최대)")]
+    public Vector2Int rarePartAmount = new Vector2Int(1, 1);
+    [Tooltip("희귀 부품이 될 수 있는 항목 (OreCatalog의 id). 이 중 하나가 무작위로 나온다")]
+    public string[] rarePartPool = { "rare_crystal" };
+
     [Header("대사 (Story JSON 시퀀스 id)")]
     public string acceptSequence;
     public string successSequence;

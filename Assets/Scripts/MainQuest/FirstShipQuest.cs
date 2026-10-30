@@ -9,10 +9,10 @@ using UnityEngine.SceneManagement;
 ///  1) 새로운 제안: 보유 자금이 unlockCredits 이상이 되면(대사·임무·워프 중이 아닐 때) 라스의 수신 통신이 온다.
 ///     선택지 "자세히 / 구매 / 보류". 보류해도 사라지지 않고, 정거장 스페이스 라운지의 '라스' 항목에서 언제든 다시 살 수 있다.
 ///  2) 설계도와 대가: blueprintPrice를 내고 블루프린트를 산다 (재구매 없음).
-///  3) 선체부터 준비해: 광물(materials)을 모항의 라스에게 납품한다. 화물칸이 작아 여러 번 나눠 낼 수 있다.
+///  3) 선체부터 준비해: 광물(materials)을 라스에게 납품한다. 화물칸이 작아 여러 번 나눠 낼 수 있다.
 ///  4) 버려진 화물: 특수 합금 회수 임무(alloyMission, SalvageMissionDirector)
 ///  5) 흔적을 쫓아서: 고급 동력 코어 확보 임무(coreMission, InterceptMissionDirector). 적 지휘관 통신 기록은 선택 목표.
-///  6) 새로운 함선: 모항의 라스에게서 최종 조립 → 함선(shipId) 지급, 바로 탑승.
+///  6) 새로운 함선: 라스에게서 최종 조립 → 함선(shipId) 지급, 바로 탑승.
 /// 라운지·미션 탭의 '라스' 항목(MissionBoardWindow)이 이 클래스의 단계별 버튼을 보여 준다.
 /// 진행 상태(단계·납품량·퀘스트 물품)는 저장(SaveSystem)에 함께 남는다. 단계가 바뀌면 도킹 중일 때 바로 저장한다.
 /// </summary>
@@ -203,15 +203,15 @@ public class FirstShipQuest : MonoBehaviour
         }
     }
 
-    /// <summary>라스(모항)에게 지금 납품할 수 있는지</summary>
+    /// <summary>라스에게 지금 납품할 수 있는지 (어느 정거장이나)</summary>
     public static bool CanDeliver(StationZone zone, out string reason)
     {
         reason = null;
         CargoHold cargo = CargoHold.Instance;
         if (_stage != Stage.Minerals)
             reason = "납품할 단계가 아닙니다.";
-        else if (zone == null || !zone.IsHome)
-            reason = $"라스는 모항({(StationZone.Home != null ? StationZone.Home.DisplayName : "모항")})에 있습니다. 재료는 모항에서 납품합니다.";
+        else if (zone == null)
+            reason = "정거장에 도킹해야 라스에게 납품할 수 있습니다.";
         else if (cargo == null || Data.materials.All(m => DeliveredOf(m.oreId) >= m.amount || cargo.Amount(m.oreId) < 1f))
             reason = "화물칸에 납품할 광물이 없습니다.";
         return reason == null;
@@ -310,8 +310,8 @@ public class FirstShipQuest : MonoBehaviour
         reason = null;
         if (_stage != Stage.Assembly || _assembling)
             reason = "아직 재료가 모두 모이지 않았습니다.";
-        else if (zone == null || !zone.IsHome)
-            reason = $"최종 조립은 모항({(StationZone.Home != null ? StationZone.Home.DisplayName : "모항")})의 라스에게서 합니다.";
+        else if (zone == null)
+            reason = "정거장에 도킹해야 라스에게 최종 조립을 맡길 수 있습니다.";
         else if (StoryPlayer.IsPlaying)
             reason = "대화 중입니다.";
         return reason == null;

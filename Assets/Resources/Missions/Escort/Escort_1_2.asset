@@ -21,6 +21,10 @@ MonoBehaviour:
     \uCD94\uAC00 \uBCF4\uC0C1"
   reward: 20000
   extraRewards: []
+  rarePartChance: 0.4
+  rarePartAmount: {x: 1, y: 3}
+  rarePartPool:
+  - rare_crystal
   acceptSequence: mission_escort_1_2_accept
   successSequence: mission_escort_1_2_success
   freighterHp: 5000

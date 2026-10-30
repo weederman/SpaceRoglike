@@ -37,7 +37,7 @@ public class CargoHold : MonoBehaviour
     /// <summary>광석 + 임무 화물</summary>
     public float Used => Ore + MissionCargo;
     public float Capacity => _capacity * (1f + PlayerEquipment.Bonus(EquipmentCatalog.Kind.Cargo));
-    public float Ratio => Used / Capacity;
+    public float Ratio => Mathf.Min(1f, Used / Capacity);
     public bool IsFull => Used >= Capacity - 0.001f;
 
     /// <summary>실려 있는 광석 종류와 양 (0보다 많은 것만)</summary>
@@ -71,6 +71,16 @@ public class CargoHold : MonoBehaviour
         _ores[oreId] = Amount(oreId) + added;
         OnChanged?.Invoke();
         return added;
+    }
+
+    /// <summary>임무 보상(희귀 부품)을 한도와 상관없이 싣는다. 한도를 넘으면 채굴은 막히지만 보상은 잃지 않는다.</summary>
+    public void Grant(string oreId, float amount)
+    {
+        if (amount <= 0f)
+            return;
+
+        _ores[oreId] = Amount(oreId) + amount;
+        OnChanged?.Invoke();
     }
 
     /// <summary>운송 임무 화물을 싣는다. 빈 자리가 모자라면 싣지 않고 false.</summary>

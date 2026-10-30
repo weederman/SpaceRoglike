@@ -250,7 +250,6 @@ public class MissionBoardWindow : StationWindow
         _detail.Show(_mainQuestIcon != null ? _mainQuestIcon : _transportIcon, MainQuestTitle(), "메인 퀘스트",
             "라스 · 1차 특수 함선 제작");
 
-        string home = StationZone.Home != null ? StationZone.Home.DisplayName : "모항";
         switch (stage)
         {
             case FirstShipQuest.Stage.Offered:
@@ -258,7 +257,7 @@ public class MissionBoardWindow : StationWindow
                     "블루프린트를 사면 재료를 모으는 퀘스트가 차례로 이어집니다.");
                 break;
             case FirstShipQuest.Stage.Minerals:
-                _detail.SetDescription($"선체를 만들 광물을 모아 {home}의 라스에게 납품합니다. 화물칸에 실은 만큼 여러 번 나눠 낼 수 있습니다.\n\n" +
+                _detail.SetDescription($"선체를 만들 광물을 모아 라스에게 납품합니다. 화물칸에 실은 만큼 여러 번 나눠 낼 수 있습니다.\n\n" +
                     "광물은 채굴하거나 정거장 상점에서 살 수 있습니다.");
                 break;
             case FirstShipQuest.Stage.Alloy:
@@ -270,7 +269,7 @@ public class MissionBoardWindow : StationWindow
                     $"(선택) 지휘함을 격파하면 {data.commsLogName}을 얻습니다.");
                 break;
             default:
-                _detail.SetDescription($"모든 재료가 모였습니다. {home}의 라스에게서 최종 조립을 하면 새 함선을 받습니다.");
+                _detail.SetDescription($"모든 재료가 모였습니다. 라스에게서 최종 조립을 하면 새 함선을 받습니다.");
                 break;
         }
 

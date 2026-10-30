@@ -21,6 +21,10 @@ MonoBehaviour:
     \uAC08\uC218\uB85D \uD574\uC801 \uCD9C\uD604 \uC99D\uAC00"
   reward: 35000
   extraRewards: []
+  rarePartChance: 0.7
+  rarePartAmount: {x: 3, y: 6}
+  rarePartPool:
+  - rare_crystal
   acceptSequence: 
   successSequence: 
   oreId: 

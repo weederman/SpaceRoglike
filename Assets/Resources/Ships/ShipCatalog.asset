@@ -51,15 +51,15 @@ MonoBehaviour:
         \uC81C\uC791\uD55C 1\uCC28 \uD2B9\uC218 \uD568\uC120.\n\n\"\uBAA8\uB450\uAC00
         \uBB3C\uB7EC\uC124 \uB54C, \uB204\uAD70\uAC00\uB294 \uADF8 \uC790\uB9AC\uC5D0
         \uB0A8\uC544\uC57C \uD55C\uB2E4.\""
-      model: {fileID: 4796092348069271544, guid: 259c1e3dd41e67f4eafc895abcc75e92, type: 3}
+      model: {fileID: 8139856114348451991, guid: 389459451cb455347b5c243eca5ac98d, type: 3}
       hullRatio: 1.5
       offset: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0}
     weaponSlots: 4
     equipmentSlots: 6
     extraTurretMounts:
-    - {x: -11, y: 3, z: -16}
-    - {x: 11, y: 3, z: -16}
+    - {x: -30, y: 9, z: -25}
+    - {x: 30, y: 9, z: -25}
     hullHp: 1800
     maxSpeed: 52
     acceleration: 26
