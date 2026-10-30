@@ -220,9 +220,7 @@ public class StationDocking : MonoBehaviour
         if (_grid != null) _grid.gameObject.SetActive(true);
 
         // 정거장 앞쪽 끝 바깥에 놓고 앞으로 밀어낸다
-        Vector3 dir = zone.Model != null ? zone.Model.forward : Vector3.forward;
-        dir.y = 0f;
-        dir = dir.sqrMagnitude > 0.01f ? dir.normalized : Vector3.forward;
+        Vector3 dir = zone.EntranceDirection;
 
         float y = StarSystem.Instance != null ? StarSystem.Instance.Origin.y : _ship.transform.position.y;
         Vector3 pos = zone.PointOutside(dir, _dockRange + _undockClearance, y);

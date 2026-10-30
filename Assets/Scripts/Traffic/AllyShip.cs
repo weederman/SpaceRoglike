@@ -60,7 +60,7 @@ public class AllyShip : MonoBehaviour
         _rb.isKinematic = false;
         SetTurrets(false, true);
 
-        // 적 프리팹을 바탕으로 만들어 나타날 때 워프 엔진음이 나는데, 늘 떠 있는 경비선이라 끈다
+        // 적 프리팹을 바탕으로 만들어 나타날 때 워프 도착음이 나는데, 늘 떠 있는 경비선이라 끈다
         AudioSource arrival = GetComponentInChildren<AudioSource>();
         if (arrival != null)
             arrival.Stop();

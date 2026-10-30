@@ -75,6 +75,17 @@ public class StationZone : MonoBehaviour
         }
     }
 
+    /// <summary>정거장 입구 쪽 (모델 앞쪽, 수평). 출항한 함선이 이쪽 바깥에 나온다.</summary>
+    public Vector3 EntranceDirection
+    {
+        get
+        {
+            Vector3 dir = _model != null ? _model.forward : Vector3.forward;
+            dir.y = 0f;
+            return dir.sqrMagnitude > 0.01f ? dir.normalized : Vector3.forward;
+        }
+    }
+
     private Transform _model;
     private Bounds _bounds;
     private bool _hasBounds;

@@ -84,7 +84,7 @@ public class PirateShip : MonoBehaviour
     private static readonly List<PirateShip> Fighting = new List<PirateShip>();
     private static readonly List<AsteroidField.Rock> RockBuffer = new List<AsteroidField.Rock>();
 
-    // 함께 나타난 배들의 워프 엔진음을 하나로 줄인다 (LimitArrivalSound)
+    // 함께 나타난 배들의 워프 도착음을 하나로 줄인다 (LimitArrivalSound)
     private const float ArrivalSoundGap = 1f;
     private static float _lastArrivalSoundAt = -10f;
 
@@ -131,7 +131,7 @@ public class PirateShip : MonoBehaviour
     }
 
     /// <summary>
-    /// 적 프리팹(EnEmy)은 나타날 때 워프 엔진음을 한 번 낸다(2D, playOnAwake). 여러 척이 한꺼번에 나타나면 소리가 겹쳐
+    /// 적 프리팹(EnEmy)은 나타날 때 워프 도착음(engine_warp_003)을 한 번 낸다(2D, playOnAwake). 여러 척이 한꺼번에 나타나면 소리가 겹쳐
     /// 지나치게 커지므로, 잠깐 사이에 함께 나타난 배는 처음 한 척만 소리를 낸다.
     /// </summary>
     private void LimitArrivalSound()

@@ -59,6 +59,9 @@ public class CameraController : MonoBehaviour
         }
     }
 
+    /// <summary>카메라가 함선 둘레를 돈 각도 (도, 기본 자리 = 0). 플레이어 이동(WASD)이 이 방향을 따른다.</summary>
+    public float Yaw => _orbitYaw;
+
     private void Start()
     {
         if (target == null)
