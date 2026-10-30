@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b29a3d5582ab8444887b4339263cb548, type: 3}
   m_Name: FirstShipQuest
   m_EditorClassIdentifier: 
-  unlockCredits: 1000000
-  blueprintPrice: 1000000
+  unlockCredits: 300000
+  blueprintPrice: 300000
   blueprintName: "1\uCC28 \uD2B9\uC218 \uD568\uC120 \uBE14\uB8E8\uD504\uB9B0\uD2B8"
   materials:
   - oreId: iron

@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// 플레이어 편 NPC 함선 (정거장 경비선). EnemyShipCatalog.SpawnAlly로 만들고, 주변 교통(AmbientTraffic)이 순찰할 정거장을 정한다.
-///  Patrol : 정거장 선체 바깥을 한 바퀴씩 돌며 떠다닌다 (쏘지 않는다)
+///  Patrol : 정거장 입구(출항하는 곳) 앞 구역 안의 아무 지점을 차례로 오가며 떠다닌다 (쏘지 않는다)
 ///  Engage : 가까이에 해적이 나타나면 가장 가까운 해적에게 다가가 그 주위를 돌며 쏜다(해적의 Raid와 같은 방식).
 ///           해적이 모두 사라지거나 정거장에서 너무 멀어지면 다시 순찰한다.
 /// 아군 표시(FriendlyShip)라 플레이어의 무기에 맞지 않고, 이 배의 무기(WeaponOwner.Ally)도 해적에게만 맞는다.
@@ -38,12 +38,10 @@ public class AllyShip : MonoBehaviour
     // 순찰
     private StationZone _station;
     private Vector2 _clearance;
-    private float _stepDegrees;
+    private float _halfWidth;
     private float _patrolSpeed;
     private float _engageRange;
     private float _leashDistance;
-    private float _patrolAngle;
-    private float _patrolSign = 1f;
     private Vector3 _patrolPoint;
     private float _nextRetarget;
     private float _orbitSign = 1f;
@@ -69,23 +67,19 @@ public class AllyShip : MonoBehaviour
     }
 
     /// <summary>
-    /// station 선체 바깥 clearance(최소~최대) 거리에서 stepDegrees씩 돌며 순찰한다.
+    /// station 입구 앞 구역을 순찰한다: 입구 쪽 선체 끝에서 clearance(최소~최대)만큼 나간 거리, 입구 중심선에서 옆으로 halfWidth 안.
     /// 해적이 engageRange 안에 들어오면 싸우고, 정거장 선체에서 leashDistance보다 멀어지면 돌아온다.
     /// </summary>
-    public void Patrol(StationZone station, Vector2 clearance, float stepDegrees, float patrolSpeed, float engageRange,
+    public void Patrol(StationZone station, Vector2 clearance, float halfWidth, float patrolSpeed, float engageRange,
         float leashDistance)
     {
         _station = station;
         _clearance = clearance;
-        _stepDegrees = stepDegrees;
+        _halfWidth = halfWidth;
         _patrolSpeed = patrolSpeed;
         _engageRange = engageRange;
         _leashDistance = leashDistance;
-        _patrolSign = Random.value < 0.5f ? -1f : 1f;
 
-        // 지금 있는 자리의 각도에서 순찰을 시작한다
-        Vector3 from = transform.position - station.transform.position;
-        _patrolAngle = Mathf.Atan2(from.x, from.z) * Mathf.Rad2Deg;
         NextPatrolPoint();
         Current = Mode.Patrol;
     }
@@ -134,10 +128,10 @@ public class AllyShip : MonoBehaviour
 
     private void NextPatrolPoint()
     {
-        _patrolAngle += _patrolSign * _stepDegrees;
-        float rad = _patrolAngle * Mathf.Deg2Rad;
-        var dir = new Vector3(Mathf.Sin(rad), 0f, Mathf.Cos(rad));
-        _patrolPoint = _station.PointOutside(dir, Random.Range(_clearance.x, _clearance.y), _rb.position.y);
+        Vector3 dir = _station.EntranceDirection;
+        Vector3 side = Vector3.Cross(Vector3.up, dir);
+        _patrolPoint = _station.PointOutside(dir, Random.Range(_clearance.x, _clearance.y), _rb.position.y)
+                       + side * Random.Range(-_halfWidth, _halfWidth);
     }
 
     // ── 교전 ──────────────────────────────────────────

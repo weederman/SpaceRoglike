@@ -3,11 +3,11 @@ using UnityEngine;
 
 /// <summary>
 /// 우주정거장 도킹/출항 (EVE Online처럼).
-///  - 입항: 함선이 정거장 선체에서 dockRange 안으로 다가가면 화면 아래에 "F 입항" 안내가 뜨고, F를 누르면 화면이 어두워지며
+///  - 입항: 함선이 정거장 선체에서 dockRange 안으로 다가가면 화면 아래에 "F 입항" 안내 버튼이 뜨고, F를 누르거나 버튼을 누르면 화면이 어두워지며
 ///    정거장 안(내부 공간)으로 들어간다. 내부 공간은 바깥 우주와 떨어진 먼 곳이다. 도킹해 있는 동안 정거장 화면(사이드바:
 ///    격납고·스페이스 라운지·지도·미션·정보)이 보이고 자동 저장(SaveSystem)이 된다. 함선은 제자리에서 움직이거나 쏘지 않고,
 ///    창이 아닌 곳을 마우스로 끌면 카메라가 함선 둘레를 돌아 둘러볼 수 있다(CameraController.OrbitEnabled).
-///  - 출항: 정거장 화면의 창이 모두 닫혀 있을 때(창은 Esc로 닫는다) F를 누르면, 화면이 어두워진 뒤 정거장 앞쪽 바깥에서 밀려 나가며 시작한다.
+///  - 출항: 정거장 화면의 창이 모두 닫혀 있을 때(창은 Esc로 닫는다) F나 "F 출항" 안내 버튼을 누르면, 화면이 어두워진 뒤 정거장 앞쪽 바깥에서 밀려 나가며 시작한다.
 ///  - 스토리 재생 중, 워프 중, 임무가 막는 동안(호송·소탕 교전)에는 입항할 수 없다.
 /// F는 채굴 키와 같지만, 입항 안내는 정거장 바로 곁에서만 뜨므로 겹치지 않는다. Shift+F(개발자 창)는 무시한다.
 /// StarSystem 프리팹에 함께 붙는다. 내부 화면 UI: Assets/Resources/UI/StationInterior.prefab
@@ -92,7 +92,7 @@ public class StationDocking : MonoBehaviour
             // 정거장 화면의 창이 모두 닫혀 있을 때만 출항
             bool canUndock = !_view.AnyWindowOpen && !StoryPlayer.IsPlaying;
             _view.ShowPrompt(canUndock ? $"{_dockKey}   출항" : null);
-            if (canUndock && DockKeyPressed())
+            if (canUndock && (DockKeyPressed() || _view.ConsumePromptClick()))
                 Undock();
             return;
         }
@@ -105,7 +105,7 @@ public class StationDocking : MonoBehaviour
                        && !GameInputLock.IsLockedExcept(this);
         _view.ShowPrompt(canDock ? $"{_dockKey}   입항 · {near.DisplayName}" : null);
 
-        if (canDock && DockKeyPressed())
+        if (canDock && (DockKeyPressed() || _view.ConsumePromptClick()))
             StartCoroutine(DockRoutine(near));
     }
 

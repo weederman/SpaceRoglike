@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 
 /// <summary>
 /// 주변 교통: 플레이어가 있는 지역(StarSystem.OnAreaChanged)에 맞춰 NPC 함선과 해적을 띄운다.
-///  - 정거장 지역: 아군 경비선(AllyShip)이 정거장 입구 앞에 나타나 정거장 주위를 순찰하고, 민간 화물선(NpcFreighter)이 오가며(도킹하며 사라지거나 워프로 떠난다),
+///  - 정거장 지역: 아군 경비선(AllyShip)이 정거장 입구 앞에 나타나 그 근처를 순찰하고, 민간 화물선(NpcFreighter)이 오가며(도킹하며 사라지거나 워프로 떠난다),
 ///    가끔 해적이 습격해 온다. 습격한 해적은 가장 가까운 플레이어 편(플레이어·경비선·화물선)을 노리고, 경비선은 해적과 싸운다.
 ///  - 소행성대(비콘) 지역: 비콘 레벨에 따라 해적이 나타나 플레이어를 노린다.
 ///  - 지역을 벗어나면(워프 등) 이 지역에 띄운 배를 모두 치운다. 도킹 중에는 함선이 먼 내부 공간에 있어 지역이 바뀐 것으로 보지 않는다.
@@ -43,10 +43,10 @@ public class AmbientTraffic : MonoBehaviour
     [SerializeField, Min(0)] private int _allyCount = 3;
     [Tooltip("정거장 입구 앞에 나타날 때 경비선 사이 간격")]
     [SerializeField, Min(0f)] private float _allySpawnSpacing = 120f;
-    [Tooltip("순찰하는 거리 (정거장 선체 끝에서, 최소~최대)")]
+    [Tooltip("순찰 구역: 입구 쪽 정거장 선체 끝에서 나간 거리 (최소~최대)")]
     [SerializeField] private Vector2 _patrolClearance = new Vector2(250f, 600f);
-    [Tooltip("순찰할 때 한 번에 정거장 둘레를 도는 각도")]
-    [SerializeField, Min(1f)] private float _patrolStepDegrees = 20f;
+    [Tooltip("순찰 구역: 입구 중심선에서 옆으로 이 거리 안")]
+    [SerializeField, Min(0f)] private float _patrolHalfWidth = 400f;
     [SerializeField, Min(1f)] private float _patrolSpeed = 30f;
     [Tooltip("이 거리 안에 해적이 들어오면 싸운다")]
     [SerializeField, Min(10f)] private float _allyEngageRange = 1200f;
@@ -308,7 +308,7 @@ public class AmbientTraffic : MonoBehaviour
             if (ally == null)
                 return;
 
-            ally.Patrol(_station, _patrolClearance, _patrolStepDegrees, _patrolSpeed, _allyEngageRange, _allyLeashDistance);
+            ally.Patrol(_station, _patrolClearance, _patrolHalfWidth, _patrolSpeed, _allyEngageRange, _allyLeashDistance);
             _allies.Add(ally);
         }
     }

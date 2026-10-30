@@ -8,7 +8,7 @@ using UnityEngine.UI;
 /// 버튼을 누르면 가운데에 그 창이 열린다 (한 번에 하나, 닫기 버튼이나 Esc로 닫는다). 지도는 항성계 지도(StarMapUI)를 연다.
 /// 스페이스 라운지는 임무를 받는 곳, 미션은 받은 임무를 보는 곳이다 (둘 다 MissionBoardWindow, 모드만 다르다).
 /// 창이 모두 닫혀 있을 때만 F로 출항할 수 있다 (StationDocking이 AnyWindowOpen을 본다).
-/// 화면 아래 가운데의 안내(입항·출항 키)와, 도킹/출항 때 쓰는 화면 전체 페이드도 여기에 있다.
+/// 화면 아래 가운데의 안내(입항·출항 버튼, 키 F나 클릭으로 누른다)와, 도킹/출항 때 쓰는 화면 전체 페이드도 여기에 있다.
 /// 프리팹: Assets/Resources/UI/StationInterior.prefab
 /// </summary>
 public class StationInteriorView : MonoBehaviour
@@ -34,9 +34,12 @@ public class StationInteriorView : MonoBehaviour
     [Header("안내 / 페이드")]
     [SerializeField] private GameObject _promptRoot;
     [SerializeField] private TMP_Text _prompt;
+    [Tooltip("안내를 눌러 입항·출항하는 버튼 (안내 배경에 붙어 있다)")]
+    [SerializeField] private Button _promptButton;
     [SerializeField] private Image _fade;
 
     private StationWindow[] _windows;
+    private bool _promptClicked;
     private StationZone _zone;
     private StarMapUI _map;
 
@@ -84,6 +87,8 @@ public class StationInteriorView : MonoBehaviour
         _missionButton.onClick.AddListener(() => Toggle(_missions));
         _infoButton.onClick.AddListener(() => Toggle(_info));
         _mapButton.onClick.AddListener(OpenMap);
+        if (_promptButton != null)
+            _promptButton.onClick.AddListener(() => _promptClicked = true);
         _lounge.Accepted += CloseWindows;
         _missions.Accepted += CloseWindows;
 
@@ -168,10 +173,20 @@ public class StationInteriorView : MonoBehaviour
             image.sprite = sprite;
     }
 
-    /// <summary>화면 아래 가운데 안내 (예: "F  출항"). null이면 숨긴다.</summary>
+    /// <summary>안내 버튼이 눌렸는지 (한 번 읽으면 지운다)</summary>
+    public bool ConsumePromptClick()
+    {
+        bool clicked = _promptClicked;
+        _promptClicked = false;
+        return clicked;
+    }
+
+    /// <summary>화면 아래 가운데 안내 버튼 (예: "F  출항"). null이면 숨긴다.</summary>
     public void ShowPrompt(string text)
     {
         bool show = !string.IsNullOrEmpty(text);
+        if (!show)
+            _promptClicked = false;
         if (_promptRoot.activeSelf != show)
             _promptRoot.SetActive(show);
         if (show && _prompt.text != text)

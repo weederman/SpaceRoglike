@@ -2,9 +2,10 @@ using UnityEngine;
 
 /// <summary>
 /// 항성계 배경: 지금 위치에서 가장 가까운 행성과 항성을 "아주 멀리 있는 커다란 천체"로 보여준다(2D Space Kit 행성/항성 그림).
-/// 천체는 함선이 다니는 평면보다 훨씬 아래 깊은 곳에, 카메라가 내려다보는 방향을 기준으로 실제 방향 쪽으로 치우쳐 놓는다.
-/// 실제 방향이 카메라 쪽이면 화면 먼 쪽으로 돌려 놓는다(카메라를 돌려도 함선 곁에 가까이 있는 것처럼 보이지 않게, FarSide).
-/// 매 프레임 카메라 시선을 따라 자리를 다시 잡으므로 함선이 움직여도 하늘처럼 거의 제자리에 있고,
+/// 천체는 하늘(스카이박스)처럼 카메라에서 일정한 방향·거리에 놓는다. 방향은 기본 카메라 각도(돌리지 않은 자리)에서 내려다볼 때
+/// 함선 평면보다 훨씬 아래 깊은 곳의 시선 중심에서 실제 방향 쪽으로 치우친 곳이고, 실제 방향이 남쪽(기본 카메라 쪽)이면 북쪽으로 올려 놓는다(FarSide).
+/// 카메라를 돌려도 천체는 월드에서 제자리라 별 배경과 함께 화면에서 돈다(카메라를 따라오지 않는다). 보이는 크기는 어느 쪽에서 봐도 같다.
+/// 함선이 움직여도 카메라를 따라 자리를 다시 잡으므로 하늘처럼 제자리에 있고,
 /// 항성계 안에서 위치가 바뀌면 방향과 크기(가까울수록 크게)가 천천히 바뀐다. 날아가다 가장 가까운 행성이 바뀌면 서서히 바꿔 낀다.
 /// 워프 터널 무대·정거장 내부처럼 항성계 밖에 있을 때는 숨기고, 그동안은 행성을 고르지 않는다(터널 위치에서 가까운 엉뚱한 행성이 끼지 않게).
 /// 워프 도착처럼 순간이동했으면 바꿔 끼는 과정 없이 도착한 곳의 행성으로 바로 바꾼다(예전 행성이 겹쳐 보이다 사라지지 않게).
@@ -19,9 +20,11 @@ public class PlanetBackdrop : MonoBehaviour
     [SerializeField, Min(100f)] private float _depth = 3000f;
     [Tooltip("시선 중심에서 천체의 실제 방향 쪽으로 치우치는 거리 (깊이 기준)")]
     [SerializeField, Min(0f)] private float _spread = 2300f;
-    [Tooltip("천체를 화면 안쪽(먼 쪽)으로만 치우치게 하는 정도. 실제 방향이 카메라 쪽이어도 앞쪽 성분을 이 값 이상으로 올린다 " +
-             "(카메라 쪽으로 오면 화면 아래 함선 곁에 크게 보여 가까이 있는 것처럼 보이므로)")]
+    [Tooltip("천체를 북쪽(기본 카메라에서 화면 먼 쪽)으로만 치우치게 하는 정도. 실제 방향이 남쪽이어도 북쪽 성분을 이 값 이상으로 올린다 " +
+             "(기본 카메라 쪽으로 오면 화면 아래 함선 곁에 보여 가까이 있는 것처럼 보이므로)")]
     [SerializeField, Range(0f, 1f)] private float _minForward = 0.35f;
+    [Tooltip("천체를 카메라에서 이 거리에 놓는다 (하늘처럼, 보이는 크기는 거리와 상관없이 같게 맞춘다). 먼 시야 거리보다 작아야 한다")]
+    [SerializeField, Min(1000f)] private float _skyDistance = 9000f;
     [Tooltip("이 깊이까지 보이도록 카메라의 먼 시야 거리를 늘린다 (실행 중에만)")]
     [SerializeField, Min(1000f)] private float _cameraFarClip = 12000f;
 
@@ -102,23 +105,19 @@ public class PlanetBackdrop : MonoBehaviour
         else
             _visibility = Mathf.MoveTowards(_visibility, inside ? 1f : 0f, Time.unscaledDeltaTime / _fadeSeconds);
 
-        // 시선 중심이 깊은 평면에 닿는 점 (카메라는 앞쪽 아래를 내려다본다)
-        float planeY = _player.position.y - _depth;
+        // 기본 카메라 각도(돌리지 않은 자리, 북쪽을 내려다봄)의 시선 중심이 깊은 평면에 닿는 점 (카메라 기준).
+        // 카메라를 돌린 각도는 빼고 내려다보는 각도만 쓰므로, 카메라를 돌려도 천체 방향은 월드에서 그대로다.
         Vector3 forward = _cam.transform.forward;
-        Vector3 center;
-        if (forward.y < -0.05f)
-            center = _cam.transform.position + forward * ((_cam.transform.position.y - planeY) / -forward.y);
-        else
-            center = new Vector3(_player.position.x, planeY, _player.position.z);
-
-        Quaternion facing = _cam.transform.rotation;
+        float downward = Mathf.Max(0.05f, -forward.y);
+        Vector3 view = new Vector3(0f, -downward, Mathf.Sqrt(Mathf.Max(0f, 1f - downward * downward)));
+        Vector3 center = view * ((_cam.transform.position.y - (_player.position.y - _depth)) / downward);
 
         // 항성
         Vector2 toStar = -here;
         float starDistance = toStar.magnitude;
         float starScale = Mathf.Lerp(_starDistanceScale.x, _starDistanceScale.y,
             Mathf.InverseLerp(_planetDistanceRange.x, _system.Data.OuterRadius, starDistance));
-        Place(_starRenderer, _system.Data.starSprite, center, toStar, _starSize * starScale, facing, _starTint, _visibility);
+        Place(_starRenderer, _system.Data.starSprite, center, toStar, _starSize * starScale, _starTint, _visibility);
 
         // 가장 가까운 행성. 항성계 밖(터널·정거장 내부)에서는 고르지 않고, 순간이동해 들어왔으면 바로 바꾼다.
         // 날아가다 바뀌면 다른 칸에 띄우고 서서히 바꿔 낀다.
@@ -161,7 +160,7 @@ public class PlanetBackdrop : MonoBehaviour
                 Mathf.InverseLerp(_planetDistanceRange.x, _planetDistanceRange.y, toPlanet.magnitude));
 
             _planetRenderers[slot].enabled = true;
-            Place(_planetRenderers[slot], o.planetSprite, center, toPlanet, _planetSize * o.planetScale * scale, facing,
+            Place(_planetRenderers[slot], o.planetSprite, center, toPlanet, _planetSize * o.planetScale * scale,
                 _planetTint, _planetAlpha[slot] * _visibility);
         }
     }
@@ -188,9 +187,12 @@ public class PlanetBackdrop : MonoBehaviour
         return best;
     }
 
-    /// <summary>천체 그림을 시선 중심에서 실제 방향 쪽으로 치우친 깊은 곳에, 카메라를 향하게 놓는다.</summary>
+    /// <summary>
+    /// 천체 그림을 시선 중심(center, 카메라 기준)에서 실제 방향 쪽으로 치우친 방향에, 카메라에서 _skyDistance 떨어뜨려 카메라를 향하게 놓는다.
+    /// 크기는 기본 카메라 각도에서 그 깊은 곳에 size로 있을 때와 같게 보이도록 맞춘다.
+    /// </summary>
     private void Place(SpriteRenderer renderer, Sprite sprite, Vector3 center, Vector2 direction, float size,
-        Quaternion facing, Color tint, float alpha)
+        Color tint, float alpha)
     {
         renderer.sprite = sprite;
         if (sprite == null || alpha <= 0f)
@@ -202,34 +204,25 @@ public class PlanetBackdrop : MonoBehaviour
         renderer.enabled = true;
 
         Vector3 dir = direction.sqrMagnitude > 1f ? FarSide(new Vector3(direction.x, 0f, direction.y).normalized) : Vector3.zero;
+        Vector3 offset = center + dir * _spread;
+        Vector3 sky = offset.normalized;
         Transform t = renderer.transform;
-        t.position = center + dir * _spread;
-        t.rotation = facing;
+        t.position = _cam.transform.position + sky * _skyDistance;
+        t.rotation = Quaternion.LookRotation(sky, Vector3.up);
 
         float longSide = Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y);
-        t.localScale = Vector3.one * (size / longSide);
+        t.localScale = Vector3.one * (size * _skyDistance / offset.magnitude / longSide);
 
         tint.a *= alpha;
         renderer.color = tint;
     }
 
-    /// <summary>
-    /// 수평 방향 dir을 카메라 기준(앞·옆)으로 나눠, 앞쪽 성분이 _minForward보다 작으면(카메라 쪽) 올려서 화면 먼 쪽으로 돌린다.
-    /// 카메라를 돌려도 천체가 시선 중심보다 카메라에 가까워지지 않는다.
-    /// </summary>
+    /// <summary>수평 방향 dir의 북쪽(+Z) 성분이 _minForward보다 작으면(남쪽) 올려서 북쪽으로 돌린다.</summary>
     private Vector3 FarSide(Vector3 dir)
     {
-        Vector3 forward = _cam.transform.forward;
-        forward.y = 0f;
-        if (forward.sqrMagnitude < 0.0001f)
+        if (dir.z >= _minForward)
             return dir;
 
-        forward.Normalize();
-        Vector3 right = Vector3.Cross(Vector3.up, forward);
-        float f = Vector3.Dot(dir, forward);
-        if (f >= _minForward)
-            return dir;
-
-        return (right * Vector3.Dot(dir, right) + forward * _minForward).normalized;
+        return new Vector3(dir.x, 0f, _minForward).normalized;
     }
 }

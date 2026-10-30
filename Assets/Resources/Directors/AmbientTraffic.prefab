@@ -49,8 +49,9 @@ MonoBehaviour:
   _retargetInterval: 2
   _allyClass: patrol_corvette
   _allyCount: 3
+  _allySpawnSpacing: 120
   _patrolClearance: {x: 250, y: 600}
-  _patrolStepDegrees: 20
+  _patrolHalfWidth: 400
   _patrolSpeed: 30
   _allyEngageRange: 1200
   _allyLeashDistance: 2000
