@@ -31,7 +31,7 @@ MonoBehaviour:
   - {fileID: 1626488730406606, guid: ff4e0e4e62247f3459cd53ba2f747149, type: 3}
   - {fileID: 5224033400427566544, guid: b136aeb8f0baa4b40a224c2f2dfb5829, type: 3}
   - {fileID: 454826032084446261, guid: f00c8df389af47046baea2d14b531550, type: 3}
-  wreckSize: 120
+  wreckSize: 220
   wreckDistance: {x: 150, y: 650}
   salvageRange: 150
   salvageSeconds: 4

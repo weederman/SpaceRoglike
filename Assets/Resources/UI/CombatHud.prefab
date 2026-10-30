@@ -1552,7 +1552,6 @@ MonoBehaviour:
   - group: {fileID: 6535933296286859706}
     key: {fileID: 3608852445993803794}
     weaponName: {fileID: 4540579723171272827}
-  _unselectedAlpha: 0.35
   _marker: {fileID: 7161352766287878637}
   _markerInfo: {fileID: 9063133846162430028}
   _shieldBar: {fileID: 24025501254862786}
@@ -1567,7 +1566,8 @@ MonoBehaviour:
   _cargo: {fileID: 4298051254080047610}
   _cargoBar: {fileID: 6320342361131791521}
   _cargoText: {fileID: 3827473597479575648}
-  _cargoFormat: "\uD654\uBB3C \xB7 \uAD11\uBB3C {0:0} / {1:0}"
+  _cargoFormat: "\uD654\uBB3C \xB7 \uAD11\uBB3C {0:0} / {1:0}  <size=18><color=#9FC7E0>(I\uD0A4\uB85C
+    \uC778\uBCA4\uD1A0\uB9AC \uD655\uC778)</color></size>"
   _waypoint: {fileID: 4545580660865479403}
   _waypointText: {fileID: 607673715604392576}
   _waypointFormat: '{0}  {1:0}'

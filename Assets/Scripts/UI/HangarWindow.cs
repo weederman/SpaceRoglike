@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 정거장의 격납고 창. 탭 두 개:
-///  - 격납고: 함선(수리·교체) → 장착 중인 무기(슬롯) → 보관 중인 무기 → 장착 중인 장비(장비 칸, 같은 종류는 하나) → 보관 중인 장비.
+///  - 격납고: 함선(수리·교체) → 장착 중인 무기(슬롯) → 보관 중인 무기 → 장착 중인 장비(장비 칸. 강화 장갑·보호막 증폭기는 여러 개, 나머지는 종류마다 하나) → 보관 중인 장비.
 ///    보관품을 골라 장착하면 원래 것은 보관함으로 돌아온다. 장비는 떼어 보관함에 넣을 수도 있다(보호막 증폭기가 없으면 보호막 없음).
 ///  - 상점: 무기(WeaponCatalog의 forSale)·장비 5종(EquipmentCatalog). 가진 것은 이름 옆에 (보유중)과 개수가 붙고,
 ///    같은 상세 화면에서 구매와 판매(보관 중인 것을 구매가의 sellRatio로 되팔기)를 한다. 팔지 않는 무기·장비도 가지고 있으면 목록에 나와 되팔 수 있다.
@@ -206,10 +206,14 @@ public class HangarWindow : StationWindow
 
         // 장비: 장착 중(장비 칸, 빈 칸 포함) → 보관 중
         _list.AddHeader($"장착 중인 장비 ({PlayerEquipment.UsedSlots} / {PlayerEquipment.SlotCount})");
+        // 같은 장비를 여러 개 달 수 있으므로(강화 장갑·보호막 증폭기) 몇 번째인지도 키에 넣는다
+        var equippedSeen = new Dictionary<string, int>();
         foreach (EquipmentCatalog.Item equipped in PlayerEquipment.EquippedItems())
         {
             EquipmentCatalog.Item item = equipped;
-            string key = "eq" + item.kind;
+            equippedSeen.TryGetValue(item.id, out int nth);
+            equippedSeen[item.id] = nth + 1;
+            string key = EquippedKey(item.id, nth);
             StationListRow row = _list.AddRow();
             row.Bind(IconOf(item), item.displayName, EquipmentLine(item), EquipmentCatalog.KindName(item.kind), () => Select(key));
             entries.Add((key, row, () => ShowEquipmentSlot(item)));
@@ -356,7 +360,7 @@ public class HangarWindow : StationWindow
     {
         _detail.Show(_armorIcon, "빈 장비 칸", "", $"장비 {PlayerEquipment.UsedSlots} / {PlayerEquipment.SlotCount}칸 사용 중");
         _detail.SetDescription("강화 장갑·보호막 증폭기·추진기 개량·화물창 확장·채굴 장비 개량 중에서 고를 수 있습니다. " +
-            "같은 종류는 하나만 달 수 있고, 등급이 높은 것으로 바꾸면 효과가 교체됩니다.\n\n" +
+            "강화 장갑과 보호막 증폭기는 여러 개 달 수 있고 효과가 더해집니다. 나머지는 종류마다 하나만 달 수 있고, 다른 등급을 달면 교체됩니다.\n\n" +
             "보호막 증폭기를 달아야 보호막이 생깁니다. 상점에서 장비를 사서 장착하세요.");
         _detail.SetMessage(_message);
     }
@@ -366,7 +370,7 @@ public class HangarWindow : StationWindow
         ShowEquipment(item, $"장착 중 · {EquipmentCatalog.KindName(item.kind)}");
         _detail.SetPrimary("해제 · 보관함으로", true, () =>
         {
-            _message = PlayerEquipment.Unequip(item.kind) ? $"{item.displayName}을 떼어 보관함으로 옮겼습니다." : "해제하지 못했습니다.";
+            _message = PlayerEquipment.Unequip(item.id) ? $"{item.displayName}을 떼어 보관함으로 옮겼습니다." : "해제하지 못했습니다.";
             Rebuild();
         });
         _detail.SetMessage(_message);
@@ -376,17 +380,21 @@ public class HangarWindow : StationWindow
     {
         ShowEquipment(item, count > 1 ? $"보관 중 ×{count}" : "보관 중");
 
-        EquipmentCatalog.Item current = PlayerEquipment.Get(item.kind);
+        EquipmentCatalog.Item current = PlayerEquipment.Replaces(item);
         bool canEquip = PlayerEquipment.CanEquip(item.id, out string reason);
         _detail.SetPrimary(current != null ? $"교체 (지금: {current.displayName})" : canEquip ? "장착" : "장비 칸 없음", canEquip, () =>
         {
             bool ok = PlayerEquipment.Equip(item.id);
             _message = !ok ? "장착하지 못했습니다."
                 : current != null ? $"{item.displayName}을 장착했습니다. 원래 장비는 보관함으로 옮겼습니다."
-                : $"{item.displayName}을 장착했습니다.";
-            _selectedKey = "eq" + item.kind;
+                : EquipmentCatalog.Stacks(item.kind) && PlayerEquipment.EquippedItems().Count(i => i.kind == item.kind) > 1
+                    ? $"{item.displayName}을 장착했습니다. 같은 종류의 효과가 더해집니다."
+                    : $"{item.displayName}을 장착했습니다.";
+            _selectedKey = EquippedKey(item.id, PlayerEquipment.EquippedCount(item.id) - 1);
             Rebuild();
         });
+        if (reason == null && current == null && EquipmentCatalog.Stacks(item.kind) && PlayerEquipment.Get(item.kind) != null)
+            reason = $"{EquipmentCatalog.KindName(item.kind)}는 여러 개 달 수 있고 효과가 더해집니다 (지금 {EquipmentCatalog.EffectName(item.kind)} +{PlayerEquipment.Bonus(item.kind) * 100f:0.#}%).";
         _detail.SetMessage(_message ?? reason);
     }
 
@@ -515,7 +523,7 @@ public class HangarWindow : StationWindow
     private void ShowEquipmentForSale(EquipmentCatalog.Item item)
     {
         int stored = PlayerEquipment.Items.Count(id => id == item.id);
-        int equipped = PlayerEquipment.Get(item.kind) == item ? 1 : 0;
+        int equipped = PlayerEquipment.EquippedCount(item.id);
         ShowEquipment(item, stored + equipped > 0 ? $"보유 {stored + equipped}개 · 장착 {equipped} · 보관 {stored}" : "보유하지 않음");
 
         SetBuyButton(item.forSale, item.price, () => StationShop.Instance != null && StationShop.Instance.Buy(item));
@@ -564,7 +572,13 @@ public class HangarWindow : StationWindow
     /// <summary>가진 개수 (장착 + 보관)</summary>
     private static int OwnedEquipment(EquipmentCatalog.Item item)
     {
-        return PlayerEquipment.Items.Count(id => id == item.id) + (PlayerEquipment.Get(item.kind) == item ? 1 : 0);
+        return PlayerEquipment.Items.Count(id => id == item.id) + PlayerEquipment.EquippedCount(item.id);
+    }
+
+    /// <summary>격납고 목록에서 단 장비 줄의 키 (같은 장비를 여러 개 달면 몇 번째인지로 구분)</summary>
+    private static string EquippedKey(string id, int nth)
+    {
+        return $"eq{id}#{nth}";
     }
 
     private static string OwnedName(string name, int owned)

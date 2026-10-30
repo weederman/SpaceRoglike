@@ -135,8 +135,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f65f033fd5d077d46963c1e23dee3836, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _explosionPrefab: {fileID: 100002, guid: 2f47b5cc2c5d54c40b29b62ba825671a, type: 3}
+  _explosionPrefab: {fileID: 100014, guid: d96258cdf841f5e4d8af97dce9661d8c, type: 3}
   _explosionLifetime: 5
+  _explosionScale: 5
+  _explosionSound: ship_explosion
 --- !u!65 &9083719977967137319
 BoxCollider:
   m_ObjectHideFlags: 0

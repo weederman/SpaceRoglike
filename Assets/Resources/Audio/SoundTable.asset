@@ -46,3 +46,6 @@ MonoBehaviour:
   - name: tavern
     clip: {fileID: 8300000, guid: a3cbfe1e21bb06345b576fb7bea8f1cf, type: 3}
     volume: 0.22
+  - name: ship_explosion
+    clip: {fileID: 8300000, guid: 75c2520332d47c543ab6ecbed510a94f, type: 3}
+    volume: 0.9

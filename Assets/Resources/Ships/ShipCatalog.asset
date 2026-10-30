@@ -27,7 +27,7 @@ MonoBehaviour:
         \uC8FD\uC74C\uC744 \uB0A8\uAE30\uACE0 \uC0AC\uB77C\uC9C0\uB294 \uC790\uB294
         \uB4DC\uBB3C\uB2E4.\""
       model: {fileID: 1152354105411914, guid: cdbec52167efb6a48b63cebb3284c246, type: 3}
-      hullRatio: 1
+      hullRatio: 0.8
       offset: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0}
     weaponSlots: 2
@@ -51,8 +51,8 @@ MonoBehaviour:
         \uC81C\uC791\uD55C 1\uCC28 \uD2B9\uC218 \uD568\uC120.\n\n\"\uBAA8\uB450\uAC00
         \uBB3C\uB7EC\uC124 \uB54C, \uB204\uAD70\uAC00\uB294 \uADF8 \uC790\uB9AC\uC5D0
         \uB0A8\uC544\uC57C \uD55C\uB2E4.\""
-      model: {fileID: 8139856114348451991, guid: 389459451cb455347b5c243eca5ac98d, type: 3}
-      hullRatio: 1.5
+      model: {fileID: 454826032084446261, guid: f00c8df389af47046baea2d14b531550, type: 3}
+      hullRatio: 1.8
       offset: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0}
     weaponSlots: 4

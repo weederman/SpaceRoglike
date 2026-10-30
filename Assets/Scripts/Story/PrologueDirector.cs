@@ -260,10 +260,11 @@ public class PrologueDirector : MonoBehaviour
         _homeRot = _ship.transform.rotation;
 
         // 씬에 놓인 함선 자리는 아주 큰 정거장 선체 안이므로, 터널에서 빠져나와 순찰함을 만나는 곳은 정거장 앞 바깥으로 한다
+        // (프롤로그 장면 구성은 모델 범위 상자 기준으로 맞춰 두었으므로 그대로 상자 끝에서 잰다)
         StationZone home = StationZone.Home;
         if (StarSystem.Instance != null && home != null)
         {
-            Vector3 outside = StarSystem.Instance.StationApproach(home, _spaceSceneClearance);
+            Vector3 outside = StarSystem.Instance.StationApproach(home, _spaceSceneClearance, false);
             _homePos = new Vector3(outside.x, _homePos.y, outside.z);
         }
 

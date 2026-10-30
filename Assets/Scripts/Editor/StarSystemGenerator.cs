@@ -5,7 +5,8 @@ using UnityEngine;
 /// <summary>
 /// 항성계 맵(StarSystemData)을 무작위로 한 번 만들어 Assets/Resources/StarSystem.asset에 저장한다.
 /// 만든 뒤에는 고정된 맵으로 쓰고, 다시 만들고 싶을 때만 메뉴를 실행한다(시드가 같으면 같은 맵이 나온다).
-///  - 행성 궤도 10개, 그 사이사이에 소행성 벨트 9개 (안쪽부터 행성 → 벨트 → 행성 …)
+///  - 행성 궤도 8개, 그 사이사이에 소행성 벨트 7개 (안쪽부터 행성 → 벨트 → 행성 …)
+///    궤도 사이 4,000, 벨트 폭 1,800 (플레이어가 워프 없이 궤도를 쉽게 넘나들지 않게 2배로 넓혔다)
 ///  - 정거장: 행성 궤도마다 하나, 궤도 위 무작위 각도 (행성과는 떨어진 곳)
 ///  - 워프 비콘: 벨트마다 레벨 1~5가 하나씩, 무작위 각도 (서로 떨어지게)
 ///  - 모항(튜토리얼 정거장)은 3번째 행성 궤도의 정거장, 튜토리얼 비콘은 그 양옆 벨트의 레벨 1 비콘 중 가까운 것
@@ -16,14 +17,14 @@ public static class StarSystemGenerator
     private const string PlanetFolder = "Assets/2D Space Kit/Background Elements/Planets/";
     private const string StarSpritePath = "Assets/2D Space Kit/Background Elements/Stars/Main Sequence.png";
 
-    private const int PlanetCount = 10;
+    private const int PlanetCount = 8;
     private const int BeaconsPerBelt = StarSystemData.MaxLevel;
     private const int DefaultSeed = 46;
 
     private const float FirstOrbitRadius = 3000f;
-    private const float OrbitSpacing = 2000f;   // 궤도(행성/벨트) 사이 간격
-    private const float OrbitJitter = 250f;
-    private const float BeltWidth = 900f;
+    private const float OrbitSpacing = 4000f;   // 궤도(행성/벨트) 사이 간격
+    private const float OrbitJitter = 500f;
+    private const float BeltWidth = 1800f;
     private const float MinBeaconSeparation = 40f;  // 같은 벨트의 비콘끼리 최소 각도
     private const float MinStationToPlanet = 40f;   // 정거장과 행성 사이 최소 각도
     private const int HomePlanetIndex = 2;          // 모항: 3번째 행성 궤도
@@ -177,10 +178,10 @@ public static class StarSystemGenerator
         return data;
     }
 
-    /// <summary>행성 10개의 모습: 안쪽 3개는 암석, 가운데 3개는 대기 행성, 바깥 4개는 가스·얼음 행성 (구간 안에서 무작위, 겹치지 않게)</summary>
+    /// <summary>행성 8개의 모습: 안쪽 3개는 암석, 가운데 2개는 대기 행성, 바깥 3개는 가스·얼음 행성 (구간 안에서 무작위, 겹치지 않게)</summary>
     private static List<(string, float)> PickPlanetLooks(System.Random rng)
     {
-        int[] perTier = { 3, 3, 4 };
+        int[] perTier = { 3, 2, 3 };
         var result = new List<(string, float)>();
         for (int t = 0; t < PlanetTiers.Length; t++)
         {

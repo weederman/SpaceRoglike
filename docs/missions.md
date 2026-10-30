@@ -333,7 +333,7 @@
 - 보관 중인 무기·장비는 상점 탭에서 되팔 수 있다: 가격 × 0.5 (WeaponCatalog/EquipmentCatalog의 sellRatio).
 - 무기·장비 가격과 성능은 [game-design.md](game-design.md) 7장(반영 결과)에 있다.
 - 무기 목록: `Assets/Resources/Shop/WeaponCatalog.asset` (이름·가격·설명·판매 여부는 각 TurretItem 에셋, 전투 수치는 `WeaponStatsTable.asset`)
-- 장비: `Assets/Resources/Shop/EquipmentCatalog.asset`. 5종 × 4단계, 장비 칸 4개(같은 종류는 하나), 처음엔 비어 있음(보호막 없음).
+- 장비: `Assets/Resources/Shop/EquipmentCatalog.asset`. 5종 × 4단계, 장비 칸 4개(강화 장갑·보호막 증폭기는 여러 개, 나머지는 종류마다 하나), 처음엔 비어 있음(보호막 없음).
 
 ## 구현에 필요한 것 (현재 코드 기준)
 

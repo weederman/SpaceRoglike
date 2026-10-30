@@ -13,6 +13,8 @@ public class SalvageWreck : MonoBehaviour
     public bool Searched { get; private set; }
     /// <summary>수색 진행 (초)</summary>
     public float Progress { get; set; }
+    /// <summary>눕힌 채로 세로축으로만 돈다 (큰 잔해가 굴러 함선 높이 위로 솟지 않게)</summary>
+    public bool SpinFlat { get; set; }
 
     private Vector3 _spin;
 
@@ -24,7 +26,10 @@ public class SalvageWreck : MonoBehaviour
 
     private void Update()
     {
-        transform.Rotate(_spin * Time.deltaTime, Space.Self);
+        if (SpinFlat)
+            transform.Rotate(Vector3.up, _spin.y * Time.deltaTime, Space.World);
+        else
+            transform.Rotate(_spin * Time.deltaTime, Space.Self);
     }
 
     public void MarkSearched()

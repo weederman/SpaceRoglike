@@ -20,7 +20,7 @@ public class StationDocking : MonoBehaviour
     public static bool IsDocked => Instance != null && (Instance._docked != null || Instance._busy);
 
     [Header("도킹")]
-    [Tooltip("정거장 선체(모델 범위)에서 이 거리(XZ) 안으로 들어오면 입항할 수 있다")]
+    [Tooltip("정거장 선체(위에서 내려다본 실제 모양)에서 이 거리(XZ) 안으로 들어오면 입항할 수 있다")]
     [SerializeField, Min(0f)] private float _dockRange = 1f;
     [Tooltip("입항·출항 키")]
     [SerializeField] private KeyCode _dockKey = KeyCode.F;
@@ -32,7 +32,7 @@ public class StationDocking : MonoBehaviour
     [SerializeField] private StationInteriorView _viewPrefab;
 
     [Header("출항")]
-    [Tooltip("정거장 앞쪽 끝에서 이만큼 더 나간 곳에 나타난다")]
+    [Tooltip("정거장 앞쪽 실제 선체 끝에서 (입항 거리 +) 이만큼 더 나간 곳에 나타난다")]
     [SerializeField, Min(0f)] private float _undockClearance = 120f;
     [Tooltip("출항할 때 밀려 나가는 속도")]
     [SerializeField, Min(0f)] private float _undockSpeed = 40f;
@@ -115,7 +115,7 @@ public class StationDocking : MonoBehaviour
         return Input.GetKeyDown(_dockKey) && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift);
     }
 
-    /// <summary>함선에서 가장 가까운 정거장과, 그 정거장 선체(모델 범위)까지의 수평 거리</summary>
+    /// <summary>함선에서 가장 가까운 정거장과, 그 정거장 선체(위에서 내려다본 실제 모양)까지의 수평 거리</summary>
     private StationZone NearestStation(out float distance)
     {
         distance = float.PositiveInfinity;
@@ -124,12 +124,7 @@ public class StationDocking : MonoBehaviour
 
         foreach (StationZone zone in StationZone.All)
         {
-            if (!zone.TryGetBounds(out Bounds b))
-                continue;
-
-            float dx = Mathf.Max(b.min.x - p.x, 0f, p.x - b.max.x);
-            float dz = Mathf.Max(b.min.z - p.z, 0f, p.z - b.max.z);
-            float d = Mathf.Sqrt(dx * dx + dz * dz);
+            float d = zone.DistanceToHull(p);
             if (d < distance)
             {
                 distance = d;

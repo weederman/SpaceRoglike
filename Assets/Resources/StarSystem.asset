@@ -18,348 +18,274 @@ MonoBehaviour:
   orbits:
   - name: K-A46 I
     kind: 0
-    radius: 2877.7039
+    radius: 2755.4077
     planetAngle: 144.45154
     planetSprite: {fileID: 21300000, guid: 3493ad023d68bf2438bf5a6d6fa588a1, type: 3}
     planetScale: 1
     beltWidth: 0
   - name: "\uC81C1 \uC18C\uD589\uC131\uB300"
     kind: 1
-    radius: 4840.4287
+    radius: 6680.857
     planetAngle: 0
     planetSprite: {fileID: 0}
     planetScale: 1
-    beltWidth: 900
+    beltWidth: 1800
   - name: K-A46 II
     kind: 0
-    radius: 7129.164
+    radius: 11258.328
     planetAngle: 71.59946
     planetSprite: {fileID: 21300000, guid: 40c6b12207a2f7b4d89cebd87c303801, type: 3}
     planetScale: 0.7
     beltWidth: 0
   - name: "\uC81C2 \uC18C\uD589\uC131\uB300"
     kind: 1
-    radius: 9007.658
+    radius: 15015.316
     planetAngle: 0
     planetSprite: {fileID: 0}
     planetScale: 1
-    beltWidth: 900
+    beltWidth: 1800
   - name: K-A46 III
     kind: 0
-    radius: 11211.209
+    radius: 19422.418
     planetAngle: 45.3659
     planetSprite: {fileID: 21300000, guid: 6bdef88550024bf4889656155eb1e123, type: 3}
     planetScale: 1
     beltWidth: 0
   - name: "\uC81C3 \uC18C\uD589\uC131\uB300"
     kind: 1
-    radius: 13214.477
+    radius: 23428.953
     planetAngle: 0
     planetSprite: {fileID: 0}
     planetScale: 1
-    beltWidth: 900
+    beltWidth: 1800
   - name: K-A46 IV
     kind: 0
-    radius: 14816.77
+    radius: 26633.54
     planetAngle: 275.80777
     planetSprite: {fileID: 21300000, guid: 8af57e43b5767104580271d5d970c4bb, type: 3}
     planetScale: 1
     beltWidth: 0
   - name: "\uC81C4 \uC18C\uD589\uC131\uB300"
     kind: 1
-    radius: 16801.268
+    radius: 30602.535
     planetAngle: 0
     planetSprite: {fileID: 0}
     planetScale: 1
-    beltWidth: 900
+    beltWidth: 1800
   - name: K-A46 V
     kind: 0
-    radius: 18854.102
+    radius: 34708.203
     planetAngle: 40.572945
     planetSprite: {fileID: 21300000, guid: 40f295fe140bd1947afb964469df15c8, type: 3}
     planetScale: 1.1
     beltWidth: 0
   - name: "\uC81C5 \uC18C\uD589\uC131\uB300"
     kind: 1
-    radius: 20991.604
+    radius: 38983.207
     planetAngle: 0
     planetSprite: {fileID: 0}
     planetScale: 1
-    beltWidth: 900
+    beltWidth: 1800
   - name: K-A46 VI
     kind: 0
-    radius: 22844.793
+    radius: 42689.586
     planetAngle: 90.940765
-    planetSprite: {fileID: 21300000, guid: 3442ac8dad963a747bb2692857498584, type: 3}
-    planetScale: 1
+    planetSprite: {fileID: 21300000, guid: ebc5a4f01947fc54096adcd9e1723924, type: 3}
+    planetScale: 1.6
     beltWidth: 0
   - name: "\uC81C6 \uC18C\uD589\uC131\uB300"
     kind: 1
-    radius: 24813.826
+    radius: 46627.652
     planetAngle: 0
     planetSprite: {fileID: 0}
     planetScale: 1
-    beltWidth: 900
+    beltWidth: 1800
   - name: K-A46 VII
     kind: 0
-    radius: 26834.65
+    radius: 50669.3
     planetAngle: 205.21477
-    planetSprite: {fileID: 21300000, guid: ebc5a4f01947fc54096adcd9e1723924, type: 3}
+    planetSprite: {fileID: 21300000, guid: 95e1a48c8de1d9a4eadd9825f7cc869b, type: 3}
     planetScale: 1.6
     beltWidth: 0
   - name: "\uC81C7 \uC18C\uD589\uC131\uB300"
     kind: 1
-    radius: 29147.438
+    radius: 55294.875
     planetAngle: 0
     planetSprite: {fileID: 0}
     planetScale: 1
-    beltWidth: 900
+    beltWidth: 1800
   - name: K-A46 VIII
     kind: 0
-    radius: 30820.896
+    radius: 58641.793
     planetAngle: 253.76909
-    planetSprite: {fileID: 21300000, guid: 95e1a48c8de1d9a4eadd9825f7cc869b, type: 3}
-    planetScale: 1.6
-    beltWidth: 0
-  - name: "\uC81C8 \uC18C\uD589\uC131\uB300"
-    kind: 1
-    radius: 33128.258
-    planetAngle: 0
-    planetSprite: {fileID: 0}
-    planetScale: 1
-    beltWidth: 900
-  - name: K-A46 IX
-    kind: 0
-    radius: 34817.23
-    planetAngle: 262.78204
     planetSprite: {fileID: 21300000, guid: 7c319980570fa04458d24c2b30eaa0e6, type: 3}
     planetScale: 1.1
-    beltWidth: 0
-  - name: "\uC81C9 \uC18C\uD589\uC131\uB300"
-    kind: 1
-    radius: 36860.363
-    planetAngle: 0
-    planetSprite: {fileID: 0}
-    planetScale: 1
-    beltWidth: 900
-  - name: K-A46 X
-    kind: 0
-    radius: 38788.2
-    planetAngle: 294.89136
-    planetSprite: {fileID: 21300000, guid: d83a39fbdcc73354d815cab77c2f64e6, type: 3}
-    planetScale: 1.6
     beltWidth: 0
   stations:
   - name: "K-A46 I \uC815\uAC70\uC7A5"
     orbit: 0
-    angle: 57.583054
+    angle: 272.34445
   - name: "K-A46 II \uC815\uAC70\uC7A5"
     orbit: 2
-    angle: 355.44302
+    angle: 262.78204
   - name: "K-A46 III \uC815\uAC70\uC7A5"
     orbit: 4
-    angle: 230.66484
+    angle: 294.89136
   - name: "K-A46 IV \uC815\uAC70\uC7A5"
     orbit: 6
-    angle: 108.39809
+    angle: 178.51285
   - name: "K-A46 V \uC815\uAC70\uC7A5"
     orbit: 8
-    angle: 271.5567
+    angle: 157.57411
   - name: "K-A46 VI \uC815\uAC70\uC7A5"
     orbit: 10
-    angle: 162.34119
+    angle: 172.43839
   - name: "K-A46 VII \uC815\uAC70\uC7A5"
     orbit: 12
-    angle: 18.243576
+    angle: 57.583054
   - name: "K-A46 VIII \uC815\uAC70\uC7A5"
     orbit: 14
-    angle: 309.38617
-  - name: "K-A46 IX \uC815\uAC70\uC7A5"
-    orbit: 16
-    angle: 145.97206
-  - name: "K-A46 X \uC815\uAC70\uC7A5"
-    orbit: 18
-    angle: 224.73643
+    angle: 109.51296
   beacons:
   - name: "\uC81C1 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 1"
     orbit: 1
-    angle: 197.44168
-    level: 4
+    angle: 355.44302
+    level: 2
   - name: "\uC81C1 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 2"
     orbit: 1
-    angle: 294.81647
-    level: 1
+    angle: 64.022385
+    level: 4
   - name: "\uC81C1 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 3"
     orbit: 1
-    angle: 60.599228
-    level: 2
+    angle: 230.66484
+    level: 5
   - name: "\uC81C1 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 4"
     orbit: 1
-    angle: 117.73754
-    level: 5
+    angle: 108.39809
+    level: 1
   - name: "\uC81C1 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 5"
     orbit: 1
-    angle: 250.68243
+    angle: 271.5567
     level: 3
   - name: "\uC81C2 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 1"
     orbit: 3
-    angle: 304.56796
+    angle: 224.73643
     level: 5
   - name: "\uC81C2 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 2"
     orbit: 3
-    angle: 110.474525
-    level: 1
+    angle: 294.81647
+    level: 3
   - name: "\uC81C2 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 3"
     orbit: 3
-    angle: 155.91011
-    level: 4
+    angle: 60.599228
+    level: 1
   - name: "\uC81C2 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 4"
     orbit: 3
-    angle: 250.50023
-    level: 3
+    angle: 117.73754
+    level: 4
   - name: "\uC81C2 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 5"
     orbit: 3
-    angle: 45.129925
+    angle: 168.81741
     level: 2
   - name: "\uC81C3 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 1"
     orbit: 5
-    angle: 258.60706
+    angle: 250.50023
     level: 1
   - name: "\uC81C3 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 2"
     orbit: 5
-    angle: 186.97119
+    angle: 103.36936
     level: 4
   - name: "\uC81C3 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 3"
     orbit: 5
-    angle: 336.7686
-    level: 5
+    angle: 339.32977
+    level: 3
   - name: "\uC81C3 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 4"
     orbit: 5
-    angle: 29.032671
-    level: 3
+    angle: 45.129925
+    level: 2
   - name: "\uC81C3 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 5"
     orbit: 5
-    angle: 74.90276
-    level: 2
+    angle: 197.58627
+    level: 5
   - name: "\uC81C4 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 1"
     orbit: 7
-    angle: 177.15384
-    level: 5
+    angle: 336.7686
+    level: 3
   - name: "\uC81C4 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 2"
     orbit: 7
-    angle: 82.37588
-    level: 4
+    angle: 265.07324
+    level: 1
   - name: "\uC81C4 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 3"
     orbit: 7
-    angle: 322.86206
-    level: 2
+    angle: 29.032671
+    level: 5
   - name: "\uC81C4 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 4"
     orbit: 7
-    angle: 258.80322
-    level: 3
+    angle: 74.90276
+    level: 4
   - name: "\uC81C4 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 5"
     orbit: 7
-    angle: 125.49646
-    level: 1
+    angle: 202.18282
+    level: 2
   - name: "\uC81C5 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 1"
     orbit: 9
-    angle: 77.861336
-    level: 4
+    angle: 322.86206
+    level: 5
   - name: "\uC81C5 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 2"
     orbit: 9
-    angle: 326.63458
-    level: 1
+    angle: 148.33485
+    level: 3
   - name: "\uC81C5 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 3"
     orbit: 9
-    angle: 16.056816
-    level: 3
+    angle: 197.45401
+    level: 1
   - name: "\uC81C5 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 4"
     orbit: 9
-    angle: 141.87578
-    level: 5
+    angle: 258.80322
+    level: 2
   - name: "\uC81C5 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 5"
     orbit: 9
-    angle: 202.31702
-    level: 2
+    angle: 77.900734
+    level: 4
   - name: "\uC81C6 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 1"
     orbit: 11
-    angle: 340.83044
-    level: 2
+    angle: 198.91164
+    level: 3
   - name: "\uC81C6 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 2"
     orbit: 11
-    angle: 158.10333
+    angle: 350.06195
     level: 1
   - name: "\uC81C6 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 3"
     orbit: 11
-    angle: 107.02435
-    level: 3
+    angle: 94.07231
+    level: 5
   - name: "\uC81C6 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 4"
     orbit: 11
-    angle: 224.18692
-    level: 5
+    angle: 265.0729
+    level: 2
   - name: "\uC81C6 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 5"
     orbit: 11
-    angle: 299.4516
+    angle: 33.15786
     level: 4
   - name: "\uC81C7 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 1"
     orbit: 13
-    angle: 164.29614
-    level: 3
+    angle: 111.00171
+    level: 4
   - name: "\uC81C7 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 2"
     orbit: 13
-    angle: 24.862055
-    level: 5
+    angle: 326.63458
+    level: 1
   - name: "\uC81C7 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 3"
     orbit: 13
-    angle: 311.6902
-    level: 2
+    angle: 16.056816
+    level: 3
   - name: "\uC81C7 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 4"
     orbit: 13
-    angle: 79.49876
-    level: 1
+    angle: 66.637566
+    level: 5
   - name: "\uC81C7 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 5"
     orbit: 13
-    angle: 265.59094
-    level: 4
-  - name: "\uC81C8 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 1"
-    orbit: 15
-    angle: 28.520897
-    level: 1
-  - name: "\uC81C8 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 2"
-    orbit: 15
-    angle: 174.4845
-    level: 4
-  - name: "\uC81C8 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 3"
-    orbit: 15
-    angle: 283.17944
-    level: 5
-  - name: "\uC81C8 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 4"
-    orbit: 15
-    angle: 96.0842
+    angle: 202.31702
     level: 2
-  - name: "\uC81C8 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 5"
-    orbit: 15
-    angle: 220.81702
-    level: 3
-  - name: "\uC81C9 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 1"
-    orbit: 17
-    angle: 112.60437
-    level: 4
-  - name: "\uC81C9 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 2"
-    orbit: 17
-    angle: 36.318123
-    level: 3
-  - name: "\uC81C9 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 3"
-    orbit: 17
-    angle: 292.19614
-    level: 2
-  - name: "\uC81C9 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 4"
-    orbit: 17
-    angle: 337.57962
-    level: 1
-  - name: "\uC81C9 \uC18C\uD589\uC131\uB300 \uBE44\uCF58 5"
-    orbit: 17
-    angle: 232.26599
-    level: 5
   homeStation: 2
   tutorialBeacon: 10

@@ -22,6 +22,10 @@ public class SalvageMissionDirector : MissionDirector
     [SerializeField] private Vector2 _guardDistance = new Vector2(60f, 280f);
     [Tooltip("잔해의 높이 (함선이 다니는 높이 기준, 음수면 아래로 지나간다)")]
     [SerializeField] private float _wreckHeight = -40f;
+    [Tooltip("큰 잔해의 윗면이 함선이 다니는 높이보다 이만큼은 아래에 오게 더 내린다 (함선이 잔해를 뚫고 지나가 보이지 않게)")]
+    [SerializeField, Min(0f)] private float _wreckClearance = 10f;
+    [Tooltip("잔해를 눕혀 놓을 때 기울이는 최대 각도 (위에서 내려다볼 때 긴 변이 보이게 거의 눕힌다)")]
+    [SerializeField, Range(0f, 90f)] private float _wreckTilt = 15f;
 
     private SalvageMissionData _data;
     private StarSystem.Location _destination = StarSystem.Location.None;
@@ -200,9 +204,15 @@ public class SalvageMissionDirector : MissionDirector
             Vector3 position = RingPoint(center, _data.wreckDistance, i, contents.Count);
             position.y = center.y + _wreckHeight;
 
-            GameObject go = SpawnModel(model, position, _data.wreckSize, false);
+            // 위에서 내려다볼 때 커 보이도록 거의 눕히고(방향만 무작위), 윗면이 함선 높이 아래에 오게 한다
+            Quaternion lying = Quaternion.Euler(Random.Range(-_wreckTilt, _wreckTilt), Random.Range(0f, 360f), Random.Range(-_wreckTilt, _wreckTilt));
+            GameObject go = SpawnModel(model, position, _data.wreckSize, false, lying);
+            float over = WorldBounds(go).max.y - (center.y - _wreckClearance);
+            if (over > 0f)
+                go.transform.position += Vector3.down * over;
             go.name = $"Wreck_{i + 1}";
             SalvageWreck wreck = go.AddComponent<SalvageWreck>();
+            wreck.SpinFlat = true;
             wreck.Contents = contents[i];
             _wrecks.Add(wreck);
         }
@@ -241,11 +251,12 @@ public class SalvageMissionDirector : MissionDirector
         return center + new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * d;
     }
 
-    /// <summary>모델을 놓고 가장 긴 변을 size로 맞춘다. solid면 부딪히는 구 판정을 단다.</summary>
-    private GameObject SpawnModel(GameObject model, Vector3 position, float size, bool solid)
+    /// <summary>모델을 놓고 가장 긴 변을 size로 맞춘다. solid면 부딪히는 구 판정을 단다. rotation이 없으면 무작위로 돌린다.</summary>
+    private GameObject SpawnModel(GameObject model, Vector3 position, float size, bool solid, Quaternion? rotation = null)
     {
-        GameObject go = model != null ? Instantiate(model, position, Random.rotation) : GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.transform.position = position;
+        Quaternion rot = rotation ?? Random.rotation;
+        GameObject go = model != null ? Instantiate(model, position, rot) : GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.transform.SetPositionAndRotation(position, rot);
         foreach (Collider c in go.GetComponentsInChildren<Collider>(true))
             Destroy(c);
         foreach (Rigidbody rb in go.GetComponentsInChildren<Rigidbody>(true))

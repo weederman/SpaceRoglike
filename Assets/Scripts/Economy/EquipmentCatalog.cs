@@ -9,7 +9,8 @@ using UnityEngine;
 ///  - 추진기 개량: 가속 +%
 ///  - 화물창 확장: 화물칸 용량 +%
 ///  - 채굴 장비 개량: 채굴 속도 +%
-/// 같은 종류는 하나만 단다(등급끼리 합산하지 않고 교체). 함선의 장비 칸 수(ShipCatalog.equipmentSlots)만큼 종류를 고를 수 있다.
+/// 강화 장갑·보호막 증폭기는 장비 칸만 있으면 여러 개 달 수 있고 효과(%)를 더한다(Stacks).
+/// 나머지 종류는 하나만 단다(등급끼리 합산하지 않고 교체). 함선의 장비 칸 수(ShipCatalog.equipmentSlots)만큼 달 수 있다.
 /// 장착·보관 상태는 PlayerEquipment가 갖는다.
 /// </summary>
 [CreateAssetMenu(fileName = "EquipmentCatalog", menuName = "SpaceRoglike/Equipment Catalog")]
@@ -72,6 +73,12 @@ public class EquipmentCatalog : ScriptableObject
     public int SellPrice(Item item)
     {
         return item != null ? Mathf.FloorToInt(item.price * sellRatio) : 0;
+    }
+
+    /// <summary>그 종류를 여러 개 달 수 있는지 (강화 장갑·보호막 증폭기). 여러 개면 효과를 더한다.</summary>
+    public static bool Stacks(Kind kind)
+    {
+        return kind == Kind.Armor || kind == Kind.Shield;
     }
 
     public static string KindName(Kind kind)

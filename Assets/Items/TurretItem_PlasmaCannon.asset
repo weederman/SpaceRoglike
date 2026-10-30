@@ -16,8 +16,10 @@ MonoBehaviour:
   displayName: "\uD50C\uB77C\uC2A4\uB9C8 \uD3EC"
   icon: {fileID: 21300000, guid: 3f83ab8fbe3a9c4488f4d911d3d04dfe, type: 3}
   turretPrefab: {fileID: 6509607899620335586, guid: ca4bec9eccdb453429c59548b28a5544, type: 3}
-  weaponType: 8
+  weaponType: 11
   price: 250000
   forSale: 1
-  description: "\uAC00\uC7A5 \uAC15\uB825\uD55C \uD50C\uB77C\uC2A4\uB9C8 \uBE54\uC744
-    \uC3D8\uB294 \uD3EC. \uC274\uB4DC\uC640 \uC120\uCCB4 \uBAA8\uB450\uB97C \uB179\uC778\uB2E4."
+  description: "\uACE0\uC18D \uB808\uC774\uC800\uC758 \uD384\uC2A4 \uD68C\uB85C\uB97C
+    \uD50C\uB77C\uC2A4\uB9C8\uB85C \uBC14\uAFBC \uC0C1\uC704 \uBB34\uAE30. \uB354
+    \uAC15\uD55C \uD384\uC2A4\uB97C \uB354 \uBE60\uB974\uAC8C \uC3D8\uC544 \uC274\uB4DC\uB97C
+    \uBE60\uB974\uAC8C \uAE4E\uACE0 \uC120\uCCB4\uC5D0\uB3C4 \uD53C\uD574\uB97C \uC900\uB2E4."

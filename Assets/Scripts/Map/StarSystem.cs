@@ -62,7 +62,7 @@ public class StarSystem : MonoBehaviour
     [Header("도착 위치 (장소 기준 XZ)")]
     [Tooltip("정거장으로 워프하면 정거장의 이쪽 방향(XZ)에 도착한다")]
     [SerializeField] private Vector2 _stationArrivalDirection = new Vector2(0f, -1f);
-    [Tooltip("정거장 선체 끝에서 이만큼 떨어진 곳에 도착한다 (정거장이 커서 중심 기준으로 재면 선체 안에 들어간다)")]
+    [Tooltip("정거장 실제 선체 끝(위에서 내려다본 모양)에서 이만큼 떨어진 곳에 도착한다. 기본 줌에서 화면 위아래로 약 65가 보인다")]
     [SerializeField, Min(0f)] private float _stationArrivalClearance = 900f;
     [Tooltip("비콘이 화면 오른쪽 위에 보이도록 비콘의 왼쪽 아래에 도착한다")]
     [SerializeField] private Vector2 _beaconArrivalOffset = new Vector2(-150f, -90f);
@@ -275,13 +275,16 @@ public class StarSystem : MonoBehaviour
         return StationApproach(zone, _stationArrivalClearance);
     }
 
-    /// <summary>워프 도착과 같은 쪽으로 정거장 선체 끝에서 clearance만큼 떨어진 자리 (함선 높이)</summary>
-    public Vector3 StationApproach(StationZone zone, float clearance)
+    /// <summary>
+    /// 워프 도착과 같은 쪽으로 정거장 선체 끝에서 clearance만큼 떨어진 자리 (함선 높이).
+    /// fromHull이면 실제 선체 모양에서, 아니면 모델 범위 상자 끝에서 잰다(StationZone.PointOutside).
+    /// </summary>
+    public Vector3 StationApproach(StationZone zone, float clearance, bool fromHull = true)
     {
         Vector3 dir = new Vector3(_stationArrivalDirection.x, 0f, _stationArrivalDirection.y);
         if (zone == null)
             return Origin;
-        return zone.PointOutside(dir, clearance, Origin.y);
+        return zone.PointOutside(dir, clearance, Origin.y, fromHull);
     }
 
     /// <summary>항성계 데이터의 정거장 번호로 정거장을 찾는다 (없으면 null)</summary>

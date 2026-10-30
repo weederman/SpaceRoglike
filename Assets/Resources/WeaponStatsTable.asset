@@ -85,18 +85,18 @@ MonoBehaviour:
     homing: 0
     homingTurnRate: 120
     damagePerSecond: 40
-  - name: plasma_cannon (PlasmaBeamHeavy)
+  - name: plasma_cannon (LaserImpulse)
     id: plasma_cannon
-    weaponType: 8
+    weaponType: 11
     displayName: "\uD50C\uB77C\uC2A4\uB9C8 \uD3EC"
-    damage: 150
+    damage: 20
     enemyDamage: 0
-    fireInterval: 0
-    shieldMultiplier: 1.25
-    armorMultiplier: 1.25
+    fireInterval: 0.2
+    shieldMultiplier: 1.5
+    armorMultiplier: 0.75
     homing: 0
     homingTurnRate: 120
-    damagePerSecond: 150
+    damagePerSecond: 100
   - name: vulcan_heavy (Vulcan)
     id: vulcan_heavy
     weaponType: 0
