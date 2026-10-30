@@ -3,9 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 전투 HUD: 화면 왼쪽 무기 슬롯 표시(1/2… 키, 선택된 무기 강조), 지정한 목표의 마커(거리·방위각·쉴드/선체 게이지,
+/// 전투 HUD: 화면 왼쪽 무기 슬롯 표시(장착한 무기 전부, 좌클릭으로 일제 사격), 지정한 목표의 마커(거리·방위각·쉴드/선체 게이지,
 /// 광맥이면 남은 광물과 채굴 사거리), 화물칸 게이지, 목적지 표시(ShowWaypoint), 화면 위쪽 가운데의 경고 표시(ShowAlert).
-/// 무기 선택(PlayerWeaponSelector), 목표 지정(TargetingSystem), 채굴 장비(MiningLaser), 화물칸(CargoHold)도
+/// 무기 슬롯(PlayerWeaponSelector), 목표 지정(TargetingSystem), 채굴 장비(MiningLaser), 화물칸(CargoHold)도
 /// 같은 프리팹에 붙어 있어 함께 생성된다.
 /// 게임 시작 시 자동 생성(씬에 배치하지 않음), 씬을 다시 불러와도 유지된다.
 /// 조작이 잠긴 스토리 재생 중과 정거장 안(도킹 중)에는 숨고, 조작하며 듣는 스토리(control 시퀀스) 중에는 보인다.
@@ -31,7 +31,6 @@ public class CombatHud : MonoBehaviour
 
     [Header("무기 슬롯 (왼쪽부터 1, 2, …)")]
     [SerializeField] private SlotView[] _slots = new SlotView[0];
-    [SerializeField, Range(0f, 1f)] private float _unselectedAlpha = 0.35f;
 
     [Header("목표 마커")]
     [SerializeField] private RectTransform _marker;
@@ -195,7 +194,7 @@ public class CombatHud : MonoBehaviour
 
             view.key.text = (i + 1).ToString();
             view.weaponName.text = WeaponCatalog.NameOf(_weapons.GetWeapon(i));
-            view.group.alpha = i == _weapons.SelectedIndex ? 1f : _unselectedAlpha;
+            view.group.alpha = 1f;
         }
     }
 

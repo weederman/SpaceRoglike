@@ -5,10 +5,11 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 정거장의 격납고 창. 탭 두 개:
-///  - 격납고: 지금 함선(수리), 장착 중인 무기(슬롯)·장비(장비 칸, 같은 종류는 하나), 보관 중인 무기·장비. 보관품을 골라 장착하면 원래 것은 보관함으로 돌아온다.
-///    장비는 떼어 보관함에 넣을 수도 있다(보호막 증폭기가 없으면 보호막 없음).
-///  - 상점: 파는 무기(WeaponCatalog의 forSale)·장비 5종(EquipmentCatalog), 보관품 판매(무기·장비를 되팔기),
-///    광물 시장(화물칸의 광석을 시장가로 판매, OreCatalog), 함선(아직 준비 중). 산 것은 격납고 보관함에 들어간다.
+///  - 격납고: 함선(수리·교체) → 장착 중인 무기(슬롯) → 보관 중인 무기 → 장착 중인 장비(장비 칸, 같은 종류는 하나) → 보관 중인 장비.
+///    보관품을 골라 장착하면 원래 것은 보관함으로 돌아온다. 장비는 떼어 보관함에 넣을 수도 있다(보호막 증폭기가 없으면 보호막 없음).
+///  - 상점: 무기(WeaponCatalog의 forSale)·장비 5종(EquipmentCatalog). 가진 것은 이름 옆에 (보유중)과 개수가 붙고,
+///    같은 상세 화면에서 구매와 판매(보관 중인 것을 구매가의 sellRatio로 되팔기)를 한다. 팔지 않는 무기·장비도 가지고 있으면 목록에 나와 되팔 수 있다.
+///    광물 시장(화물칸의 광석을 시장가로 판매, OreCatalog), 함선(상점에서 팔지 않음). 산 것은 격납고 보관함에 들어간다.
 /// 왼쪽 목록(StationListView)에서 고르면 오른쪽 상세(ItemDetailView)에 설명·세부정보(데미지·발사속도·DPS·사정거리·탄속·가격)와 버튼이 나온다.
 /// 계산과 지불은 StationShop, 무기 보관함은 PlayerHangar, 무기 슬롯은 PlayerWeaponSelector, 장비는 PlayerEquipment. 무기는 무기 id(weaponId)로 다룬다.
 /// </summary>
@@ -174,10 +175,10 @@ public class HangarWindow : StationWindow
             entries.Add((key, row, () => ShowOwnedShip(owned)));
         }
 
-        // 장착 중
+        // 무기: 장착 중(슬롯) → 보관 중
         PlayerWeaponSelector selector = PlayerWeaponSelector.Instance;
         int slots = selector != null ? selector.SlotCount : 0;
-        _list.AddHeader("장착 중");
+        _list.AddHeader($"장착 중인 무기 ({slots})");
         for (int i = 0; i < slots; i++)
         {
             int slot = i;
@@ -189,8 +190,22 @@ public class HangarWindow : StationWindow
             entries.Add(("slot" + slot, row, () => ShowEquipped(item, slot)));
         }
 
-        // 장비 칸: 단 장비 + 빈 칸
-        _list.AddHeader($"장비 ({PlayerEquipment.UsedSlots} / {PlayerEquipment.SlotCount})");
+        // 보관 중인 무기 (같은 무기는 한 줄로)
+        var storedWeapons = PlayerHangar.Items.GroupBy(t => t).ToList();
+        _list.AddHeader(storedWeapons.Count > 0 ? $"보관 중인 무기 ({PlayerHangar.Items.Count})" : "보관 중인 무기 · 없음 (상점에서 구매)");
+        foreach (var group in storedWeapons)
+        {
+            string weapon = group.Key;
+            int count = group.Count();
+            TurretItemData item = Item(weapon);
+            StationListRow row = _list.AddRow();
+            row.Bind(item != null ? item.icon : null, ItemName(item, weapon), WeaponLine(item), count > 1 ? $"×{count}" : "",
+                () => Select("stored" + weapon));
+            entries.Add(("stored" + weapon, row, () => ShowStored(item, weapon, count)));
+        }
+
+        // 장비: 장착 중(장비 칸, 빈 칸 포함) → 보관 중
+        _list.AddHeader($"장착 중인 장비 ({PlayerEquipment.UsedSlots} / {PlayerEquipment.SlotCount})");
         foreach (EquipmentCatalog.Item equipped in PlayerEquipment.EquippedItems())
         {
             EquipmentCatalog.Item item = equipped;
@@ -208,22 +223,9 @@ public class HangarWindow : StationWindow
             entries.Add((key, row, ShowEmptySlot));
         }
 
-        // 보관 중 (같은 무기는 한 줄로)
-        var stored = PlayerHangar.Items.GroupBy(t => t).ToList();
-        int storedCount = PlayerHangar.Items.Count + PlayerEquipment.Items.Count;
-        _list.AddHeader(storedCount > 0 ? $"보관 중 ({storedCount})" : "보관 중 · 비어 있음 (상점에서 구매)");
-        foreach (var group in stored)
-        {
-            string weapon = group.Key;
-            int count = group.Count();
-            TurretItemData item = Item(weapon);
-            StationListRow row = _list.AddRow();
-            row.Bind(item != null ? item.icon : null, ItemName(item, weapon), WeaponLine(item), count > 1 ? $"×{count}" : "",
-                () => Select("stored" + weapon));
-            entries.Add(("stored" + weapon, row, () => ShowStored(item, weapon, count)));
-        }
-
-        foreach (var group in PlayerEquipment.Items.GroupBy(id => id))
+        var storedEquipment = PlayerEquipment.Items.GroupBy(id => id).ToList();
+        _list.AddHeader(storedEquipment.Count > 0 ? $"보관 중인 장비 ({PlayerEquipment.Items.Count})" : "보관 중인 장비 · 없음 (상점에서 구매)");
+        foreach (var group in storedEquipment)
         {
             EquipmentCatalog.Item item = _equipment != null ? _equipment.Find(group.Key) : null;
             if (item == null)
@@ -430,64 +432,37 @@ public class HangarWindow : StationWindow
 
     private void BuildShop(List<(string, StationListRow, System.Action)> entries)
     {
+        // 무기: 파는 무기와, 팔지 않지만 가진 무기(되팔 수 있게). 가진 것은 이름 옆에 (보유중)과 개수
         _list.AddHeader("무기");
         if (_catalog != null)
         {
-            foreach (TurretItemData item in _catalog.weapons.Where(w => w != null && w.forSale))
+            foreach (TurretItemData item in _catalog.weapons.Where(w => w != null && (w.forSale || OwnedWeapon(w.weaponId) > 0)))
             {
                 TurretItemData it = item;
+                int owned = OwnedWeapon(it.weaponId);
                 StationListRow row = _list.AddRow();
-                string price = StationShop.CanAfford(it.price) ? $"{it.price:N0} CR" : $"<color=#FF7B7B>{it.price:N0} CR</color>";
-                row.Bind(it.icon, ItemName(it, it.weaponId), WeaponLine(it), price, () => Select("buy" + it.weaponId));
+                row.Bind(it.icon, OwnedName(ItemName(it, it.weaponId), owned), OwnedLine(WeaponLine(it), owned),
+                    PriceText(it.forSale, it.price), () => Select("buy" + it.weaponId));
                 entries.Add(("buy" + it.weaponId, row, () => ShowForSale(it)));
             }
         }
 
-        // 장비 5종
+        // 장비 5종 (무기와 같이 가진 것은 (보유중)과 개수)
         if (_equipment != null)
         {
             foreach (EquipmentCatalog.Kind kind in EquipmentCatalog.AllKinds)
             {
                 _list.AddHeader(EquipmentCatalog.KindName(kind));
-                foreach (EquipmentCatalog.Item item in _equipment.items.Where(i => i != null && i.forSale && i.kind == kind))
+                foreach (EquipmentCatalog.Item item in _equipment.items.Where(i => i != null && i.kind == kind && (i.forSale || OwnedEquipment(i) > 0)))
                 {
                     EquipmentCatalog.Item it = item;
+                    int owned = OwnedEquipment(it);
                     StationListRow row = _list.AddRow();
-                    string price = StationShop.CanAfford(it.price) ? $"{it.price:N0} CR" : $"<color=#FF7B7B>{it.price:N0} CR</color>";
-                    row.Bind(IconOf(it), it.displayName, EquipmentLine(it), price, () => Select("buyEq" + it.id));
+                    row.Bind(IconOf(it), OwnedName(it.displayName, owned), OwnedLine(EquipmentLine(it), owned),
+                        PriceText(it.forSale, it.price), () => Select("buyEq" + it.id));
                     entries.Add(("buyEq" + it.id, row, () => ShowEquipmentForSale(it)));
                 }
             }
-        }
-
-        // 보관품 판매: 격납고 보관함의 무기·장비를 되판다 (장착 중인 것은 격납고 탭에서 먼저 보관함으로 옮긴다)
-        var storedWeapons = PlayerHangar.Items.GroupBy(t => t).ToList();
-        var storedEquipment = PlayerEquipment.Items.GroupBy(id => id).ToList();
-        _list.AddHeader(storedWeapons.Count + storedEquipment.Count > 0 ? "판매 · 보관 중인 무기와 장비" : "판매 · 보관 중인 것 없음");
-        foreach (var group in storedWeapons)
-        {
-            TurretItemData item = Item(group.Key);
-            if (item == null)
-                continue;
-
-            int count = group.Count();
-            StationListRow row = _list.AddRow();
-            row.Bind(item.icon, ItemName(item, item.weaponId), count > 1 ? $"보관 ×{count}" : "보관 중", $"{_catalog.SellPrice(item):N0} CR",
-                () => Select("sell" + item.weaponId));
-            entries.Add(("sell" + item.weaponId, row, () => ShowSellWeapon(item, count)));
-        }
-
-        foreach (var group in storedEquipment)
-        {
-            EquipmentCatalog.Item item = _equipment != null ? _equipment.Find(group.Key) : null;
-            if (item == null)
-                continue;
-
-            int count = group.Count();
-            StationListRow row = _list.AddRow();
-            row.Bind(IconOf(item), item.displayName, count > 1 ? $"보관 ×{count}" : "보관 중", $"{_equipment.SellPrice(item):N0} CR",
-                () => Select("sellEq" + item.id));
-            entries.Add(("sellEq" + item.id, row, () => ShowSellEquipment(item, count)));
         }
 
         // 광물 시장: 화물칸의 광석을 시장가로 판다
@@ -517,66 +492,98 @@ public class HangarWindow : StationWindow
         }));
     }
 
+    /// <summary>상점의 무기: 구매 버튼과 판매 버튼(보관 중인 것을 구매가의 sellRatio로 되판다)</summary>
     private void ShowForSale(TurretItemData item)
     {
-        int owned = PlayerHangar.Items.Count(t => t == item.weaponId);
-        int equipped = 0;
-        PlayerWeaponSelector selector = PlayerWeaponSelector.Instance;
-        for (int i = 0; selector != null && i < selector.SlotCount; i++)
-            if (selector.GetWeapon(i) == item.weaponId) equipped++;
+        int stored = PlayerHangar.Items.Count(t => t == item.weaponId);
+        int equipped = EquippedWeapon(item.weaponId);
+        ShowWeapon(item, stored + equipped > 0 ? $"보유 {stored + equipped}개 · 장착 {equipped} · 보관 {stored}" : "보유하지 않음");
 
-        ShowWeapon(item, owned + equipped > 0 ? $"보유: 장착 {equipped} · 보관 {owned}" : "보유하지 않음");
+        SetBuyButton(item.forSale, item.price, () => StationShop.Instance != null && StationShop.Instance.Buy(item));
 
-        bool afford = StationShop.CanAfford(item.price);
-        _detail.SetPrimary(afford ? $"구매 · {item.price:N0} CR" : "크레딧 부족", afford, () =>
-        {
-            _message = StationShop.Instance != null && StationShop.Instance.Buy(item)
-                ? "구매했습니다. 격납고 탭에서 장착할 수 있습니다."
-                : "구매하지 못했습니다.";
-            Rebuild();
-        });
-        _detail.SetMessage(_message);
-    }
-
-    private void ShowEquipmentForSale(EquipmentCatalog.Item item)
-    {
-        int owned = PlayerEquipment.Items.Count(id => id == item.id);
-        bool equipped = PlayerEquipment.Get(item.kind) == item;
-        ShowEquipment(item, owned > 0 || equipped ? $"보유: 장착 {(equipped ? 1 : 0)} · 보관 {owned}" : "보유하지 않음");
-
-        bool afford = StationShop.CanAfford(item.price);
-        _detail.SetPrimary(afford ? $"구매 · {item.price:N0} CR" : "크레딧 부족", afford, () =>
-        {
-            _message = StationShop.Instance != null && StationShop.Instance.Buy(item)
-                ? "구매했습니다. 격납고 탭에서 장착할 수 있습니다."
-                : "구매하지 못했습니다.";
-            Rebuild();
-        });
-        _detail.SetMessage(_message);
-    }
-
-    private void ShowSellWeapon(TurretItemData item, int count)
-    {
-        ShowWeapon(item, count > 1 ? $"보관 중 ×{count}" : "보관 중");
-        _detail.SetPrimary($"판매 · {_catalog.SellPrice(item):N0} CR", true, () =>
+        int sell = _catalog.SellPrice(item);
+        _detail.SetSecondary(stored > 0 ? $"판매 · {sell:N0} CR" : $"판매 · 보관 중인 것 없음", stored > 0, () =>
         {
             int credits = StationShop.Instance != null ? StationShop.Instance.Sell(item) : -1;
             _message = credits >= 0 ? $"{ItemName(item, item.weaponId)}을 팔아 {credits:N0} CR을 받았습니다." : "팔지 못했습니다.";
             Rebuild();
         });
-        _detail.SetMessage(_message ?? "장착 중인 무기는 교체해 보관함으로 옮긴 뒤 팔 수 있습니다.");
+        _detail.SetMessage(_message ?? (stored == 0 && equipped > 0 ? "장착 중인 무기는 격납고 탭에서 교체해 보관함으로 옮긴 뒤 팔 수 있습니다." : null));
     }
 
-    private void ShowSellEquipment(EquipmentCatalog.Item item, int count)
+    /// <summary>상점의 장비: 구매 버튼과 판매 버튼(보관 중인 것을 구매가의 sellRatio로 되판다)</summary>
+    private void ShowEquipmentForSale(EquipmentCatalog.Item item)
     {
-        ShowEquipment(item, count > 1 ? $"보관 중 ×{count}" : "보관 중");
-        _detail.SetPrimary($"판매 · {_equipment.SellPrice(item):N0} CR", true, () =>
+        int stored = PlayerEquipment.Items.Count(id => id == item.id);
+        int equipped = PlayerEquipment.Get(item.kind) == item ? 1 : 0;
+        ShowEquipment(item, stored + equipped > 0 ? $"보유 {stored + equipped}개 · 장착 {equipped} · 보관 {stored}" : "보유하지 않음");
+
+        SetBuyButton(item.forSale, item.price, () => StationShop.Instance != null && StationShop.Instance.Buy(item));
+
+        int sell = _equipment.SellPrice(item);
+        _detail.SetSecondary(stored > 0 ? $"판매 · {sell:N0} CR" : $"판매 · 보관 중인 것 없음", stored > 0, () =>
         {
             int credits = StationShop.Instance != null ? StationShop.Instance.Sell(item) : -1;
             _message = credits >= 0 ? $"{item.displayName}을 팔아 {credits:N0} CR을 받았습니다." : "팔지 못했습니다.";
             Rebuild();
         });
-        _detail.SetMessage(_message ?? "장착 중인 장비는 해제해 보관함으로 옮긴 뒤 팔 수 있습니다.");
+        _detail.SetMessage(_message ?? (stored == 0 && equipped > 0 ? "장착 중인 장비는 격납고 탭에서 해제해 보관함으로 옮긴 뒤 팔 수 있습니다." : null));
+    }
+
+    private void SetBuyButton(bool forSale, int price, System.Func<bool> buy)
+    {
+        if (!forSale)
+        {
+            _detail.SetPrimary("판매하지 않는 상품", false, null);
+            return;
+        }
+
+        bool afford = StationShop.CanAfford(price);
+        _detail.SetPrimary(afford ? $"구매 · {price:N0} CR" : "크레딧 부족", afford, () =>
+        {
+            _message = buy() ? "구매했습니다. 격납고 탭에서 장착할 수 있습니다." : "구매하지 못했습니다.";
+            Rebuild();
+        });
+    }
+
+    /// <summary>가진 개수 (장착 + 보관)</summary>
+    private static int OwnedWeapon(string weaponId)
+    {
+        return PlayerHangar.Items.Count(t => t == weaponId) + EquippedWeapon(weaponId);
+    }
+
+    private static int EquippedWeapon(string weaponId)
+    {
+        int equipped = 0;
+        PlayerWeaponSelector selector = PlayerWeaponSelector.Instance;
+        for (int i = 0; selector != null && i < selector.SlotCount; i++)
+            if (selector.GetWeapon(i) == weaponId) equipped++;
+        return equipped;
+    }
+
+    /// <summary>가진 개수 (장착 + 보관)</summary>
+    private static int OwnedEquipment(EquipmentCatalog.Item item)
+    {
+        return PlayerEquipment.Items.Count(id => id == item.id) + (PlayerEquipment.Get(item.kind) == item ? 1 : 0);
+    }
+
+    private static string OwnedName(string name, int owned)
+    {
+        return owned > 0 ? $"{name} <color=#7CFFB2>(보유중)</color>" : name;
+    }
+
+    private static string OwnedLine(string line, int owned)
+    {
+        if (owned <= 0)
+            return line;
+        return string.IsNullOrEmpty(line) ? $"보유 {owned}개" : $"{line} · 보유 {owned}개";
+    }
+
+    private static string PriceText(bool forSale, int price)
+    {
+        if (!forSale)
+            return "비매품";
+        return StationShop.CanAfford(price) ? $"{price:N0} CR" : $"<color=#FF7B7B>{price:N0} CR</color>";
     }
 
     private void ShowOre(OreCatalog.Ore ore, CargoHold cargo)

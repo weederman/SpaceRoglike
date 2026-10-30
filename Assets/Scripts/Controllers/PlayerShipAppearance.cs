@@ -38,7 +38,7 @@ public class PlayerShipAppearance : MonoBehaviour
     private const string ConfigPath = "Ships/PlayerShipLooks";
 
     private PlayerShipLooks _config;
-    private LookSettings _shipLook; // 지금 탄 함선의 모습 (없으면 PlayerShipLooks의 fighter)
+    private LookSettings _shipLook; // 지금 탄 함선의 모습 (SetShip 전이면 ShipLook이 PlayerShips의 지금 함선을 쓴다)
     private MeshRenderer _originalHull;
     private GameObject _model;
     private bool _applied;
@@ -50,11 +50,24 @@ public class PlayerShipAppearance : MonoBehaviour
     {
         get
         {
-            if (Current == Look.Fighter && _shipLook != null && _shipLook.model != null)
-                return _shipLook;
+            if (Current == Look.Fighter && ShipLook != null)
+                return ShipLook;
             if (_config == null)
                 _config = Resources.Load<PlayerShipLooks>(ConfigPath);
             return _config != null ? _config.Get(Current) : null;
+        }
+    }
+
+    /// <summary>
+    /// 지금 탄 함선의 모습. 함선을 바꾸기 전(PlayerShips.Apply가 아직 불리지 않은 새 게임)에도 PlayerShips의 지금 함선을 쓴다
+    /// (예전 PlayerShipLooks의 '소형 전투선' 이름·설명이 격납고에 남지 않게). 모델이 없으면 null.
+    /// </summary>
+    private LookSettings ShipLook
+    {
+        get
+        {
+            LookSettings look = _shipLook ?? PlayerShips.Current?.look;
+            return look != null && look.model != null ? look : null;
         }
     }
 
@@ -103,8 +116,8 @@ public class PlayerShipAppearance : MonoBehaviour
         if (_config == null)
             _config = Resources.Load<PlayerShipLooks>(ConfigPath);
 
-        LookSettings settings = look == Look.Fighter && _shipLook != null && _shipLook.model != null
-            ? _shipLook
+        LookSettings settings = look == Look.Fighter && ShipLook != null
+            ? ShipLook
             : _config != null ? _config.Get(look) : null;
         if (settings == null || settings.model == null)
         {

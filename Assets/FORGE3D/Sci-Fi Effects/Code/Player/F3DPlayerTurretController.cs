@@ -32,7 +32,7 @@ namespace FORGE3D
                 return;
             }
 
-            // [추가] 무기를 바꾼 직후(1~9키, 모든 터렛이 함께 바뀐다)에는 쏘던 것을 멈춘다 (아래에서 새 무기로 다시 쏜다)
+            // [추가] 무기를 바꾼 직후(격납고 장착·loadout cue)에는 쏘던 것을 멈춘다 (아래에서 새 무기로 다시 쏜다)
             if (!PlayerWeaponSelector.CanFire())
             {
                 if (isFiring)

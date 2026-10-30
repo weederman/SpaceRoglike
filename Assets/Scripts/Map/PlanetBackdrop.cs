@@ -88,7 +88,15 @@ public class PlanetBackdrop : MonoBehaviour
             _cam.farClipPlane = _cameraFarClip;
 
         bool inside = _system.IsInsideSystem(_player.position);
-        _visibility = Mathf.MoveTowards(_visibility, inside ? 1f : 0f, Time.unscaledDeltaTime / _fadeSeconds);
+        Vector2 here = _system.ToSystem(_player.position);
+
+        // 순간이동(정거장 도킹·출항, 워프 도착 등)으로 안팎이 바뀌었으면 서서히 사라지지 않고 바로 숨기거나 보인다
+        // (정거장 안으로 들어갈 때 예전 행성이 잠깐 보였다 사라지지 않게)
+        bool jumped = (here - _lastHere).magnitude > _teleportDistance;
+        if (jumped && inside != _wasInside)
+            _visibility = inside ? 1f : 0f;
+        else
+            _visibility = Mathf.MoveTowards(_visibility, inside ? 1f : 0f, Time.unscaledDeltaTime / _fadeSeconds);
 
         // 시선 중심이 깊은 평면에 닿는 점 (카메라는 앞쪽 아래를 내려다본다)
         float planeY = _player.position.y - _depth;
@@ -99,7 +107,6 @@ public class PlanetBackdrop : MonoBehaviour
         else
             center = new Vector3(_player.position.x, planeY, _player.position.z);
 
-        Vector2 here = _system.ToSystem(_player.position);
         Quaternion facing = _cam.transform.rotation;
 
         // 항성
@@ -127,10 +134,9 @@ public class PlanetBackdrop : MonoBehaviour
                 _activeSlot = 1 - _activeSlot;
                 _planetOrbits[_activeSlot] = nearest;
             }
-
-            _lastHere = here;
         }
 
+        _lastHere = here;
         _wasInside = inside;
 
         for (int slot = 0; slot < 2; slot++)
